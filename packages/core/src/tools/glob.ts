@@ -4,6 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * Glob 工具模块
+ *
+ * 该模块提供了基于 glob 模式的文件查找功能，支持在各种代码库中快速查找文件。
+ * 主要功能包括：
+ * - 支持常见的 glob 模式（如 **/*.js、src/**/*.ts）
+ * - 返回按修改时间排序的匹配文件路径
+ * - 支持路径过滤和文件过滤
+ * - 限制返回的文件数量以避免性能问题
+ */
+
 import fs from 'node:fs';
 import path from 'node:path';
 import { glob, escape } from 'glob';
@@ -26,6 +37,21 @@ const debugLogger = createDebugLogger('GLOB');
 const MAX_FILE_COUNT = 100;
 
 // Subset of 'Path' interface provided by 'glob' that we can implement for testing
+/**
+ * Glob 路径接口
+ *
+ * 'glob' 库提供的 Path 接口的子集，用于在测试中实现。
+ *
+ * @interface
+ * @description 表示文件路径的基本信息，包括完整路径和修改时间
+ * @example
+ * ```typescript
+ * const path: GlobPath = {
+ *   fullpath: () => '/path/to/file.txt',
+ *   mtimeMs: 1234567890
+ * }
+ * ```
+ */
 export interface GlobPath {
   fullpath(): string;
   mtimeMs?: number;
@@ -35,6 +61,10 @@ export interface GlobPath {
  * Sorts file entries based on recency and then alphabetically.
  * Recent files (modified within recencyThresholdMs) are listed first, newest to oldest.
  * Older files are listed after recent ones, sorted alphabetically by path.
+ *
+ * @zh-CN 根据文件的新旧程度和字母顺序对文件条目进行排序
+ * @zh-CN 最近修改的文件（在 recencyThresholdMs 毫秒内）列在最前面，按修改时间从新到旧排序
+ * @zh-CN 较旧的文件列在最近文件之后，按路径字母顺序排序
  */
 export function sortFileEntries(
   entries: GlobPath[],
@@ -63,19 +93,35 @@ export function sortFileEntries(
 
 /**
  * Parameters for the GlobTool
+ *
+ * @zh-CN Glob 工具的参数接口
+ * @zh-CN 定义了 Glob 工具执行时所需的参数
  */
 export interface GlobToolParams {
   /**
    * The glob pattern to match files against
+   *
+   * @zh-CN 用于匹配文件的 glob 模式
+   * @zh-CN 支持常见的 glob 模式语法，如 "**/*.js" 或 "src/**/*.ts"
    */
   pattern: string;
 
   /**
    * The directory to search in (optional, defaults to current directory)
+   *
+   * @zh-CN 搜索目录（可选，默认为当前目录）
+   * @zh-CN 如果不指定，则在工作目录中搜索
    */
   path?: string;
 }
 
+/**
+ * Glob 工具执行类
+ *
+ * @zh-CN 负责执行 Glob 工具的具体逻辑
+ * @zh-CN 处理文件模式匹配、路径验证和文件过滤
+ * @internal
+ */
 class GlobToolInvocation extends BaseToolInvocation<
   GlobToolParams,
   ToolResult
@@ -234,6 +280,10 @@ class GlobToolInvocation extends BaseToolInvocation<
 
 /**
  * Implementation of the Glob tool logic
+ *
+ * @zh-CN Glob 工具的实现类
+ * @zh-CN 提供基于 glob 模式的快速文件匹配功能
+ * @zh-CN 支持各种代码库规模，返回按修改时间排序的匹配文件路径
  */
 export class GlobTool extends BaseDeclarativeTool<GlobToolParams, ToolResult> {
   static readonly Name = ToolNames.GLOB;

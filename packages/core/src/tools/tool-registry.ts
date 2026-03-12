@@ -4,6 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 工具注册表模块
+ *
+ * 本模块负责管理 Qwen Code 系统中所有可用工具的注册、发现和检索。
+ * 支持从命令行发现工具以及通过 MCP (Model Context Protocol) 服务器发现工具。
+ * 提供统一的工具管理接口，包括工具注册、查找、执行等功能。
+ */
+
 import type { FunctionDeclaration } from '@google/genai';
 import type {
   AnyDeclarativeTool,
@@ -25,6 +33,10 @@ import type { EventEmitter } from 'node:events';
 import { createDebugLogger } from '../utils/debugLogger.js';
 import type { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
 
+/**
+ * 工具参数类型
+ * 工具调用时使用的参数集合，键值对形式
+ */
 type ToolParams = Record<string, unknown>;
 
 const debugLogger = createDebugLogger('TOOL_REGISTRY');
@@ -125,6 +137,12 @@ class DiscoveredToolInvocation extends BaseToolInvocation<
   }
 }
 
+/**
+ * 从项目发现的工具类
+ *
+ * 表示通过工具发现命令从项目中检测到的工具。
+ * 这些工具会在调用时通过执行外部命令来运行。
+ */
 export class DiscoveredTool extends BaseDeclarativeTool<
   ToolParams,
   ToolResult
@@ -171,6 +189,13 @@ Signal: Signal number or \`(none)\` if no signal was received.
   }
 }
 
+/**
+ * 工具注册表类
+ *
+ * 管理所有可用工具的注册、发现和检索。
+ * 维护工具的索引，支持工具的动态发现和移除，
+ * 提供 MCP (Model Context Protocol) 服务器的连接管理。
+ */
 export class ToolRegistry {
   // The tools keyed by tool name as seen by the LLM.
   private tools: Map<string, AnyDeclarativeTool> = new Map();
@@ -192,8 +217,8 @@ export class ToolRegistry {
   }
 
   /**
-   * Registers a tool definition.
-   * @param tool - The tool object containing schema and execution logic.
+   * 注册一个工具定义
+   * @param tool - 包含 schema 和执行逻辑的工具对象
    */
   registerTool(tool: AnyDeclarativeTool): void {
     if (this.tools.has(tool.name)) {
@@ -218,8 +243,8 @@ export class ToolRegistry {
   }
 
   /**
-   * Removes all tools from a specific MCP server.
-   * @param serverName The name of the server to remove tools from.
+   * 从指定 MCP 服务器移除所有工具
+   * @param serverName 要移除工具的服务器名称
    */
   removeMcpToolsByServer(serverName: string): void {
     for (const [name, tool] of this.tools.entries()) {
@@ -230,9 +255,9 @@ export class ToolRegistry {
   }
 
   /**
-   * Disables an MCP server by removing its tools, prompts, and disconnecting the client.
-   * Also updates the config's exclusion list.
-   * @param serverName The name of the server to disable.
+   * 禁用 MCP 服务器，移除其工具、提示并断开客户端连接
+   * 同时更新配置的排除列表
+   * @param serverName 要禁用的服务器名称
    */
   async disableMcpServer(serverName: string): Promise<void> {
     // Remove tools from registry
@@ -252,9 +277,9 @@ export class ToolRegistry {
   }
 
   /**
-   * Discovers tools from project (if available and configured).
-   * Can be called multiple times to update discovered tools.
-   * This will discover tools from the command line and from MCP servers.
+   * 从项目发现工具（如果可用且已配置）
+   * 可以多次调用来更新发现的工具
+   * 这将从命令行和 MCP 服务器发现工具
    */
   async discoverAllTools(): Promise<void> {
     // remove any previously discovered tools
@@ -269,9 +294,9 @@ export class ToolRegistry {
   }
 
   /**
-   * Discovers tools from project (if available and configured).
-   * Can be called multiple times to update discovered tools.
-   * This will NOT discover tools from the command line, only from MCP servers.
+   * 从项目发现工具（如果可用且已配置）
+   * 可以多次调用来更新发现的工具
+   * 这不会从命令行发现工具，只从 MCP 服务器发现
    */
   async discoverMcpTools(): Promise<void> {
     // remove any previously discovered tools
@@ -284,15 +309,15 @@ export class ToolRegistry {
   }
 
   /**
-   * Restarts all MCP servers and re-discovers tools.
+   * 重启所有 MCP 服务器并重新发现工具
    */
   async restartMcpServers(): Promise<void> {
     await this.discoverMcpTools();
   }
 
   /**
-   * Discover or re-discover tools for a single MCP server.
-   * @param serverName - The name of the server to discover tools from.
+   * 为单个 MCP 服务器发现或重新发现工具
+   * @param serverName - 要发现工具的服务器名称
    */
   async discoverToolsForServer(serverName: string): Promise<void> {
     // Remove any previously discovered tools from this server
@@ -433,10 +458,10 @@ export class ToolRegistry {
   }
 
   /**
-   * Retrieves the list of tool schemas (FunctionDeclaration array).
-   * Extracts the declarations from the ToolListUnion structure.
-   * Includes discovered (vs registered) tools if configured.
-   * @returns An array of FunctionDeclarations.
+   * 获取工具 schema 列表 (FunctionDeclaration 数组)
+   * 从 ToolListUnion 结构中提取声明
+   * 如果配置了，则包含发现的（而非注册的）工具
+   * @returns FunctionDeclaration 数组
    */
   getFunctionDeclarations(): FunctionDeclaration[] {
     const declarations: FunctionDeclaration[] = [];
@@ -447,9 +472,9 @@ export class ToolRegistry {
   }
 
   /**
-   * Retrieves a filtered list of tool schemas based on a list of tool names.
-   * @param toolNames - An array of tool names to include.
-   * @returns An array of FunctionDeclarations for the specified tools.
+   * 根据工具名称列表获取过滤后的工具 schema 列表
+   * @param toolNames - 要包含的工具名称数组
+   * @returns 指定工具的 FunctionDeclaration 数组
    */
   getFunctionDeclarationsFiltered(toolNames: string[]): FunctionDeclaration[] {
     const declarations: FunctionDeclaration[] = [];
@@ -463,14 +488,14 @@ export class ToolRegistry {
   }
 
   /**
-   * Returns an array of all registered and discovered tool names.
+   * 返回所有已注册和已发现的工具名称数组
    */
   getAllToolNames(): string[] {
     return Array.from(this.tools.keys());
   }
 
   /**
-   * Returns an array of all registered and discovered tool instances.
+   * 返回所有已注册和已发现的工具实例数组
    */
   getAllTools(): AnyDeclarativeTool[] {
     return Array.from(this.tools.values()).sort((a, b) =>
@@ -479,7 +504,7 @@ export class ToolRegistry {
   }
 
   /**
-   * Returns an array of tools registered from a specific MCP server.
+   * 返回从特定 MCP 服务器注册的工具数组
    */
   getToolsByServer(serverName: string): AnyDeclarativeTool[] {
     const serverTools: AnyDeclarativeTool[] = [];
@@ -492,12 +517,19 @@ export class ToolRegistry {
   }
 
   /**
-   * Get the definition of a specific tool.
+   * 获取特定工具的定义
    */
   getTool(name: string): AnyDeclarativeTool | undefined {
     return this.tools.get(name);
   }
 
+  /**
+   * 从 MCP 服务器读取资源
+   * @param serverName - MCP 服务器名称
+   * @param uri - 资源 URI
+   * @param options - 可选参数，包含中止信号
+   * @returns 资源读取结果
+   */
   async readMcpResource(
     serverName: string,
     uri: string,
@@ -511,8 +543,8 @@ export class ToolRegistry {
   }
 
   /**
-   * Stops all MCP clients and cleans up resources.
-   * This method is idempotent and safe to call multiple times.
+   * 停止所有 MCP 客户端并清理资源
+   * 此方法是幂等的，可以安全地多次调用
    */
   async stop(): Promise<void> {
     try {

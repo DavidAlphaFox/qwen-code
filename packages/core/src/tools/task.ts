@@ -4,6 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * Task 工具模块
+ *
+ * 该模块提供了任务委托功能，允许主代理将复杂的、多步骤的任务委托给专门的子代理执行。
+ * 支持实时进度更新、工具调用追踪和错误处理。
+ */
+
 import { BaseDeclarativeTool, BaseToolInvocation, Kind } from './tools.js';
 import { ToolNames, ToolDisplayNames } from './tool-names.js';
 import type {
@@ -36,15 +43,28 @@ import type {
 } from '../subagents/subagent-events.js';
 import { createDebugLogger } from '../utils/debugLogger.js';
 
+/**
+ * Task 工具参数接口
+ *
+ * 定义了启动子代理任务所需的参数。
+ */
 export interface TaskParams {
+  /** 任务的简短描述（3-5个词） */
   description: string;
+  /** 代理需要执行的任务提示 */
   prompt: string;
+  /** 用于此任务的专用代理类型 */
   subagent_type: string;
 }
 
 const debugLogger = createDebugLogger('TASK');
 
 /**
+ * Task 工具
+ *
+ * 使主代理能够将任务委托给专门子代理的工具。该工具动态加载可用子代理，
+ * 并将其包含在描述中供模型选择。
+ *
  * Task tool that enables primary agents to delegate tasks to specialized subagents.
  * The tool dynamically loads available subagents and includes them in its description
  * for the model to choose from.
@@ -98,6 +118,8 @@ export class TaskTool extends BaseDeclarativeTool<TaskParams, ToolResult> {
   }
 
   /**
+   * 异步初始化工具，通过加载可用子代理并更新描述和模式。
+   *
    * Asynchronously initializes the tool by loading available subagents
    * and updating the description and schema.
    */
@@ -119,6 +141,8 @@ export class TaskTool extends BaseDeclarativeTool<TaskParams, ToolResult> {
   }
 
   /**
+   * 根据可用子代理更新工具的描述和模式。
+   *
    * Updates the tool's description and schema based on available subagents.
    */
   private updateDescriptionAndSchema(): void {
@@ -213,6 +237,12 @@ assistant: "I'm going to use the Task tool to launch the with the greeting-respo
     }
   }
 
+  /**
+   * 验证工具参数的有效性。
+   *
+   * @param params - 任务参数
+   * @returns 验证错误信息，验证通过则返回 null
+   */
   override validateToolParams(params: TaskParams): string | null {
     // Validate required fields
     if (
@@ -252,20 +282,43 @@ assistant: "I'm going to use the Task tool to launch the with the greeting-respo
     return null;
   }
 
+  /**
+   * 创建任务工具调用实例。
+   *
+   * @param params - 任务参数
+   * @returns 任务工具调用实例
+   */
   protected createInvocation(params: TaskParams) {
     return new TaskToolInvocation(this.config, this.subagentManager, params);
   }
 
+  /**
+   * 获取可用子代理名称列表。
+   *
+   * @returns 可用子代理名称数组
+   */
   getAvailableSubagentNames(): string[] {
     return this.availableSubagents.map((subagent) => subagent.name);
   }
 }
 
+/**
+ * Task 工具调用类
+ *
+ * 处理具体的任务执行，包括子代理的创建、执行和事件处理。
+ */
 class TaskToolInvocation extends BaseToolInvocation<TaskParams, ToolResult> {
   private readonly _eventEmitter: SubAgentEventEmitter;
   private currentDisplay: TaskResultDisplay | null = null;
   private currentToolCalls: TaskResultDisplay['toolCalls'] = [];
 
+  /**
+   * 构造函数，初始化任务工具调用实例。
+   *
+   * @param config - 配置对象
+   * @param subagentManager - 子代理管理器
+   * @param params - 任务参数
+   */
   constructor(
     private readonly config: Config,
     private readonly subagentManager: SubagentManager,
@@ -275,11 +328,18 @@ class TaskToolInvocation extends BaseToolInvocation<TaskParams, ToolResult> {
     this._eventEmitter = new SubAgentEventEmitter();
   }
 
+  /**
+   * 获取事件发射器实例。
+   *
+   * @returns 子代理事件发射器
+   */
   get eventEmitter(): SubAgentEventEmitter {
     return this._eventEmitter;
   }
 
   /**
+   * 更新当前显示状态，并在提供 updateOutput 时调用它。
+   *
    * Updates the current display state and calls updateOutput if provided
    */
   private updateDisplay(
@@ -299,6 +359,8 @@ class TaskToolInvocation extends BaseToolInvocation<TaskParams, ToolResult> {
   }
 
   /**
+   * 设置事件监听器以实时更新子代理进度。
+   *
    * Sets up event listeners for real-time subagent progress updates
    */
   private setupEventListeners(
@@ -454,15 +516,33 @@ class TaskToolInvocation extends BaseToolInvocation<TaskParams, ToolResult> {
     );
   }
 
+  /**
+   * 获取任务描述。
+   *
+   * @returns 任务描述字符串
+   */
   getDescription(): string {
     return `${this.params.subagent_type} subagent: "${this.params.description}"`;
   }
 
+  /**
+   * 判断执行前是否需要用户确认。
+   * 任务委托应自动执行，无需用户确认。
+   *
+   * @returns 始终返回 false
+   */
   override async shouldConfirmExecute(): Promise<false> {
     // Task delegation should execute automatically without user confirmation
     return false;
   }
 
+  /**
+   * 执行任务，创建并运行子代理。
+   *
+   * @param signal - 可选的中止信号
+   * @param updateOutput - 可选的输出更新回调
+   * @returns 任务执行结果
+   */
   async execute(
     signal?: AbortSignal,
     updateOutput?: (output: ToolResultDisplay) => void,

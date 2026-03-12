@@ -4,6 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * MCP 客户端模块
+ *
+ * 本模块实现了 MCP (Model Context Protocol) 客户端功能，用于连接和管理 MCP 服务器。
+ * 主要功能包括：
+ * - 连接不同类型的 MCP 服务器（stdio、SSE、HTTP）
+ * - 发现并注册 MCP 服务器提供的工具和提示词
+ * - 管理 MCP 服务器的连接状态
+ * - 支持 OAuth、服务账号、Google 凭据等多种认证方式
+ * - 处理资源读取请求
+ */
+
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { SSEClientTransportOptions } from '@modelcontextprotocol/sdk/client/sse.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
@@ -50,6 +62,8 @@ import type { ToolRegistry } from './tool-registry.js';
 
 /**
  * Callback type for sending MCP messages to SDK servers via control plane
+ *
+ * 用于通过控制平面向 SDK 服务器发送 MCP 消息的回调函数类型
  */
 export type SendSdkMcpMessage = (
   serverName: string,
@@ -67,6 +81,8 @@ export type DiscoveredMCPPrompt = Prompt & {
 
 /**
  * Enum representing the connection status of an MCP server
+ *
+ * 表示 MCP 服务器连接状态的枚举
  */
 export enum MCPServerStatus {
   /** Server is disconnected or experiencing errors */
@@ -79,6 +95,8 @@ export enum MCPServerStatus {
 
 /**
  * Enum representing the overall MCP discovery state
+ *
+ * 表示 MCP 整体发现状态的枚举
  */
 export enum MCPDiscoveryState {
   /** Discovery has not started yet */
@@ -94,6 +112,10 @@ export enum MCPDiscoveryState {
  *
  * This class is responsible for connecting to, discovering tools from, and
  * managing the state of a single MCP server.
+ *
+ * 单个 MCP 服务器的客户端
+ *
+ * 此类负责连接到单个 MCP 服务器，发现工具并管理服务器状态
  */
 export class McpClient {
   private client: Client;
@@ -260,6 +282,8 @@ let mcpDiscoveryState: MCPDiscoveryState = MCPDiscoveryState.NOT_STARTED;
 
 /**
  * Map to track which MCP servers have been discovered to require OAuth
+ *
+ * 映射表，用于跟踪哪些 MCP 服务器需要 OAuth 认证
  */
 export const mcpServerRequiresOAuth: Map<string, boolean> = new Map();
 
@@ -274,6 +298,8 @@ const statusChangeListeners: StatusChangeListener[] = [];
 
 /**
  * Add a listener for MCP server status changes
+ *
+ * 添加 MCP 服务器状态变化的监听器
  */
 export function addMCPStatusChangeListener(
   listener: StatusChangeListener,
@@ -283,6 +309,8 @@ export function addMCPStatusChangeListener(
 
 /**
  * Remove a listener for MCP server status changes
+ *
+ * 移除 MCP 服务器状态变化的监听器
  */
 export function removeMCPStatusChangeListener(
   listener: StatusChangeListener,
@@ -295,6 +323,8 @@ export function removeMCPStatusChangeListener(
 
 /**
  * Update the status of an MCP server
+ *
+ * 更新 MCP 服务器的状态
  */
 export function updateMCPServerStatus(
   serverName: string,
@@ -309,6 +339,8 @@ export function updateMCPServerStatus(
 
 /**
  * Get the current status of an MCP server
+ *
+ * 获取 MCP 服务器的当前状态
  */
 export function getMCPServerStatus(serverName: string): MCPServerStatus {
   return serverStatuses.get(serverName) || MCPServerStatus.DISCONNECTED;
@@ -316,6 +348,8 @@ export function getMCPServerStatus(serverName: string): MCPServerStatus {
 
 /**
  * Get all MCP server statuses
+ *
+ * 获取所有 MCP 服务器的状态
  */
 export function getAllMCPServerStatuses(): Map<string, MCPServerStatus> {
   return new Map(serverStatuses);
@@ -323,6 +357,8 @@ export function getAllMCPServerStatuses(): Map<string, MCPServerStatus> {
 
 /**
  * Get the current MCP discovery state
+ *
+ * 获取当前的 MCP 发现状态
  */
 export function getMCPDiscoveryState(): MCPDiscoveryState {
   return mcpDiscoveryState;
@@ -798,6 +834,8 @@ export async function invokeMcpPrompt(
  * Checks if the MCP server configuration has a network transport URL (SSE or HTTP).
  * @param config The MCP server configuration.
  * @returns True if a `url` or `httpUrl` is present, false otherwise.
+ *
+ * 检查 MCP 服务器配置是否具有网络传输 URL（SSE 或 HTTP）
  */
 export function hasNetworkTransport(config: MCPServerConfig): boolean {
   return !!(config.url || config.httpUrl);
@@ -1422,7 +1460,12 @@ export async function createTransport(
   );
 }
 
-/** Visible for testing */
+/** Visible for testing
+ *
+ * 可见性测试
+ *
+ * 检查工具是否已启用
+ */
 export function isEnabled(
   funcDecl: FunctionDeclaration,
   mcpServerName: string,

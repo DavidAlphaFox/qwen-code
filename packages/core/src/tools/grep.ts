@@ -4,6 +4,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * Grep 工具模块
+ *
+ * 提供文本搜索功能，支持在文件中搜索指定的正则表达式模式。
+ * 该工具采用多策略优先级搜索机制，优先使用 git grep，其次是系统 grep，
+ * 最后回退到纯 JavaScript 实现。
+ *
+ * 主要功能：
+ * - 支持正则表达式模式搜索
+ * - 支持文件过滤（通过 glob 模式）
+ * - 支持路径限制
+ * - 支持结果数量限制
+ * - 自动使用最优搜索策略
+ */
+
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { EOL } from 'node:os';
@@ -26,32 +41,46 @@ import { isCommandAvailable } from '../utils/shell-utils.js';
 // --- Interfaces ---
 
 /**
- * Parameters for the GrepTool
+ * Grep 工具的参数配置
+ *
+ * 定义了 Grep 工具的输入参数，包括搜索模式、搜索路径、文件过滤等选项。
+ *
+ * @see {@link GrepTool}
  */
 export interface GrepToolParams {
   /**
    * The regular expression pattern to search for in file contents
+   *
+   * 要在文件内容中搜索的正则表达式模式
    */
   pattern: string;
 
   /**
    * The directory to search in (optional, defaults to current directory relative to root)
+   *
+   * 要搜索的目录（可选，默认为当前工作目录）
    */
   path?: string;
 
   /**
    * Glob pattern to filter files (e.g. "*.js", "*.{ts,tsx}")
+   *
+   * 用于过滤文件的 glob 模式（例如："*.js"、"*.{ts,tsx}"）
    */
   glob?: string;
 
   /**
    * Maximum number of matching lines to return (optional, shows all if not specified)
+   *
+   * 要返回的最大匹配行数（可选，未指定时显示所有匹配）
    */
   limit?: number;
 }
 
 /**
  * Result object for a single grep match
+ *
+ * 单个 grep 匹配结果的对象
  */
 interface GrepMatch {
   filePath: string;
@@ -496,6 +525,15 @@ class GrepToolInvocation extends BaseToolInvocation<
 
 /**
  * Implementation of the Grep tool logic (moved from CLI)
+ *
+ * Grep 工具的实现类
+ *
+ * 提供文本搜索功能，使用多策略机制进行搜索：
+ * 1. 优先使用 git grep（适用于 Git 仓库）
+ * 2. 其次使用系统 grep 命令
+ * 3. 最后使用纯 JavaScript 实现作为回退
+ *
+ * 该工具支持正则表达式搜索、文件过滤和结果限制等功能。
  */
 export class GrepTool extends BaseDeclarativeTool<GrepToolParams, ToolResult> {
   static readonly Name = ToolNames.GREP;
@@ -537,8 +575,13 @@ export class GrepTool extends BaseDeclarativeTool<GrepToolParams, ToolResult> {
 
   /**
    * Validates the parameters for the tool
+   *
+   * 验证工具参数
+   *
    * @param params Parameters to validate
+   *                要验证的参数
    * @returns An error message string if invalid, null otherwise
+   *          如果参数无效返回错误消息字符串，否则返回 null
    */
   protected override validateToolParamValues(
     params: GrepToolParams,

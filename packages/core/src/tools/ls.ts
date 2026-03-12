@@ -21,21 +21,32 @@ const debugLogger = createDebugLogger('LS');
 const MAX_ENTRY_COUNT = 100;
 
 /**
+ * LS 工具模块
+ *
+ * 该模块实现了列出目录内容的功能，可以显示指定路径下的文件和子目录。
+ * 支持过滤功能，可以忽略符合特定模式的文件，并支持 .gitignore 和 .qwenignore 文件过滤规则。
+ */
+
+/**
  * Parameters for the LS tool
+ * LS 工具的参数
  */
 export interface LSToolParams {
   /**
    * The absolute path to the directory to list
+   * 要列出的目录的绝对路径
    */
   path: string;
 
   /**
    * Array of glob patterns to ignore (optional)
+   * 要忽略的 glob 模式数组（可选）
    */
   ignore?: string[];
 
   /**
    * Whether to respect .gitignore and .qwenignore patterns (optional, defaults to true)
+   * 是否遵守 .gitignore 和 .qwenignore 模式（可选，默认为 true）
    */
   file_filtering_options?: {
     respect_git_ignore?: boolean;
@@ -45,30 +56,36 @@ export interface LSToolParams {
 
 /**
  * File entry returned by LS tool
+ * LS 工具返回的文件条目
  */
 export interface FileEntry {
   /**
    * Name of the file or directory
+   * 文件或目录的名称
    */
   name: string;
 
   /**
    * Absolute path to the file or directory
+   * 文件或目录的绝对路径
    */
   path: string;
 
   /**
    * Whether this entry is a directory
+   * 该条目是否为目录
    */
   isDirectory: boolean;
 
   /**
    * Size of the file in bytes (0 for directories)
+   * 文件大小（字节，目录为 0）
    */
   size: number;
 
   /**
    * Last modified timestamp
+   * 最后修改时间戳
    */
   modifiedTime: Date;
 }
@@ -83,9 +100,10 @@ class LSToolInvocation extends BaseToolInvocation<LSToolParams, ToolResult> {
 
   /**
    * Checks if a filename matches any of the ignore patterns
-   * @param filename Filename to check
-   * @param patterns Array of glob patterns to check against
-   * @returns True if the filename should be ignored
+   * 检查文件名是否匹配任何忽略模式
+   * @param filename Filename to check\n要检查的文件名
+   * @param patterns Array of glob patterns to check against\n要检查的 glob 模式数组
+   * @returns True if the filename should be ignored\n如果文件名应该被忽略则返回 true
    */
   private shouldIgnore(filename: string, patterns?: string[]): boolean {
     if (!patterns || patterns.length === 0) {
@@ -107,7 +125,8 @@ class LSToolInvocation extends BaseToolInvocation<LSToolParams, ToolResult> {
 
   /**
    * Gets a description of the file reading operation
-   * @returns A string describing the file being read
+   * 获取文件读取操作的描述
+   * @returns A string describing the file being read\n描述正在读取的文件的字符串
    */
   getDescription(): string {
     const relativePath = makeRelative(
@@ -118,6 +137,7 @@ class LSToolInvocation extends BaseToolInvocation<LSToolParams, ToolResult> {
   }
 
   // Helper for consistent error formatting
+  // 用于一致错误格式化的辅助方法
   private errorResult(
     llmContent: string,
     returnDisplay: string,
@@ -136,7 +156,8 @@ class LSToolInvocation extends BaseToolInvocation<LSToolParams, ToolResult> {
 
   /**
    * Executes the LS operation with the given parameters
-   * @returns Result of the LS operation
+   * 使用给定参数执行 LS 操作
+   * @returns Result of the LS operation\nLS 操作的结果
    */
   async execute(_signal: AbortSignal): Promise<ToolResult> {
     try {
@@ -275,6 +296,7 @@ class LSToolInvocation extends BaseToolInvocation<LSToolParams, ToolResult> {
 
 /**
  * Implementation of the LS tool logic
+ * LS 工具逻辑的实现
  */
 export class LSTool extends BaseDeclarativeTool<LSToolParams, ToolResult> {
   static readonly Name = ToolNames.LS;
@@ -283,17 +305,18 @@ export class LSTool extends BaseDeclarativeTool<LSToolParams, ToolResult> {
     super(
       LSTool.Name,
       ToolDisplayNames.LS,
-      'Lists the names of files and subdirectories directly within a specified directory path. Can optionally ignore entries matching provided glob patterns.',
+      'Lists the names of files and subdirectories directly within a specified directory path. Can optionally ignore entries matching provided glob patterns.\n列出指定目录路径中的文件和子目录名称。可以选择忽略符合指定 glob 模式的条目。',
       Kind.Search,
       {
         properties: {
           path: {
             description:
-              'The absolute path to the directory to list (must be absolute, not relative)',
+              'The absolute path to the directory to list (must be absolute, not relative)\n要列出的目录的绝对路径（必须是绝对路径，不能是相对路径）',
             type: 'string',
           },
           ignore: {
-            description: 'List of glob patterns to ignore',
+            description:
+              'List of glob patterns to ignore\n要忽略的 glob 模式列表',
             items: {
               type: 'string',
             },
@@ -301,17 +324,17 @@ export class LSTool extends BaseDeclarativeTool<LSToolParams, ToolResult> {
           },
           file_filtering_options: {
             description:
-              'Optional: Whether to respect ignore patterns from .gitignore or .qwenignore',
+              'Optional: Whether to respect ignore patterns from .gitignore or .qwenignore\n可选：是否遵守 .gitignore 或 .qwenignore 中的忽略模式',
             type: 'object',
             properties: {
               respect_git_ignore: {
                 description:
-                  'Optional: Whether to respect .gitignore patterns when listing files. Only available in git repositories. Defaults to true.',
+                  'Optional: Whether to respect .gitignore patterns when listing files. Only available in git repositories. Defaults to true.\n可选：列出文件时是否遵守 .gitignore 模式。仅在 git 仓库中可用。默认为 true。',
                 type: 'boolean',
               },
               respect_qwen_ignore: {
                 description:
-                  'Optional: Whether to respect .qwenignore patterns when listing files. Defaults to true.',
+                  'Optional: Whether to respect .qwenignore patterns when listing files. Defaults to true.\n可选：列出文件时是否遵守 .qwenignore 模式。默认为 true。',
                 type: 'boolean',
               },
             },
@@ -325,8 +348,9 @@ export class LSTool extends BaseDeclarativeTool<LSToolParams, ToolResult> {
 
   /**
    * Validates the parameters for the tool
-   * @param params Parameters to validate
-   * @returns An error message string if invalid, null otherwise
+   * 验证工具的参数
+   * @param params Parameters to validate\n要验证的参数
+   * @returns An error message string if invalid, null otherwise\n如果参数无效则返回错误消息字符串，否则返回 null
    */
   protected override validateToolParamValues(
     params: LSToolParams,
@@ -351,6 +375,12 @@ export class LSTool extends BaseDeclarativeTool<LSToolParams, ToolResult> {
     return null;
   }
 
+  /**
+   * Creates a tool invocation instance
+   * 创建工具调用实例
+   * @param params Parameters for the tool invocation\n工具调用的参数
+   * @returns A tool invocation instance\n工具调用实例
+   */
   protected createInvocation(
     params: LSToolParams,
   ): ToolInvocation<LSToolParams, ToolResult> {

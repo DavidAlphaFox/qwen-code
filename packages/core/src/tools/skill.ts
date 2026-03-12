@@ -4,6 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 技能工具模块
+ *
+ * 该模块实现了技能工具功能，允许模型访问和执行用户自定义的技能。
+ * 技能工具可以动态加载可用技能，并将其包含在工具描述中供模型选择。
+ *
+ * 主要功能：
+ * - 动态加载和更新可用技能列表
+ * - 提供技能执行接口
+ * - 管理技能描述和架构
+ */
+
 import { BaseDeclarativeTool, BaseToolInvocation, Kind } from './tools.js';
 import { ToolNames, ToolDisplayNames } from './tool-names.js';
 import type { ToolResult, ToolResultDisplay } from './tools.js';
@@ -16,7 +28,12 @@ import { createDebugLogger } from '../utils/debugLogger.js';
 
 const debugLogger = createDebugLogger('SKILL');
 
+/**
+ * 技能工具参数接口
+ * 定义调用技能工具时所需的参数
+ */
 export interface SkillParams {
+  /** 技能名称，例如 "pdf" 或 "xlsx" */
   skill: string;
 }
 
@@ -24,6 +41,17 @@ export interface SkillParams {
  * Skill tool that enables the model to access skill definitions.
  * The tool dynamically loads available skills and includes them in its description
  * for the model to choose from.
+ *
+ * 技能工具类
+ *
+ * 继承自 BaseDeclarativeTool，提供技能加载和执行功能。
+ * 该工具允许模型访问技能定义，动态加载可用技能并将其包含在工具描述中供模型选择。
+ *
+ * 主要功能：
+ * - 动态加载和管理可用技能列表
+ * - 根据可用技能更新工具描述和架构
+ * - 验证技能参数
+ * - 创建技能工具调用实例
  */
 export class SkillTool extends BaseDeclarativeTool<SkillParams, ToolResult> {
   static readonly Name: string = ToolNames.SKILL;
@@ -72,6 +100,11 @@ export class SkillTool extends BaseDeclarativeTool<SkillParams, ToolResult> {
   /**
    * Asynchronously initializes the tool by loading available skills
    * and updating the description and schema.
+   *
+   * 异步刷新可用技能列表
+   *
+   * 通过加载可用技能并更新工具描述和架构来异步初始化工具。
+   * 此方法会在技能管理器的技能列表发生变化时自动调用。
    */
   async refreshSkills(): Promise<void> {
     try {
@@ -92,6 +125,11 @@ export class SkillTool extends BaseDeclarativeTool<SkillParams, ToolResult> {
 
   /**
    * Updates the tool's description and schema based on available skills.
+   *
+   * 更新工具描述和架构
+   *
+   * 根据当前可用的技能列表，动态生成工具描述和架构。
+   * 如果没有可用技能，会显示提示信息指导用户如何创建技能。
    */
   private updateDescriptionAndSchema(): void {
     let skillDescriptions = '';
@@ -149,6 +187,16 @@ ${skillDescriptions}
     (this as { description: string }).description = baseDescription;
   }
 
+  /**
+   * 验证技能工具参数
+   *
+   * 检查技能参数是否有效：
+   * - 验证技能名称是否为非空字符串
+   * - 验证技能是否存在于可用技能列表中
+   *
+   * @param params 技能参数对象
+   * @returns 如果验证通过返回 null，否则返回错误消息
+   */
   override validateToolParams(params: SkillParams): string | null {
     // Validate required fields
     if (
@@ -175,16 +223,45 @@ ${skillDescriptions}
     return null;
   }
 
+  /**
+   * 创建技能工具调用实例
+   *
+   * @param params 技能参数对象
+   * @returns 技能工具调用实例
+   */
   protected createInvocation(params: SkillParams) {
     return new SkillToolInvocation(this.config, this.skillManager, params);
   }
 
+  /**
+   * 获取所有可用技能的名称列表
+   *
+   * @returns 技能名称字符串数组
+   */
   getAvailableSkillNames(): string[] {
     return this.availableSkills.map((skill) => skill.name);
   }
 }
 
+/**
+ * 技能工具调用类
+ *
+ * 继承自 BaseToolInvocation，负责执行具体的技能加载和调用操作。
+ *
+ * 主要功能：
+ * - 加载指定技能的内容
+ * - 处理技能执行错误
+ * - 记录技能执行日志
+ * - 返回技能内容供模型使用
+ */
 class SkillToolInvocation extends BaseToolInvocation<SkillParams, ToolResult> {
+  /**
+   * 构造函数
+   *
+   * @param config 配置对象
+   * @param skillManager 技能管理器实例
+   * @param params 技能参数
+   */
   constructor(
     private readonly config: Config,
     private readonly skillManager: SkillManager,
@@ -193,15 +270,38 @@ class SkillToolInvocation extends BaseToolInvocation<SkillParams, ToolResult> {
     super(params);
   }
 
+  /**
+   * 获取工具调用描述
+   *
+   * @returns 描述字符串，包含要使用的技能名称
+   */
   getDescription(): string {
     return `Use skill: "${this.params.skill}"`;
   }
 
+  /**
+   * 判断执行前是否需要确认
+   *
+   * 技能加载是只读操作，不需要用户确认。
+   *
+   * @returns 始终返回 false
+   */
   override async shouldConfirmExecute(): Promise<false> {
     // Skill loading is a read-only operation, no confirmation needed
     return false;
   }
 
+  /**
+   * 执行技能工具调用
+   *
+   * 加载指定的技能并返回其内容。
+   * 会处理各种错误情况，包括技能未找到、解析错误等。
+   * 同时会记录技能执行的成功或失败状态。
+   *
+   * @param _signal 中止信号（未使用）
+   * @param _updateOutput 输出更新回调（未使用）
+   * @returns 工具执行结果，包含技能内容或错误信息
+   */
   async execute(
     _signal?: AbortSignal,
     _updateOutput?: (output: ToolResultDisplay) => void,

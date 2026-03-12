@@ -4,6 +4,26 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * Shell 命令执行工具模块
+ *
+ * 该模块提供了在终端中执行 Shell 命令的功能，支持前台和后台执行、超时控制、
+ * 输出实时更新以及安全权限管理。主要包含以下组件：
+ *
+ * - ShellToolParams: Shell 工具的参数接口定义
+ * - ShellToolInvocation: Shell 命令调用类，负责执行具体的 Shell 命令
+ * - ShellTool: Shell 工具的声明性定义，包含参数验证和工具调用创建
+ *
+ * 功能特性：
+ * - 支持前台/后台命令执行
+ * - 支持命令超时控制
+ * - 支持工作目录切换
+ * - 支持命令白名单机制
+ * - 支持二进制输出检测
+ * - 支持 Git 提交自动添加 co-author
+ * - 支持输出汇总功能
+ */
+
 import fs from 'node:fs';
 import path from 'node:path';
 import os, { EOL } from 'node:os';
@@ -48,18 +68,40 @@ const debugLogger = createDebugLogger('SHELL');
 export const OUTPUT_UPDATE_INTERVAL_MS = 1000;
 const DEFAULT_FOREGROUND_TIMEOUT_MS = 120000;
 
+/**
+ * Shell 工具参数接口
+ *
+ * 定义了执行 Shell 命令时所需的各种参数。
+ */
 export interface ShellToolParams {
+  /** 要执行的 Shell 命令 */
   command: string;
+  /** 是否在后台执行命令 */
   is_background: boolean;
+  /** 超时时间（毫秒），可选 */
   timeout?: number;
+  /** 命令的简短描述，用于向用户展示 */
   description?: string;
+  /** 执行命令的工作目录，绝对路径，可选 */
   directory?: string;
 }
 
+/**
+ * Shell 命令调用类
+ *
+ * 负责执行具体的 Shell 命令，处理命令执行、输出更新、
+ * 权限确认以及 Git 提交的 co-author 添加等功能。
+ */
 export class ShellToolInvocation extends BaseToolInvocation<
   ShellToolParams,
   ToolResult
 > {
+  /**
+   * 构造函数
+   * @param config - 配置对象
+   * @param params - Shell 工具参数
+   * @param allowlist - 命令白名单集合
+   */
   constructor(
     private readonly config: Config,
     params: ShellToolParams,
@@ -68,6 +110,10 @@ export class ShellToolInvocation extends BaseToolInvocation<
     super(params);
   }
 
+  /**
+   * 获取命令描述
+   * @returns 包含命令、目录、超时等信息的描述字符串
+   */
   getDescription(): string {
     let description = `${this.params.command}`;
     // append optional [in directory]
@@ -89,6 +135,11 @@ export class ShellToolInvocation extends BaseToolInvocation<
     return description;
   }
 
+  /**
+   * 检查是否需要用户确认执行
+   * @param _abortSignal - 中止信号
+   * @returns 确认详情或 false（不需要确认）
+   */
   override async shouldConfirmExecute(
     _abortSignal: AbortSignal,
   ): Promise<ToolCallConfirmationDetails | false> {
@@ -124,6 +175,14 @@ export class ShellToolInvocation extends BaseToolInvocation<
     return confirmationDetails;
   }
 
+  /**
+   * 执行 Shell 命令
+   * @param signal - 中止信号，用于取消命令执行
+   * @param updateOutput - 输出更新回调函数
+   * @param shellExecutionConfig - Shell 执行配置
+   * @param setPidCallback - 进程 ID 设置回调函数
+   * @returns 工具执行结果，包含输出和显示信息
+   */
   async execute(
     signal: AbortSignal,
     updateOutput?: (output: ToolResultDisplay) => void,
@@ -414,6 +473,11 @@ export class ShellToolInvocation extends BaseToolInvocation<
     }
   }
 
+  /**
+   * 为 Git 提交命令添加 co-author 信息
+   * @param command - 原始命令
+   * @returns 处理后的命令，可能包含 co-author 信息
+   */
   private addCoAuthorToGitCommit(command: string): string {
     // Check if co-author feature is enabled
     const gitCoAuthorSettings = this.config.getGitCoAuthor();
@@ -464,6 +528,10 @@ Co-authored-by: ${gitCoAuthorSettings.name} <${gitCoAuthorSettings.email}>`;
   }
 }
 
+/**
+ * 获取 Shell 工具的描述信息
+ * @returns Shell 工具的描述字符串，包含使用说明和注意事项
+ */
 function getShellToolDescription(): string {
   const isWindows = os.platform() === 'win32';
   const executionWrapper = isWindows
@@ -520,6 +588,10 @@ ${processGroupNote}
 `;
 }
 
+/**
+ * 获取命令参数的描述信息
+ * @returns 命令参数的描述字符串
+ */
 function getCommandDescription(): string {
   const cmd_substitution_warning =
     '\n*** WARNING: Command substitution using $(), `` ` ``, <(), or >() is not allowed for security reasons.';
@@ -536,13 +608,24 @@ function getCommandDescription(): string {
   }
 }
 
+/**
+ * Shell 工具类
+ *
+ * Shell 命令执行工具的声明性定义，负责参数验证和工具调用创建。
+ */
 export class ShellTool extends BaseDeclarativeTool<
   ShellToolParams,
   ToolResult
 > {
+  /** Shell 工具名称 */
   static Name: string = ToolNames.SHELL;
+  /** 命令白名单集合 */
   private allowlist: Set<string> = new Set();
 
+  /**
+   * 构造函数
+   * @param config - 配置对象
+   */
   constructor(private readonly config: Config) {
     super(
       ShellTool.Name,
@@ -583,6 +666,11 @@ export class ShellTool extends BaseDeclarativeTool<
     );
   }
 
+  /**
+   * 验证工具参数
+   * @param params - Shell 工具参数
+   * @returns 验证错误信息，如果验证通过则返回 null
+   */
   protected override validateToolParamValues(
     params: ShellToolParams,
   ): string | null {
@@ -643,6 +731,11 @@ export class ShellTool extends BaseDeclarativeTool<
     return null;
   }
 
+  /**
+   * 创建工具调用实例
+   * @param params - Shell 工具参数
+   * @returns 工具调用实例
+   */
   protected createInvocation(
     params: ShellToolParams,
   ): ToolInvocation<ShellToolParams, ToolResult> {

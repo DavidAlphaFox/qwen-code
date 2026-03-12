@@ -4,6 +4,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 编辑工具模块
+ *
+ * 提供文件编辑功能，支持替换文件中的文本内容。
+ * 可以创建新文件或修改现有文件的内容，支持单次替换和全局替换。
+ *
+ * 主要功能：
+ * - 使用精确的文本替换来编辑文件
+ * - 支持创建新文件
+ * - 支持替换所有匹配项
+ * - 提供差异预览和用户确认机制
+ * - 保留文件的原始编码和 BOM
+ */
+
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as Diff from 'diff';
@@ -45,6 +59,18 @@ import {
 
 const debugLogger = createDebugLogger('EDIT');
 
+/**
+ * 应用文本替换操作
+ *
+ * 根据提供的参数在当前内容中执行文本替换。
+ * 如果是新文件创建，直接返回新字符串；否则执行安全的字面替换。
+ *
+ * @param currentContent - 文件的当前内容，如果文件不存在则为 null
+ * @param oldString - 要被替换的旧文本
+ * @param newString - 要替换成的新文本
+ * @param isNewFile - 是否为创建新文件的操作
+ * @returns 替换后的内容
+ */
 export function applyReplacement(
   currentContent: string | null,
   oldString: string,
@@ -68,52 +94,77 @@ export function applyReplacement(
 }
 
 /**
- * Parameters for the Edit tool
+ * 编辑工具参数接口
+ *
+ * 定义编辑工具所需的参数类型
  */
 export interface EditToolParams {
   /**
    * The absolute path to the file to modify
+   * 要修改的文件的绝对路径
    */
   file_path: string;
 
   /**
    * The text to replace
+   * 要被替换的文本
    */
   old_string: string;
 
   /**
    * The text to replace it with
+   * 要替换成的新文本
    */
   new_string: string;
 
   /**
    * Replace every occurrence of old_string instead of requiring a unique match.
+   * 替换所有匹配的 old_string，而不是要求唯一匹配
    */
   replace_all?: boolean;
 
   /**
    * Whether the edit was modified manually by the user.
+   * 编辑是否由用户手动修改
    */
   modified_by_user?: boolean;
 
   /**
    * Initially proposed content.
+   * 最初提议的内容
    */
   ai_proposed_content?: string;
 }
 
+/**
+ * 计算出的编辑结果接口
+ *
+ * 存储编辑操作的计算结果，包括新旧内容、匹配次数、错误信息等
+ */
 interface CalculatedEdit {
+  /** 文件的当前内容 */
   currentContent: string | null;
+  /** 编辑后的新内容 */
   newContent: string;
+  /** old_string 匹配到的次数 */
   occurrences: number;
+  /** 错误信息（如果有） */
   error?: { display: string; raw: string; type: ToolErrorType };
+  /** 是否为新创建的文件 */
   isNewFile: boolean;
-  /** Detected encoding of the existing file (e.g. 'utf-8', 'gbk') */
+  /** Detected encoding of the existing file (e.g. 'utf-8', 'gbk')
+   * 检测到的现有文件编码（例如 'utf-8', 'gbk'） */
   encoding: string;
-  /** Whether the existing file has a UTF-8 BOM */
+  /** Whether the existing file has a UTF-8 BOM
+   * 现有文件是否具有 UTF-8 BOM */
   bom: boolean;
 }
 
+/**
+ * 编辑工具调用类
+ *
+ * 负责执行编辑操作的具体逻辑，包括计算编辑结果、处理用户确认、执行实际的文件写入等
+ */
 class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
   constructor(
     private readonly config: Config,
@@ -126,9 +177,11 @@ class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
 
   /**
    * Calculates the potential outcome of an edit operation.
-   * @param params Parameters for the edit operation
-   * @returns An object describing the potential edit outcome
+   * 计算编辑操作的潜在结果。
+   * @param params Parameters for the edit operation / 编辑操作的参数
+   * @returns An object describing the potential edit outcome / 描述潜在编辑结果的对象
    * @throws File system errors if reading the file fails unexpectedly (e.g., permissions)
+   *         如果读取文件意外失败（例如权限问题），抛出文件系统错误
    */
   private async calculateEdit(params: EditToolParams): Promise<CalculatedEdit> {
     const replaceAll = params.replace_all ?? false;
@@ -255,12 +308,14 @@ class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
   /**
    * Handles the confirmation prompt for the Edit tool in the CLI.
    * It needs to calculate the diff to show the user.
+   * 处理编辑工具在 CLI 中的确认提示。
+   * 需要计算差异以向用户显示。
    */
   async shouldConfirmExecute(
     abortSignal: AbortSignal,
   ): Promise<ToolCallConfirmationDetails | false> {
-  const mode = this.config.getApprovalMode();
-  if (mode === ApprovalMode.AUTO_EDIT || mode === ApprovalMode.YOLO) {
+    const mode = this.config.getApprovalMode();
+    if (mode === ApprovalMode.AUTO_EDIT || mode === ApprovalMode.YOLO) {
       return false;
     }
 
@@ -348,8 +403,9 @@ class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
 
   /**
    * Executes the edit operation with the given parameters.
-   * @param params Parameters for the edit operation
-   * @returns Result of the edit operation
+   * 执行具有给定参数的编辑操作。
+   * @param params Parameters for the edit operation / 编辑操作的参数
+   * @returns Result of the edit operation / 编辑操作的结果
    */
   async execute(signal: AbortSignal): Promise<ToolResult> {
     let editData: CalculatedEdit;
@@ -485,6 +541,7 @@ class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
 
   /**
    * Creates parent directories if they don't exist
+   * 如果父目录不存在，则创建它们
    */
   private ensureParentDirectoriesExist(filePath: string): void {
     const dirName = path.dirname(filePath);
@@ -496,6 +553,9 @@ class EditToolInvocation implements ToolInvocation<EditToolParams, ToolResult> {
 
 /**
  * Implementation of the Edit tool logic
+ * 编辑工具逻辑的实现类
+ *
+ * 提供文件编辑功能的公共 API，定义工具的参数、验证规则和描述信息
  */
 export class EditTool
   extends BaseDeclarativeTool<EditToolParams, ToolResult>
@@ -549,8 +609,9 @@ Expectation for required parameters:
 
   /**
    * Validates the parameters for the Edit tool
-   * @param params Parameters to validate
-   * @returns Error message string or null if valid
+   * 验证编辑工具的参数
+   * @param params Parameters to validate / 要验证的参数
+   * @returns Error message string or null if valid / 错误消息字符串，如果有效则为 null
    */
   protected override validateToolParamValues(
     params: EditToolParams,
@@ -578,6 +639,11 @@ Expectation for required parameters:
     return new EditToolInvocation(this.config, params);
   }
 
+  /**
+   * Gets the modification context for the Edit tool.
+   * 获取编辑工具的修改上下文。
+   * 这个方法提供修改上下文，允许 IDE 集成时获取和修改编辑内容
+   */
   getModifyContext(_: AbortSignal): ModifyContext<EditToolParams> {
     return {
       getFilePath: (params: EditToolParams) => params.file_path,

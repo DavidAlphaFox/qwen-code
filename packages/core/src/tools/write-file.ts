@@ -4,6 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 写入文件工具模块
+ *
+ * 该模块提供了将内容写入文件系统的功能，支持创建新文件或覆盖现有文件。
+ * 包含文件路径验证、差异比较、编码处理等功能。
+ */
+
 import fs from 'node:fs';
 import path from 'node:path';
 import * as Diff from 'diff';
@@ -44,30 +51,43 @@ import { createDebugLogger } from '../utils/debugLogger.js';
 const debugLogger = createDebugLogger('WRITE_FILE');
 
 /**
+ * WriteFile 工具的参数接口
+ *
  * Parameters for the WriteFile tool
  */
 export interface WriteFileToolParams {
   /**
+   * 要写入的文件的绝对路径
+   *
    * The absolute path to the file to write to
    */
   file_path: string;
 
   /**
+   * 要写入文件的内容
+   *
    * The content to write to the file
    */
   content: string;
 
   /**
+   * 建议的内容是否已被用户修改
+   *
    * Whether the proposed content was modified by the user.
    */
   modified_by_user?: boolean;
 
   /**
+   * 最初建议的内容
+   *
    * Initially proposed content.
    */
   ai_proposed_content?: string;
 }
 
+/**
+ * 获取修正后的文件内容结果
+ */
 interface GetCorrectedFileContentResult {
   originalContent: string;
   correctedContent: string;
@@ -75,6 +95,17 @@ interface GetCorrectedFileContentResult {
   error?: { message: string; code?: string };
 }
 
+/**
+ * 获取修正后的文件内容
+ *
+ * 读取指定路径的现有文件内容，用于后续的文件写入操作。
+ * 如果文件不存在或无法读取，返回相应的状态信息。
+ *
+ * @param config - 配置对象
+ * @param filePath - 文件路径
+ * @param proposedContent - 建议写入的内容
+ * @returns 包含原始内容、修正内容、文件存在状态和可能的错误信息
+ */
 export async function getCorrectedFileContent(
   config: Config,
   filePath: string,
@@ -109,6 +140,12 @@ export async function getCorrectedFileContent(
   return { originalContent, correctedContent, fileExists };
 }
 
+/**
+ * WriteFile 工具调用类
+ *
+ * 负责处理单次文件写入操作的执行逻辑，包括文件路径验证、内容写入、
+ * 错误处理和遥测日志记录。
+ */
 class WriteFileToolInvocation extends BaseToolInvocation<
   WriteFileToolParams,
   ToolResult
@@ -386,6 +423,11 @@ class WriteFileToolInvocation extends BaseToolInvocation<
 }
 
 /**
+ * WriteFile 工具类
+ *
+ * 实现写入文件的工具逻辑，支持创建新文件或覆盖现有文件。
+ * 提供文件路径验证、用户确认、内容修改和遥测记录等功能。
+ *
  * Implementation of the WriteFile tool logic
  */
 export class WriteFileTool

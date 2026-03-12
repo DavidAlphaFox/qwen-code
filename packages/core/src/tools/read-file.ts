@@ -4,6 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 文件读取工具模块
+ *
+ * 该模块提供了读取文件内容的功能，支持：
+ * - 读取文本文件（支持指定行号范围）
+ * - 读取图片文件（PNG、JPG、GIF、WEBP、SVG、BMP）
+ * - 读取 PDF 文件
+ *
+ * 主要包含两个核心类：
+ * - ReadFileTool：工具定义类，定义了工具的参数、验证逻辑等
+ * - ReadFileToolInvocation：工具执行类，负责实际执行读取操作
+ */
+
 import path from 'node:path';
 import { makeRelative, shortenPath } from '../utils/paths.js';
 import type { ToolInvocation, ToolLocation, ToolResult } from './tools.js';
@@ -24,29 +37,45 @@ import { isSubpath } from '../utils/paths.js';
 import { Storage } from '../config/storage.js';
 
 /**
- * Parameters for the ReadFile tool
+ * ReadFile 工具的参数接口
+ *
+ * 定义了读取文件工具所需的参数。
  */
 export interface ReadFileToolParams {
   /**
    * The absolute path to the file to read
+   * 要读取的文件的绝对路径
    */
   absolute_path: string;
 
   /**
    * The line number to start reading from (optional)
+   * 开始读取的行号（可选），从 0 开始
    */
   offset?: number;
 
   /**
    * The number of lines to read (optional)
+   * 要读取的行数（可选）
    */
   limit?: number;
 }
 
+/**
+ * ReadFile 工具执行类
+ *
+ * 负责执行读取文件的具体操作，包括生成工具描述和执行读取逻辑。
+ */
 class ReadFileToolInvocation extends BaseToolInvocation<
   ReadFileToolParams,
   ToolResult
 > {
+  /**
+   * 构造函数
+   *
+   * @param config - 配置对象
+   * @param params - 读取文件工具的参数
+   */
   constructor(
     private config: Config,
     params: ReadFileToolParams,
@@ -54,6 +83,13 @@ class ReadFileToolInvocation extends BaseToolInvocation<
     super(params);
   }
 
+  /**
+   * 获取工具描述
+   *
+   * 生成友好的工具调用描述，显示文件路径和读取范围。
+   *
+   * @returns 工具描述字符串
+   */
   getDescription(): string {
     const relativePath = makeRelative(
       this.params.absolute_path,
@@ -73,10 +109,24 @@ class ReadFileToolInvocation extends BaseToolInvocation<
     return shortPath;
   }
 
+  /**
+   * 获取工具操作位置
+   *
+   * 返回工具操作涉及的文件位置信息。
+   *
+   * @returns 工具位置数组
+   */
   override toolLocations(): ToolLocation[] {
     return [{ path: this.params.absolute_path, line: this.params.offset }];
   }
 
+  /**
+   * 执行文件读取操作
+   *
+   * 根据参数读取文件内容，处理可能的错误，并记录遥测数据。
+   *
+   * @returns 工具执行结果，包含文件内容或错误信息
+   */
   async execute(): Promise<ToolResult> {
     const result = await processSingleFileContent(
       this.params.absolute_path,
@@ -133,7 +183,9 @@ class ReadFileToolInvocation extends BaseToolInvocation<
 }
 
 /**
- * Implementation of the ReadFile tool logic
+ * ReadFile 工具类
+ *
+ * 实现文件读取工具的逻辑，包括工具定义、参数验证和工具调用创建。
  */
 export class ReadFileTool extends BaseDeclarativeTool<
   ReadFileToolParams,
@@ -141,6 +193,11 @@ export class ReadFileTool extends BaseDeclarativeTool<
 > {
   static readonly Name: string = ToolNames.READ_FILE;
 
+  /**
+   * 构造函数
+   *
+   * @param config - 配置对象
+   */
   constructor(private config: Config) {
     super(
       ReadFileTool.Name,
@@ -171,6 +228,18 @@ export class ReadFileTool extends BaseDeclarativeTool<
     );
   }
 
+  /**
+   * 验证工具参数
+   *
+   * 检查传入的参数是否有效，包括：
+   * - 路径是否为绝对路径
+   * - 路径是否在工作空间或允许的目录内
+   * - offset 和 limit 参数的值是否合法
+   * - 文件是否被 .qwenignore 忽略
+   *
+   * @param params - 要验证的参数
+   * @returns 如果验证失败返回错误消息，否则返回 null
+   */
   protected override validateToolParamValues(
     params: ReadFileToolParams,
   ): string | null {
@@ -218,6 +287,14 @@ export class ReadFileTool extends BaseDeclarativeTool<
     return null;
   }
 
+  /**
+   * 创建工具调用实例
+   *
+   * 根据传入的参数创建一个工具执行实例。
+   *
+   * @param params - 工具参数
+   * @returns 工具调用实例
+   */
   protected createInvocation(
     params: ReadFileToolParams,
   ): ToolInvocation<ReadFileToolParams, ToolResult> {
