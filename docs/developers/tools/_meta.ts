@@ -4,6 +4,7 @@ export default {
   'multi-file': 'Multi-File Read',
   shell: 'Shell',
   'todo-write': 'Todo Write',
+  'task-management-zh': '任务管理工具对比',
   task: 'Task',
   'exit-plan-mode': 'Exit Plan Mode',
   'web-fetch': 'Web Fetch',
