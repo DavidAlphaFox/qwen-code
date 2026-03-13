@@ -3,10 +3,10 @@
  * Copyright 2025 Qwen Team
  * SPDX-License-Identifier: Apache-2.0
  *
- * Adapter layer for normalizing different data formats to unified message format
+ * 适配器层 - 用于将不同数据格式规范化为统一的消息格式
  */
 
-// Type exports
+// 类型导出
 export type {
   UnifiedMessage,
   UnifiedMessageType,
@@ -17,10 +17,10 @@ export type {
   FileContext,
 } from './types.js';
 
-// JSONL Adapter (for ChatViewer)
+// JSONL适配器（用于聊天查看器）
 export { adaptJSONLMessages, filterEmptyMessages } from './JSONLAdapter.js';
 
-// ACP Adapter (for vscode-ide-companion)
+// ACP适配器（用于vscode-ide-companion）
 export {
   adaptACPMessages,
   isToolCallData,

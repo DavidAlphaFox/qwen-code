@@ -1,4 +1,10 @@
 /**
+ * @file copy_bundle_assets.js
+ * @description 打包资源复制脚本
+ * 将 .sb 文件和 vendor 目录复制到 dist 目录
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -54,7 +60,10 @@ if (existsSync(coreVendorDir)) {
 console.log('\n✅ All bundle assets copied to dist/');
 
 /**
- * Recursively copy directory
+ * 递归复制目录
+ * 复制整个目录结构，包括文件权限
+ * @param {string} src - 源目录路径
+ * @param {string} dest - 目标目录路径
  */
 function copyRecursiveSync(src, dest) {
   if (!existsSync(src)) {

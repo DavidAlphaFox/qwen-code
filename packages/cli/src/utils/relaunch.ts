@@ -8,6 +8,10 @@ import { spawn } from 'node:child_process';
 import { RELAUNCH_EXIT_CODE } from './processUtils.js';
 import { writeStderrLine } from './stdioHelpers.js';
 
+/**
+ * 监控退出代码并在需要时重新启动应用程序
+ * @param runner - 返回退出代码的异步函数
+ */
 export async function relaunchOnExitCode(runner: () => Promise<number>) {
   while (true) {
     try {
@@ -25,6 +29,11 @@ export async function relaunchOnExitCode(runner: () => Promise<number>) {
   }
 }
 
+/**
+ * 在子进程中重新启动应用程序
+ * @param additionalNodeArgs - 额外的 Node.js 参数
+ * @param additionalScriptArgs - 额外的脚本参数
+ */
 export async function relaunchAppInChildProcess(
   additionalNodeArgs: string[],
   additionalScriptArgs: string[],
@@ -34,8 +43,8 @@ export async function relaunchAppInChildProcess(
   }
 
   const runner = () => {
-    // process.argv is [node, script, ...args]
-    // We want to construct [ ...nodeArgs, script, ...scriptArgs]
+    // process.argv 是 [node, script, ...args]
+    // 我们想构造 [ ...nodeArgs, script, ...scriptArgs]
     const script = process.argv[1];
     const scriptArgs = process.argv.slice(2);
 
@@ -48,7 +57,7 @@ export async function relaunchAppInChildProcess(
     ];
     const newEnv = { ...process.env, QWEN_CODE_NO_RELAUNCH: 'true' };
 
-    // The parent process should not be reading from stdin while the child is running.
+    // 父进程在子进程运行时不应从 stdin 读取
     process.stdin.pause();
 
     const child = spawn(process.execPath, nodeArgs, {
@@ -59,7 +68,7 @@ export async function relaunchAppInChildProcess(
     return new Promise<number>((resolve, reject) => {
       child.on('error', reject);
       child.on('close', (code) => {
-        // Resume stdin before the parent process exits.
+        // 父进程退出前恢复 stdin
         process.stdin.resume();
         resolve(code ?? 1);
       });

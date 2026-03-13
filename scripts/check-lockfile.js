@@ -1,4 +1,10 @@
 /**
+ * @file check-lockfile.js
+ * @description 锁文件检查脚本
+ * 验证 package-lock.json 中的依赖项是否具有正确的解析和完整性字段
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0

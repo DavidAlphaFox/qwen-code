@@ -15,8 +15,8 @@ const FULL_MULTIMODAL: InputModalities = {
 };
 
 /**
- * Ordered regex patterns: most specific -> most general (first match wins).
- * Default for unknown models is text-only (empty object = all false).
+ * 有序的正则表达式模式：最具体 -> 最一般（首次匹配优先）
+ * 未知模型默认为纯文本（空对象 = 全部为 false）
  */
 const MODALITY_PATTERNS: Array<[RegExp, InputModalities]> = [
   // -------------------

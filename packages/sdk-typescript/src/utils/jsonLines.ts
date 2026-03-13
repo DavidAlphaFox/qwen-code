@@ -1,5 +1,10 @@
 import { SdkLogger } from './logger.js';
 
+/**
+ * 将消息序列化为JSON Lines格式
+ * @param message - 要序列化的消息对象
+ * @returns 序列化后的JSON Lines字符串
+ */
 export function serializeJsonLine(message: unknown): string {
   try {
     return JSON.stringify(message) + '\n';
@@ -10,6 +15,12 @@ export function serializeJsonLine(message: unknown): string {
   }
 }
 
+/**
+ * 安全解析单行JSON
+ * @param line - 要解析的行
+ * @param context - 日志上下文
+ * @returns 解析后的对象，解析失败返回null
+ */
 export function parseJsonLineSafe(
   line: string,
   context = 'JsonLines',
@@ -27,6 +38,11 @@ export function parseJsonLineSafe(
   }
 }
 
+/**
+ * 检查消息是否有效
+ * @param message - 要检查的消息对象
+ * @returns 如果消息有效返回true
+ */
 export function isValidMessage(message: unknown): boolean {
   return (
     message !== null &&
@@ -36,6 +52,12 @@ export function isValidMessage(message: unknown): boolean {
   );
 }
 
+/**
+ * 异步解析JSON Lines流
+ * @param lines - 异步行迭代器
+ * @param context - 日志上下文
+ * @yield 解析后的消息对象
+ */
 export async function* parseJsonLinesStream(
   lines: AsyncIterable<string>,
   context = 'JsonLines',

@@ -24,10 +24,8 @@ export interface UseHistoryManagerReturn {
 }
 
 /**
- * Custom hook to manage the chat history state.
- *
- * Encapsulates the history array, message ID generation, adding items,
- * updating items, and clearing the history.
+ * 管理聊天历史状态的自定义 Hook
+ * 封装历史数组、消息 ID 生成、添加项目、更新项目和清除历史
  */
 export function useHistory(): UseHistoryManagerReturn {
   const [history, setHistory] = useState<HistoryItem[]>([]);

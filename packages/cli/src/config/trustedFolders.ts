@@ -17,10 +17,17 @@ import type { Settings } from './settings.js';
 import stripJsonComments from 'strip-json-comments';
 import { writeStderrLine } from '../utils/stdioHelpers.js';
 
+/** 可信文件夹文件名 */
 export const TRUSTED_FOLDERS_FILENAME = 'trustedFolders.json';
+/** 设置目录名称 */
 export const SETTINGS_DIRECTORY_NAME = '.qwen';
+/** 用户设置目录路径 */
 export const USER_SETTINGS_DIR = path.join(homedir(), SETTINGS_DIRECTORY_NAME);
 
+/**
+ * 获取可信文件夹配置文件的路径
+ * @returns 可信文件夹配置文件的完整路径
+ */
 export function getTrustedFoldersPath(): string {
   if (process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH']) {
     return process.env['QWEN_CODE_TRUSTED_FOLDERS_PATH'];
@@ -28,32 +35,51 @@ export function getTrustedFoldersPath(): string {
   return path.join(USER_SETTINGS_DIR, TRUSTED_FOLDERS_FILENAME);
 }
 
+/**
+ * 信任级别枚举
+ */
 export enum TrustLevel {
   TRUST_FOLDER = 'TRUST_FOLDER',
   TRUST_PARENT = 'TRUST_PARENT',
   DO_NOT_TRUST = 'DO_NOT_TRUST',
 }
 
+/**
+ * 信任规则接口
+ */
 export interface TrustRule {
   path: string;
   trustLevel: TrustLevel;
 }
 
+/**
+ * 可信文件夹错误接口
+ */
 export interface TrustedFoldersError {
   message: string;
   path: string;
 }
 
+/**
+ * 可信文件夹文件接口
+ */
 export interface TrustedFoldersFile {
   config: Record<string, TrustLevel>;
   path: string;
 }
 
+/**
+ * 信任结果接口
+ */
 export interface TrustResult {
   isTrusted: boolean | undefined;
   source: 'ide' | 'file' | undefined;
 }
 
+/**
+ * 已加载的可信文件夹类
+ * 管理可信文件夹配置和信任判断逻辑
+ */
 export class LoadedTrustedFolders {
   constructor(
     readonly user: TrustedFoldersFile,
@@ -68,11 +94,9 @@ export class LoadedTrustedFolders {
   }
 
   /**
-   * Returns true or false if the path should be "trusted". This function
-   * should only be invoked when the folder trust setting is active.
-   *
-   * @param location path
-   * @returns
+   * 判断路径是否应该被"信任"。此函数仅在文件夹信任设置激活时调用。
+   * @param location - 要检查的路径
+   * @returns 是否信任该路径，返回 undefined 表示不确定
    */
   isPathTrusted(location: string): boolean | undefined {
     const trustedPaths: string[] = [];
@@ -119,13 +143,17 @@ export class LoadedTrustedFolders {
 let loadedTrustedFolders: LoadedTrustedFolders | undefined;
 
 /**
- * FOR TESTING PURPOSES ONLY.
- * Resets the in-memory cache of the trusted folders configuration.
+ * 仅供测试使用
+ * 重置可信文件夹配置的内存缓存
  */
 export function resetTrustedFoldersForTesting(): void {
   loadedTrustedFolders = undefined;
 }
 
+/**
+ * 加载可信文件夹配置
+ * @returns 已加载的可信文件夹配置对象
+ */
 export function loadTrustedFolders(): LoadedTrustedFolders {
   if (loadedTrustedFolders) {
     return loadedTrustedFolders;
@@ -169,6 +197,10 @@ export function loadTrustedFolders(): LoadedTrustedFolders {
   return loadedTrustedFolders;
 }
 
+/**
+ * 保存可信文件夹配置到文件
+ * @param trustedFoldersFile - 可信文件夹文件对象
+ */
 export function saveTrustedFolders(
   trustedFoldersFile: TrustedFoldersFile,
 ): void {
@@ -190,7 +222,7 @@ export function saveTrustedFolders(
   }
 }
 
-/** Is folder trust feature enabled per the current applied settings */
+/** 根据当前应用的设置，判断文件夹信任功能是否启用 */
 export function isFolderTrustEnabled(settings: Settings): boolean {
   const folderTrustSetting = settings.security?.folderTrust?.enabled ?? false;
   return folderTrustSetting;
@@ -221,6 +253,13 @@ function getWorkspaceTrustFromLocalConfig(
   };
 }
 
+/**
+ * 判断工作区是否受信任
+ * 优先级：IDE 设置 > 本地用户配置
+ * @param settings - 用户设置对象
+ * @param trustConfig - 可选的信任配置覆盖
+ * @returns 信任结果对象
+ */
 export function isWorkspaceTrusted(
   settings: Settings,
   trustConfig?: Record<string, TrustLevel>,

@@ -60,15 +60,26 @@ function getMergeStrategyForPath(path: string[]): MergeStrategy | undefined {
 
 export type { Settings, MemoryImportFormat };
 
+/** 设置目录名称 */
 export const SETTINGS_DIRECTORY_NAME = '.qwen';
+/** 用户设置文件路径 */
 export const USER_SETTINGS_PATH = Storage.getGlobalSettingsPath();
+/** 用户设置目录路径 */
 export const USER_SETTINGS_DIR = path.dirname(USER_SETTINGS_PATH);
+/** 默认排除的环境变量列表 */
 export const DEFAULT_EXCLUDED_ENV_VARS = ['DEBUG', 'DEBUG_MODE'];
 
 // Settings version to track migration state
+/** 设置版本号，用于跟踪迁移状态 */
 export const SETTINGS_VERSION = 3;
+/** 设置版本键名 */
 export const SETTINGS_VERSION_KEY = '$version';
 
+/**
+ * 获取系统设置文件路径
+ * 根据操作系统平台返回不同的默认路径
+ * @returns 系统设置文件的完整路径
+ */
 export function getSystemSettingsPath(): string {
   if (process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH']) {
     return process.env['QWEN_CODE_SYSTEM_SETTINGS_PATH'];
@@ -82,6 +93,10 @@ export function getSystemSettingsPath(): string {
   }
 }
 
+/**
+ * 获取系统默认设置文件路径
+ * @returns 系统默认设置文件的完整路径
+ */
 export function getSystemDefaultsPath(): string {
   if (process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH']) {
     return process.env['QWEN_CODE_SYSTEM_DEFAULTS_PATH'];
@@ -94,6 +109,10 @@ export function getSystemDefaultsPath(): string {
 
 export type { DnsResolutionOrder } from './settingsSchema.js';
 
+/**
+ * 设置作用域枚举
+ * 定义了设置的可见性和优先级范围
+ */
 export enum SettingScope {
   User = 'User',
   Workspace = 'Workspace',
@@ -101,24 +120,39 @@ export enum SettingScope {
   SystemDefaults = 'SystemDefaults',
 }
 
+/**
+ * 检查点设置接口
+ */
 export interface CheckpointingSettings {
   enabled?: boolean;
 }
 
+/**
+ * 工具输出摘要设置接口
+ */
 export interface SummarizeToolOutputSettings {
   tokenBudget?: number;
 }
 
+/**
+ * 无障碍设置接口
+ */
 export interface AccessibilitySettings {
   enableLoadingPhrases?: boolean;
   screenReader?: boolean;
 }
 
+/**
+ * 设置错误接口
+ */
 export interface SettingsError {
   message: string;
   path: string;
 }
 
+/**
+ * 设置文件接口
+ */
 export interface SettingsFile {
   settings: Settings;
   originalSettings: Settings;
@@ -188,11 +222,11 @@ function getSettingsFileKeyWarnings(
 }
 
 /**
- * Collects warnings for ignored legacy and unknown settings keys,
- * as well as migration warnings.
- *
- * For `$version: 2` settings files, we do not apply implicit migrations.
- * Instead, we surface actionable, de-duplicated warnings in the terminal UI.
+ * 收集被忽略的旧设置键和未知设置键的警告，以及迁移警告
+ * 对于 $version: 2 的设置文件，我们不会应用隐式迁移
+ * 而是会在终端 UI 中显示可操作的、去重的警告
+ * @param loadedSettings - 已加载的设置对象
+ * @returns 警告字符串数组
  */
 export function getSettingsWarnings(loadedSettings: LoadedSettings): string[] {
   const warningSet = new Set<string>();
@@ -249,6 +283,10 @@ function mergeSettings(
   ) as Settings;
 }
 
+/**
+ * 已加载的设置类
+ * 管理来自不同作用域（系统、用户、工作区）的设置文件
+ */
 export class LoadedSettings {
   constructor(
     system: SettingsFile,
@@ -318,8 +356,9 @@ export class LoadedSettings {
 }
 
 /**
- * Creates a minimal LoadedSettings instance with empty settings.
- * Used in stream-json mode where settings are ignored.
+ * 创建最小化的 LoadedSettings 实例，使用空设置
+ * 用于 stream-json 模式，在该模式下设置会被忽略
+ * @returns 带有空设置的 LoadedSettings 实例
  */
 export function createMinimalSettings(): LoadedSettings {
   const emptySettingsFile: SettingsFile = {
@@ -340,11 +379,13 @@ export function createMinimalSettings(): LoadedSettings {
 }
 
 /**
- * Finds the .env file to load, respecting workspace trust settings.
- *
- * When workspace is untrusted, only allow user-level .env files at:
+ * 查找要加载的 .env 文件，遵循工作区信任设置
+ * 当工作区不受信任时，只允许用户级别的 .env 文件：
  * - ~/.qwen/.env
  * - ~/.env
+ * @param settings - 用户设置对象
+ * @param startDir - 起始目录
+ * @returns .env 文件路径，如果未找到则返回 null
  */
 function findEnvFile(settings: Settings, startDir: string): string | null {
   const homeDir = homedir();
@@ -390,6 +431,11 @@ function findEnvFile(settings: Settings, startDir: string): string | null {
   }
 }
 
+/**
+ * 设置 Cloud Shell 环境
+ * 特殊处理 GOOGLE_CLOUD_PROJECT 环境变量
+ * @param envFilePath - .env 文件路径
+ */
 export function setUpCloudShellEnvironment(envFilePath: string | null): void {
   // Special handling for GOOGLE_CLOUD_PROJECT in Cloud Shell:
   // Because GOOGLE_CLOUD_PROJECT in Cloud Shell tracks the project
@@ -412,14 +458,14 @@ export function setUpCloudShellEnvironment(envFilePath: string | null): void {
   }
 }
 /**
- * Loads environment variables from .env files and settings.env.
- *
- * Priority order (highest to lowest):
- * 1. CLI flags
- * 2. process.env (system/export/inline environment variables)
- * 3. .env files (no-override mode)
- * 4. settings.env (no-override mode)
- * 5. defaults
+ * 从 .env 文件和 settings.env 加载环境变量
+ * 优先级顺序（从高到低）：
+ * 1. CLI 标志
+ * 2. process.env（系统/导出/内联环境变量）
+ * 3. .env 文件（不覆盖模式）
+ * 4. settings.env（不覆盖模式）
+ * 5. 默认值
+ * @param settings - 用户设置对象
  */
 export function loadEnvironment(settings: Settings): void {
   const envFilePath = findEnvFile(settings, process.cwd());
@@ -470,8 +516,10 @@ export function loadEnvironment(settings: Settings): void {
 }
 
 /**
- * Loads settings from user and workspace directories.
- * Project settings override user settings.
+ * 从用户和工作区目录加载设置
+ * 工作区设置会覆盖用户设置
+ * @param workspaceDir - 工作区目录，默认为 process.cwd()
+ * @returns 已加载的设置对象
  */
 export function loadSettings(
   workspaceDir: string = process.cwd(),
@@ -719,6 +767,11 @@ export function loadSettings(
   );
 }
 
+/**
+ * 保存设置文件
+ * 保留原始文件格式的同时更新设置
+ * @param settingsFile - 设置文件对象
+ */
 export function saveSettings(settingsFile: SettingsFile): void {
   try {
     // Ensure the directory exists

@@ -9,8 +9,8 @@ import type { Config } from '../config/config.js';
 import { getAllGeminiMdFilenames } from '../tools/memoryTool.js';
 
 /**
- * Common ignore patterns used across multiple tools for basic exclusions.
- * These are the most commonly ignored directories in development projects.
+ * 多个工具使用的通用忽略模式，用于基本排除
+ * 这些是开发项目中最常被忽略的目录
  */
 export const COMMON_IGNORE_PATTERNS: string[] = [
   '**/node_modules/**',
@@ -21,7 +21,7 @@ export const COMMON_IGNORE_PATTERNS: string[] = [
 ];
 
 /**
- * Binary file extension patterns that are typically excluded from text processing.
+ * 通常从文本处理中排除的二进制文件扩展名模式
  */
 export const BINARY_FILE_PATTERNS: string[] = [
   '**/*.bin',
@@ -50,8 +50,8 @@ export const BINARY_FILE_PATTERNS: string[] = [
 ];
 
 /**
- * Media file patterns that require special handling in tools like read-many-files.
- * These files can be processed as inlineData when explicitly requested.
+ * 需要在 read-many-files 等工具中特殊处理的媒体文件模式
+ * 这些文件在明确请求时可以作为 inlineData 处理
  */
 export const MEDIA_FILE_PATTERNS: string[] = [
   '**/*.pdf',
@@ -65,7 +65,7 @@ export const MEDIA_FILE_PATTERNS: string[] = [
 ];
 
 /**
- * Common directory patterns that are typically ignored in development projects.
+ * 开发项目中通常忽略的常见目录模式
  */
 export const COMMON_DIRECTORY_EXCLUDES: string[] = [
   '**/.vscode/**',
@@ -77,19 +77,19 @@ export const COMMON_DIRECTORY_EXCLUDES: string[] = [
 ];
 
 /**
- * Python-specific patterns.
+ * Python 特定的模式
  */
 export const PYTHON_EXCLUDES: string[] = ['**/*.pyc', '**/*.pyo'];
 
 /**
- * System and environment file patterns.
+ * 系统和环境文件模式
  */
 export const SYSTEM_FILE_EXCLUDES: string[] = ['**/.DS_Store', '**/.env'];
 
 /**
- * Comprehensive file exclusion patterns combining all common ignore patterns.
- * These patterns are compatible with glob ignore patterns.
- * Note: Media files (PDF, images) are not excluded here as they need special handling in read-many-files.
+ * 组合所有常见忽略模式的综合文件排除模式
+ * 这些模式与 glob 忽略模式兼容
+ * 注意：媒体文件（PDF、图片）不在此处排除，因为它们需要在 read-many-files 中特殊处理
  */
 export const DEFAULT_FILE_EXCLUDES: string[] = [
   ...COMMON_IGNORE_PATTERNS,
@@ -100,48 +100,50 @@ export const DEFAULT_FILE_EXCLUDES: string[] = [
 ];
 
 /**
- * Options for configuring file exclusion patterns.
+ * 配置文件排除模式的选项
  */
 export interface ExcludeOptions {
   /**
-   * Whether to include default exclusion patterns. Defaults to true.
+   * 是否包含默认排除模式。默认为 true
    */
   includeDefaults?: boolean;
 
   /**
-   * Additional custom patterns from configuration.
+   * 来自配置的自定义模式
    */
   customPatterns?: string[];
 
   /**
-   * Additional patterns provided at runtime (e.g., from CLI arguments).
+   * 运行时提供的其他模式（例如来自 CLI 参数）
    */
   runtimePatterns?: string[];
 
   /**
-   * Whether to include dynamic patterns like configured context filenames. Defaults to true.
+   * 是否包含动态模式（如配置的上下文文件名）。默认为 true
    */
   includeDynamicPatterns?: boolean;
 }
 
 /**
- * Centralized file exclusion utility that provides configurable and extensible
- * file exclusion patterns for different tools and use cases.
+ * 集中化的文件排除实用程序，为不同工具和用例提供可配置和可扩展的文件排除模式
  */
 export class FileExclusions {
   constructor(private config?: Config) {}
 
   /**
-   * Gets core ignore patterns for basic file operations like glob.
-   * These are the minimal essential patterns that should almost always be excluded.
+   * 获取基本文件操作（如 glob）所需的核心忽略模式
+   * 这些是几乎总是应该排除的最少必要模式
+   * @returns 核心忽略模式数组
    */
   getCoreIgnorePatterns(): string[] {
     return [...COMMON_IGNORE_PATTERNS];
   }
 
   /**
-   * Gets comprehensive default exclusion patterns for operations like read-many-files.
-   * Includes all standard exclusions: directories, binary files, system files, etc.
+   * 获取 read-many-files 等操作的综合默认排除模式
+   * 包括所有标准排除：目录、二进制文件、系统文件等
+   * @param options - 排除选项
+   * @returns 排除模式数组
    */
   getDefaultExcludePatterns(options: ExcludeOptions = {}): string[] {
     const {
@@ -182,8 +184,10 @@ export class FileExclusions {
   }
 
   /**
-   * Gets exclude patterns for read-many-files tool with legacy compatibility.
-   * This maintains the same behavior as the previous getDefaultExcludes() function.
+   * 获取用于 read-many-files 工具的排除模式，保持向后兼容性
+   * 这与之前的 getDefaultExcludes() 函数行为相同
+   * @param additionalExcludes - 额外的排除模式
+   * @returns 排除模式数组
    */
   getReadManyFilesExcludes(additionalExcludes: string[] = []): string[] {
     return this.getDefaultExcludePatterns({
@@ -194,8 +198,10 @@ export class FileExclusions {
   }
 
   /**
-   * Gets exclude patterns for glob tool operations.
-   * Uses core patterns by default but can be extended with additional patterns.
+   * 获取用于 glob 工具操作的排除模式
+   * 默认使用核心模式，但可以使用其他模式扩展
+   * @param additionalExcludes - 额外的排除模式
+   * @returns 排除模式数组
    */
   getGlobExcludes(additionalExcludes: string[] = []): string[] {
     const corePatterns = this.getCoreIgnorePatterns();
@@ -208,8 +214,10 @@ export class FileExclusions {
   }
 
   /**
-   * Builds exclude patterns with full customization options.
-   * This is the most flexible method for advanced use cases.
+   * 使用完整自定义选项构建排除模式
+   * 这是高级用例最灵活的方法
+   * @param options - 排除选项
+   * @returns 排除模式数组
    */
   buildExcludePatterns(options: ExcludeOptions): string[] {
     return this.getDefaultExcludePatterns(options);
@@ -217,9 +225,11 @@ export class FileExclusions {
 }
 
 /**
- * Extracts file extensions from glob patterns.
- * Converts patterns like glob/*.exe to .exe
- * Handles brace expansion like glob/*.{js,ts} to .js and .ts
+ * 从 glob 模式中提取文件扩展名
+ * 将类似 glob/*.exe 的模式转换为 .exe
+ * 处理大括号扩展如 glob/*.{js,ts} 转换为 .js 和 .ts
+ * @param patterns - glob 模式数组
+ * @returns 扩展名数组
  */
 export function extractExtensionsFromPatterns(patterns: string[]): string[] {
   const extensions = new Set(
@@ -259,8 +269,8 @@ export function extractExtensionsFromPatterns(patterns: string[]): string[] {
 }
 
 /**
- * Binary file extensions extracted from BINARY_FILE_PATTERNS for quick lookup.
- * Additional extensions not covered by the patterns are included for completeness.
+ * 从 BINARY_FILE_PATTERNS 提取的二进制文件扩展名，用于快速查找
+ * 为完整性起见，还包含了模式中未涵盖的其他扩展名
  */
 export const BINARY_EXTENSIONS: string[] = [
   ...extractExtensionsFromPatterns([

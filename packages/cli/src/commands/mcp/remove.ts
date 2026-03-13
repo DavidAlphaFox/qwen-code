@@ -4,12 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// File for 'qwen mcp remove' command
+// 'qwen mcp remove' 命令文件
 import type { CommandModule } from 'yargs';
 import { loadSettings, SettingScope } from '../../config/settings.js';
 import { writeStdoutLine } from '../../utils/stdioHelpers.js';
 import { MCPOAuthTokenStorage } from '@qwen-code/qwen-code-core';
 
+/**
+ * 移除 MCP 服务器的异步函数
+ * @param name - 服务器名称
+ * @param options - 选项对象
+ */
 async function removeMcpServer(
   name: string,
   options: {
@@ -44,9 +49,12 @@ async function removeMcpServer(
   writeStdoutLine(`Server "${name}" removed from ${scope} settings.`);
 }
 
+/**
+ * 移除 MCP 服务器命令
+ */
 export const removeCommand: CommandModule = {
   command: 'remove <name>',
-  describe: 'Remove a server',
+  describe: '移除一个服务器',
   builder: (yargs) =>
     yargs
       .usage('Usage: qwen mcp remove [options] <name>')

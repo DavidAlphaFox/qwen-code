@@ -57,22 +57,25 @@ import { getPlanModeSystemReminder } from './prompts.js';
 import { ShellToolInvocation } from '../tools/shell.js';
 
 const TRUNCATION_PARAM_GUIDANCE =
-  'Note: Your previous response was truncated due to max_tokens limit, ' +
-  'which likely caused incomplete tool call parameters. ' +
-  'Please retry the tool call with complete parameters. ' +
-  'If the content is too large for a single response, ' +
-  'consider splitting it into smaller parts.';
+  '注意：您之前的响应因 max_tokens 限制而被截断，' +
+  '这可能导致不完整的工具调用参数。' +
+  '请使用完整的参数重试工具调用。' +
+  '如果内容太大无法在单次响应中完成，' +
+  '请考虑将其分成更小的部分。';
 
 const TRUNCATION_EDIT_REJECTION =
-  'Your previous response was truncated due to max_tokens limit, ' +
-  'which likely produced incomplete file content. ' +
-  'The tool call has been rejected to prevent writing ' +
-  'truncated content to the file. ' +
-  'Please retry the tool call with complete content. ' +
-  'If the content is too large for a single response, ' +
-  'consider splitting it into smaller parts ' +
-  '(e.g., write_file for initial content, then edit for additions).';
+  '您之前的响应因 max_tokens 限制而被截断，' +
+  '这可能产生了不完整的文件内容。' +
+  '工具调用已被拒绝，以防止写入' +
+  '截断的内容到文件。' +
+  '请使用完整内容重试工具调用。' +
+  '如果内容太大无法在单次响应中完成，' +
+  '请考虑将其分成更小的部分' +
+  '（例如，先使用 write_file 写入初始内容，然后使用 edit 进行追加）。';
 
+/**
+ * 验证中的工具调用
+ */
 export type ValidatingToolCall = {
   status: 'validating';
   request: ToolCallRequestInfo;

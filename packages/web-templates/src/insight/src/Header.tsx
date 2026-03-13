@@ -2,7 +2,13 @@
 import React from 'react';
 import type { InsightData } from './types';
 
-// Header Component
+/**
+ * 页面头部组件
+ * 显示洞察页面标题和统计信息
+ * @param props - 组件属性
+ * @param props.data - 洞察数据
+ * @param props.dateRangeStr - 日期范围字符串
+ */
 export function Header({
   data,
   dateRangeStr,
@@ -27,6 +33,12 @@ export function Header({
   );
 }
 
+/**
+ * 统计行组件
+ * 显示关键统计指标的卡片行
+ * @param props - 组件属性
+ * @param props.data - 洞察数据
+ */
 export function StatsRow({ data }: { data: InsightData }) {
   const {
     totalMessages = 0,

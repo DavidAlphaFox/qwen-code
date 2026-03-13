@@ -34,181 +34,344 @@ import {
   type ThoughtSummary,
 } from '../utils/thoughtUtils.js';
 
-// Define a structure for tools passed to the server
+// 定义传递给服务器的工具有效结构
+/**
+ * 服务器工具定义
+ */
 export interface ServerTool {
+  /** 工具名称 */
   name: string;
+  /** 函数模式定义 */
   schema: FunctionDeclaration;
-  // The execute method signature might differ slightly or be wrapped
+  // 执行方法的签名可能略有不同或被包装
+  /**
+   * 执行工具函数
+   * @param params - 工具参数
+   * @param signal - 中止信号
+   * @returns 工具执行结果
+   */
   execute(
     params: Record<string, unknown>,
     signal?: AbortSignal,
   ): Promise<ToolResult>;
+  /**
+   * 检查工具调用是否需要确认
+   * @param params - 工具参数
+   * @param abortSignal - 中止信号
+   * @returns 确认详情或 false
+   */
   shouldConfirmExecute(
     params: Record<string, unknown>,
     abortSignal: AbortSignal,
   ): Promise<ToolCallConfirmationDetails | false>;
 }
 
+/**
+ * Gemini 事件类型枚举
+ */
 export enum GeminiEventType {
+  /** 内容事件 */
   Content = 'content',
+  /** 工具调用请求 */
   ToolCallRequest = 'tool_call_request',
+  /** 工具调用响应 */
   ToolCallResponse = 'tool_call_response',
+  /** 工具调用确认 */
   ToolCallConfirmation = 'tool_call_confirmation',
+  /** 用户取消 */
   UserCancelled = 'user_cancelled',
+  /** 错误 */
   Error = 'error',
+  /** 聊天压缩 */
   ChatCompressed = 'chat_compressed',
+  /** 思考 */
   Thought = 'thought',
+  /** 最大会话轮次 */
   MaxSessionTurns = 'max_session_turns',
+  /** 会话令牌限制超出 */
   SessionTokenLimitExceeded = 'session_token_limit_exceeded',
+  /** 完成 */
   Finished = 'finished',
+  /** 检测到循环 */
   LoopDetected = 'loop_detected',
+  /** 引用 */
   Citation = 'citation',
+  /** 重试 */
   Retry = 'retry',
+  /** Hook 系统消息 */
   HookSystemMessage = 'hook_system_message',
 }
 
+/**
+ * 服务器 Gemini 重试事件
+ */
 export type ServerGeminiRetryEvent = {
+  /** 事件类型为重试 */
   type: GeminiEventType.Retry;
+  /** 重试信息 */
   retryInfo?: RetryInfo;
 };
 
+/**
+ * 结构化错误
+ */
 export interface StructuredError {
+  /** 错误消息 */
   message: string;
+  /** HTTP 状态码 */
   status?: number;
 }
 
+/**
+ * Gemini 错误事件值
+ */
 export interface GeminiErrorEventValue {
+  /** 错误对象 */
   error: StructuredError;
 }
 
+/**
+ * 会话令牌限制超出值
+ */
 export interface SessionTokenLimitExceededValue {
+  /** 当前令牌数 */
   currentTokens: number;
+  /** 限制 */
   limit: number;
+  /** 消息 */
   message: string;
 }
 
+/**
+ * Gemini 完成事件值
+ */
 export interface GeminiFinishedEventValue {
+  /** 完成原因 */
   reason: FinishReason | undefined;
+  /** 使用元数据 */
   usageMetadata: GenerateContentResponseUsageMetadata | undefined;
 }
 
+/**
+ * 工具调用请求信息
+ */
 export interface ToolCallRequestInfo {
+  /** 调用 ID */
   callId: string;
+  /** 工具名称 */
   name: string;
+  /** 工具参数 */
   args: Record<string, unknown>;
+  /** 是否由客户端发起 */
   isClientInitiated: boolean;
+  /** 提示 ID */
   prompt_id: string;
+  /** 响应 ID */
   response_id?: string;
-  /** Set to true when the LLM response was truncated due to max_tokens. */
+  /** 当 LLM 响应因 max_tokens 而被截断时设为 true */
   wasOutputTruncated?: boolean;
 }
 
+/**
+ * 工具调用响应信息
+ */
 export interface ToolCallResponseInfo {
+  /** 调用 ID */
   callId: string;
+  /** 响应部分 */
   responseParts: Part[];
+  /** 结果显示 */
   resultDisplay: ToolResultDisplay | undefined;
+  /** 错误 */
   error: Error | undefined;
+  /** 错误类型 */
   errorType: ToolErrorType | undefined;
+  /** 输出文件 */
   outputFile?: string | undefined;
+  /** 内容长度 */
   contentLength?: number;
 }
 
+/**
+ * 服务器工具调用确认详情
+ */
 export interface ServerToolCallConfirmationDetails {
+  /** 请求 */
   request: ToolCallRequestInfo;
+  /** 确认详情 */
   details: ToolCallConfirmationDetails;
 }
 
+/**
+ * 服务器 Gemini 内容事件
+ */
 export type ServerGeminiContentEvent = {
+  /** 事件类型 */
   type: GeminiEventType.Content;
+  /** 内容值 */
   value: string;
 };
 
+/**
+ * 服务器 Gemini 思考事件
+ */
 export type ServerGeminiThoughtEvent = {
+  /** 事件类型 */
   type: GeminiEventType.Thought;
+  /** 思考摘要 */
   value: ThoughtSummary;
 };
 
+/**
+ * 服务器 Gemini 工具调用请求事件
+ */
 export type ServerGeminiToolCallRequestEvent = {
+  /** 事件类型 */
   type: GeminiEventType.ToolCallRequest;
+  /** 工具调用请求信息 */
   value: ToolCallRequestInfo;
 };
 
+/**
+ * 服务器 Gemini 工具调用响应事件
+ */
 export type ServerGeminiToolCallResponseEvent = {
+  /** 事件类型 */
   type: GeminiEventType.ToolCallResponse;
+  /** 工具调用响应信息 */
   value: ToolCallResponseInfo;
 };
 
+/**
+ * 服务器 Gemini 工具调用确认事件
+ */
 export type ServerGeminiToolCallConfirmationEvent = {
+  /** 事件类型 */
   type: GeminiEventType.ToolCallConfirmation;
+  /** 工具调用确认详情 */
   value: ServerToolCallConfirmationDetails;
 };
 
+/**
+ * 服务器 Gemini 用户取消事件
+ */
 export type ServerGeminiUserCancelledEvent = {
+  /** 事件类型 */
   type: GeminiEventType.UserCancelled;
 };
 
+/**
+ * 服务器 Gemini 错误事件
+ */
 export type ServerGeminiErrorEvent = {
+  /** 事件类型 */
   type: GeminiEventType.Error;
+  /** 错误事件值 */
   value: GeminiErrorEventValue;
 };
 
+/**
+ * 压缩状态枚举
+ */
 export enum CompressionStatus {
-  /** The compression was successful */
+  /** 压缩成功 */
   COMPRESSED = 1,
 
-  /** The compression failed due to the compression inflating the token count */
+  /** 由于压缩导致令牌数增加而压缩失败 */
   COMPRESSION_FAILED_INFLATED_TOKEN_COUNT,
 
-  /** The compression failed due to an error counting tokens */
+  /** 由于计算令牌数出错导致压缩失败 */
   COMPRESSION_FAILED_TOKEN_COUNT_ERROR,
 
-  /** The compression failed due to receiving an empty or null summary */
+  /** 由于收到空或 null 摘要导致压缩失败 */
   COMPRESSION_FAILED_EMPTY_SUMMARY,
 
-  /** The compression was not necessary and no action was taken */
+  /** 不需要压缩，未执行任何操作 */
   NOOP,
 }
 
+/**
+ * 聊天压缩信息
+ */
 export interface ChatCompressionInfo {
+  /** 原始令牌数 */
   originalTokenCount: number;
+  /** 压缩后令牌数 */
   newTokenCount: number;
+  /** 压缩状态 */
   compressionStatus: CompressionStatus;
 }
 
+/**
+ * 服务器 Gemini 聊天压缩事件
+ */
 export type ServerGeminiChatCompressedEvent = {
+  /** 事件类型 */
   type: GeminiEventType.ChatCompressed;
+  /** 聊天压缩信息或 null */
   value: ChatCompressionInfo | null;
 };
 
+/**
+ * 服务器 Gemini 最大会话轮次事件
+ */
 export type ServerGeminiMaxSessionTurnsEvent = {
+  /** 事件类型 */
   type: GeminiEventType.MaxSessionTurns;
 };
 
+/**
+ * 服务器 Gemini 会话令牌限制超出事件
+ */
 export type ServerGeminiSessionTokenLimitExceededEvent = {
+  /** 事件类型 */
   type: GeminiEventType.SessionTokenLimitExceeded;
+  /** 会话令牌限制超出值 */
   value: SessionTokenLimitExceededValue;
 };
 
+/**
+ * 服务器 Gemini 完成事件
+ */
 export type ServerGeminiFinishedEvent = {
+  /** 事件类型 */
   type: GeminiEventType.Finished;
+  /** 完成事件值 */
   value: GeminiFinishedEventValue;
 };
 
+/**
+ * 服务器 Gemini 循环检测事件
+ */
 export type ServerGeminiLoopDetectedEvent = {
+  /** 事件类型 */
   type: GeminiEventType.LoopDetected;
 };
 
+/**
+ * 服务器 Gemini 引用事件
+ */
 export type ServerGeminiCitationEvent = {
+  /** 事件类型 */
   type: GeminiEventType.Citation;
+  /** 引用值 */
   value: string;
 };
 
+/**
+ * 服务器 Gemini Hook 系统消息事件
+ */
 export type ServerGeminiHookSystemMessageEvent = {
+  /** 事件类型 */
   type: GeminiEventType.HookSystemMessage;
+  /** 消息值 */
   value: string;
 };
 
-// The original union type, now composed of the individual types
+// 原始联合类型，由各个类型组合而成
+/**
+ * 服务器 Gemini 流事件联合类型
+ */
 export type ServerGeminiStreamEvent =
   | ServerGeminiChatCompressedEvent
   | ServerGeminiCitationEvent
@@ -226,7 +389,10 @@ export type ServerGeminiStreamEvent =
   | ServerGeminiSessionTokenLimitExceededEvent
   | ServerGeminiRetryEvent;
 
-// A turn manages the agentic loop turn within the server context.
+// 一个 turn 管理服务器上下文中的 agentic loop turn
+/**
+ * Turn 类 - 管理服务器上下文中的 agentic loop turn
+ */
 export class Turn {
   readonly pendingToolCalls: ToolCallRequestInfo[] = [];
   private debugResponses: GenerateContentResponse[] = [];
@@ -238,7 +404,13 @@ export class Turn {
     private readonly chat: GeminiChat,
     private readonly prompt_id: string,
   ) {}
-  // The run method yields simpler events suitable for server logic
+  /**
+   * 运行方法，生成更适合服务器逻辑的简化事件
+   * @param model - 模型名称
+   * @param req - 消息内容
+   * @param signal - 中止信号
+   * @returns 服务器 Gemini 流事件的异步生成器
+   */
   async *run(
     model: string,
     req: PartListUnion,
@@ -377,6 +549,11 @@ export class Turn {
     }
   }
 
+  /**
+   * 处理待处理的函数调用
+   * @param fnCall - 函数调用对象
+   * @returns 服务器 Gemini 流事件或 null
+   */
   private handlePendingFunctionCall(
     fnCall: FunctionCall,
   ): ServerGeminiStreamEvent | null {
@@ -401,6 +578,10 @@ export class Turn {
     return { type: GeminiEventType.ToolCallRequest, value: toolCallRequest };
   }
 
+  /**
+   * 获取调试响应
+   * @returns 生成的响应数组
+   */
   getDebugResponses(): GenerateContentResponse[] {
     return this.debugResponses;
   }

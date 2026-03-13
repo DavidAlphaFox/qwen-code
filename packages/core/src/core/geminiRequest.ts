@@ -8,12 +8,17 @@ import { type PartListUnion } from '@google/genai';
 import { partToString } from '../utils/partUtils.js';
 
 /**
- * Represents a request to be sent to the Gemini API.
- * For now, it's an alias to PartListUnion as the primary content.
- * This can be expanded later to include other request parameters.
+ * 表示要发送到 Gemini API 的请求
+ * 目前，它是 PartListUnion 的别名作为主要内容
+ * 以后可以扩展以包含其他请求参数
  */
 export type GeminiCodeRequest = PartListUnion;
 
+/**
+ * 将 PartListUnion 转换为字符串
+ * @param value - PartListUnion 值
+ * @returns 字符串表示
+ */
 export function partListUnionToString(value: PartListUnion): string {
   return partToString(value, { verbose: true });
 }

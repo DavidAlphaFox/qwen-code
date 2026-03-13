@@ -8,7 +8,9 @@ import type { ReactNode } from 'react';
 import { forwardRef } from 'react';
 
 /**
- * Button variant types
+ * 按钮变体类型
+ * @typedef {'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'} ButtonVariant
+ * @description 定义按钮的视觉风格：primary（主要）、secondary（次要）、danger（危险）、ghost（幽灵）、outline（轮廓）
  */
 export type ButtonVariant =
   | 'primary'
@@ -18,40 +20,60 @@ export type ButtonVariant =
   | 'outline';
 
 /**
- * Button size types
+ * 按钮尺寸类型
+ * @typedef {'sm' | 'md' | 'lg'} ButtonSize
+ * @description 定义按钮的尺寸：sm（小）、md（中）、lg（大）
  */
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 /**
- * Button component props interface
+ * 按钮组件属性接口
+ * @interface ButtonProps
+ * @description Button组件的属性定义，继承自HTML按钮元素的所有属性
  */
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Button content */
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** 按钮内容 */
   children: ReactNode;
-  /** Visual style variant */
+  /** 视觉风格变体 */
   variant?: ButtonVariant;
-  /** Button size */
+  /** 按钮尺寸 */
   size?: ButtonSize;
-  /** Loading state - shows spinner and disables button */
+  /** 加载状态 - 显示加载动画并禁用按钮 */
   loading?: boolean;
-  /** Icon to display before children */
+  /** 显示在内容左侧的图标 */
   leftIcon?: ReactNode;
-  /** Icon to display after children */
+  /** 显示在内容右侧的图标 */
   rightIcon?: ReactNode;
-  /** Full width button */
+  /** 是否占满宽度 */
   fullWidth?: boolean;
 }
 
 /**
- * Button component with multiple variants and sizes
+ * 按钮组件
+ * @component
+ * @description 多样式、多尺寸的按钮组件，支持加载状态和自定义图标
+ *
+ * @param {ButtonProps} props - 组件属性
+ * @param {React.Ref<HTMLButtonElement>} ref - 转发给底层button元素的引用
+ * @returns {JSX.Element} React按钮元素
  *
  * @example
- * ```tsx
+ * // 主要按钮
  * <Button variant="primary" size="md" onClick={handleClick}>
- *   Click me
+ *   点击我
  * </Button>
- * ```
+ *
+ * @example
+ * // 加载状态按钮
+ * <Button variant="primary" loading={true}>
+ *   处理中...
+ * </Button>
+ *
+ * @example
+ * // 带图标的按钮
+ * <Button variant="outline" leftIcon={<SaveIcon />}>
+ *   保存
+ * </Button>
  */
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (

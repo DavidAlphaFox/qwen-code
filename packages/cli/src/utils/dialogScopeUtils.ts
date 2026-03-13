@@ -9,7 +9,7 @@ import { SettingScope } from '../config/settings.js';
 import { settingExistsInScope } from './settingsUtils.js';
 
 /**
- * Shared scope labels for dialog components that need to display setting scopes
+ * 对话框组件的共享作用域标签，用于显示设置作用域
  */
 export const SCOPE_LABELS = {
   [SettingScope.User]: 'User Settings',
@@ -22,7 +22,8 @@ export const SCOPE_LABELS = {
 } as const;
 
 /**
- * Helper function to get scope items for radio button selects
+ * 获取单选按钮选择的作用域项
+ * @returns 作用域选项数组
  */
 export function getScopeItems() {
   return [
@@ -36,7 +37,11 @@ export function getScopeItems() {
 }
 
 /**
- * Generate scope message for a specific setting
+ * 为特定设置生成作用域消息
+ * @param settingKey - 设置键名
+ * @param selectedScope - 选中的作用域
+ * @param settings - 已加载的设置
+ * @returns string 作用域消息字符串
  */
 export function getScopeMessageForSetting(
   settingKey: string,

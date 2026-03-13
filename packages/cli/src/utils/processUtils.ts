@@ -7,12 +7,12 @@
 import { runExitCleanup } from './cleanup.js';
 
 /**
- * Exit code used to signal that the CLI should be relaunched.
+ * 用于信号表示 CLI 应该重新启动的退出代码
  */
 export const RELAUNCH_EXIT_CODE = 42;
 
 /**
- * Exits the process with a special code to signal that the parent process should relaunch it.
+ * 以特殊代码退出进程，以信号通知父进程应该重新启动它
  */
 export async function relaunchApp(): Promise<void> {
   await runExitCleanup();

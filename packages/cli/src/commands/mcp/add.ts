@@ -4,12 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// File for 'qwen mcp add' command
+// 'qwen mcp add' 命令文件
 import type { CommandModule } from 'yargs';
 import { loadSettings, SettingScope } from '../../config/settings.js';
 import { writeStdoutLine, writeStderrLine } from '../../utils/stdioHelpers.js';
 import type { MCPServerConfig } from '@qwen-code/qwen-code-core';
 
+/**
+ * 添加 MCP 服务器的异步函数
+ * @param name - 服务器名称
+ * @param commandOrUrl - 命令（stdio）或 URL（sse, http）
+ * @param args - 额外的命令行参数
+ * @param options - 选项对象
+ */
 async function addMcpServer(
   name: string,
   commandOrUrl: string,
@@ -135,9 +142,12 @@ async function addMcpServer(
   }
 }
 
+/**
+ * 添加 MCP 服务器命令
+ */
 export const addCommand: CommandModule = {
   command: 'add <name> <commandOrUrl> [args...]',
-  describe: 'Add a server',
+  describe: '添加一个服务器',
   builder: (yargs) =>
     yargs
       .usage('Usage: qwen mcp add [options] <name> <commandOrUrl> [args...]')

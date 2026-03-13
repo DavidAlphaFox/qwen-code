@@ -9,6 +9,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as childProcess from 'node:child_process';
 
+/** 包管理器枚举 */
 export enum PackageManager {
   NPM = 'npm',
   YARN = 'yarn',
@@ -23,13 +24,25 @@ export enum PackageManager {
 
 const debugLogger = createDebugLogger('INSTALLATION_INFO');
 
+/** 安装信息接口 */
 export interface InstallationInfo {
+  /** 包管理器 */
   packageManager: PackageManager;
+  /** 是否为全局安装 */
   isGlobal: boolean;
+  /** 更新命令（可选） */
   updateCommand?: string;
+  /** 更新消息（可选） */
   updateMessage?: string;
 }
 
+/**
+ * 获取安装信息
+ * 检测 CLI 的安装方式和包管理器
+ * @param projectRoot - 项目根目录
+ * @param isAutoUpdateEnabled - 是否启用自动更新
+ * @returns InstallationInfo 安装信息对象
+ */
 export function getInstallationInfo(
   projectRoot: string,
   isAutoUpdateEnabled: boolean,
@@ -40,12 +53,12 @@ export function getInstallationInfo(
   }
 
   try {
-    // Normalize path separators to forward slashes for consistent matching.
+    // 规范化路径分隔符为正斜杠以进行一致匹配
     const realPath = fs.realpathSync(cliPath).replace(/\\/g, '/');
     const normalizedProjectRoot = projectRoot?.replace(/\\/g, '/');
     const isGit = isGitRepository(process.cwd());
 
-    // Check for local git clone first
+    // 首先检查本地 git 克隆
     if (
       isGit &&
       normalizedProjectRoot &&
@@ -53,14 +66,14 @@ export function getInstallationInfo(
       !realPath.includes('/node_modules/')
     ) {
       return {
-        packageManager: PackageManager.UNKNOWN, // Not managed by a package manager in this sense
+        packageManager: PackageManager.UNKNOWN, // 从这个意义上说不是由包管理器管理的
         isGlobal: false,
         updateMessage:
           'Running from a local git clone. Please update with "git pull".',
       };
     }
 
-    // Check for npx/pnpx
+    // 检查 npx/pnpx
     if (realPath.includes('/.npm/_npx') || realPath.includes('/npm/_npx')) {
       return {
         packageManager: PackageManager.NPX,
@@ -76,10 +89,10 @@ export function getInstallationInfo(
       };
     }
 
-    // Check for Homebrew
+    // 检查 Homebrew
     if (process.platform === 'darwin') {
       try {
-        // We do not support homebrew for now, keep forward compatibility for future use
+        // 我们目前不支持 homebrew，为未来使用保持向前兼容性
         childProcess.execSync('brew list -1 | grep -q "^qwen-code$"', {
           stdio: 'ignore',
         });
@@ -90,11 +103,11 @@ export function getInstallationInfo(
             'Installed via Homebrew. Please update with "brew upgrade".',
         };
       } catch (_error) {
-        // continue to the next check
+        // 继续下一个检查
       }
     }
 
-    // Check for pnpm
+    // 检查 pnpm
     if (realPath.includes('/.pnpm/global')) {
       const updateCommand = 'pnpm add -g @qwen-code/qwen-code@latest';
       return {
@@ -107,7 +120,7 @@ export function getInstallationInfo(
       };
     }
 
-    // Check for yarn
+    // 检查 yarn
     if (realPath.includes('/.yarn/global')) {
       const updateCommand = 'yarn global add @qwen-code/qwen-code@latest';
       return {
@@ -120,7 +133,7 @@ export function getInstallationInfo(
       };
     }
 
-    // Check for bun
+    // 检查 bun
     if (realPath.includes('/.bun/install/cache')) {
       return {
         packageManager: PackageManager.BUNX,
@@ -140,7 +153,7 @@ export function getInstallationInfo(
       };
     }
 
-    // Check for local install
+    // 检查本地安装
     if (
       normalizedProjectRoot &&
       realPath.startsWith(`${normalizedProjectRoot}/node_modules`)
@@ -161,7 +174,7 @@ export function getInstallationInfo(
       };
     }
 
-    // Assume global npm
+    // 假设为全局 npm
     const updateCommand = 'npm install -g @qwen-code/qwen-code@latest';
     return {
       packageManager: PackageManager.NPM,

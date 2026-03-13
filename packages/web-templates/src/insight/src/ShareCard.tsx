@@ -3,10 +3,13 @@ import React from 'react';
 import type { InsightData } from './types';
 
 /**
- * Theme configuration for the share card
+ * 分享卡片主题类型
  */
 export type Theme = 'light' | 'dark';
 
+/**
+ * 主题配置接口
+ */
 interface ThemeConfig {
   background: string;
   textPrimary: string;
@@ -47,8 +50,11 @@ const themes: Record<Theme, ThemeConfig> = {
 };
 
 /**
- * A hidden 1200x675 card optimized for Twitter/X sharing.
- * Rendered off-screen; captured by html2canvas when the user clicks "Share as Card".
+ * 一个隐藏的 1200x675 卡片组件，针对 Twitter/X 分享进行了优化。
+ * 在屏幕外渲染；当用户点击"分享为卡片"时，通过 html2canvas 捕获。
+ * @param props - 组件属性
+ * @param props.data - 洞察数据
+ * @param props.theme - 主题（默认为 'light'）
  */
 export function ShareCard({
   data,
@@ -490,7 +496,13 @@ function ActiveHoursChart({
   );
 }
 
-/** Build a 7x~26 grid of intensity values for the mini heatmap (last ~6 months). */
+/**
+ * 构建迷你热力图
+ * 生成一个 7x~26 的强度值网格（过去约 6 个月）
+ * @param heatmap - 热力图数据
+ * @param theme - 主题配置
+ * @returns 单元格数组
+ */
 function buildMiniHeatmap(
   heatmap: Record<string, number>,
   theme: ThemeConfig,

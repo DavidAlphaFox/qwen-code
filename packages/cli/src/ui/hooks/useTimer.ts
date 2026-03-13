@@ -7,10 +7,10 @@
 import { useState, useEffect, useRef } from 'react';
 
 /**
- * Custom hook to manage a timer that increments every second.
- * @param isActive Whether the timer should be running.
- * @param resetKey A key that, when changed, will reset the timer to 0 and restart the interval.
- * @returns The elapsed time in seconds.
+ * 管理每秒递增计时器的自定义 Hook
+ * @param isActive - 计时器是否应该运行
+ * @param resetKey - 一个键，更改时将重置计时器为 0 并重新启动间隔
+ * @returns 经过的时间（秒）
  */
 export const useTimer = (isActive: boolean, resetKey: unknown) => {
   const [elapsedTime, setElapsedTime] = useState(0);

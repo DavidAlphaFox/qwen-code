@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// File for 'gemini mcp' command
-import type { CommandModule, Argv } from 'yargs';
-import { addCommand } from './mcp/add.js';
-import { removeCommand } from './mcp/remove.js';
-import { listCommand } from './mcp/list.js';
-
+// 'mcp' 命令文件
+/**
+ * MCP 命令模块
+ * 用于管理 MCP 服务器的 yargs 命令定义
+ */
 export const mcpCommand: CommandModule = {
   command: 'mcp',
-  describe: 'Manage MCP servers',
+  describe: '管理 MCP 服务器',
   builder: (yargs: Argv) =>
     yargs
       .command(addCommand)

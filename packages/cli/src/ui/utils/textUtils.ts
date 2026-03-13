@@ -10,9 +10,9 @@ import { stripVTControlCharacters } from 'node:util';
 import stringWidth from 'string-width';
 
 /**
- * Calculates the maximum width of a multi-line ASCII art string.
- * @param asciiArt The ASCII art string.
- * @returns The length of the longest line in the ASCII art.
+ * 计算多行 ASCII 艺术字符串的最大宽度
+ * @param asciiArt - ASCII 艺术字符串
+ * @returns ASCII 艺术中最长行的长度
  */
 export const getAsciiArtWidth = (asciiArt: string): number => {
   if (!asciiArt) {
@@ -24,14 +24,16 @@ export const getAsciiArtWidth = (asciiArt: string): number => {
 
 /*
  * -------------------------------------------------------------------------
- *  Unicode‑aware helpers (work at the code‑point level rather than UTF‑16
- *  code units so that surrogate‑pair emoji count as one "column".)
+ *  Unicode 感知的辅助函数（在代码点级别而非 UTF-16 代码单元工作，
+ *  这样代理对 emoji 算作一个"列"）
  * ---------------------------------------------------------------------- */
 
-// Cache for code points to reduce GC pressure
-const codePointsCache = new Map<string, string[]>();
-const MAX_STRING_LENGTH_TO_CACHE = 1000;
-
+// 代码点的缓存以减少 GC 压力
+/**
+ * 将字符串转换为代码点数组
+ * @param str - 输入字符串
+ * @returns 代码点字符串数组
+ */
 export function toCodePoints(str: string): string[] {
   // ASCII fast path - check if all chars are ASCII (0-127)
   let isAscii = true;

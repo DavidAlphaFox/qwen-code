@@ -9,7 +9,9 @@ import { parse, stringify } from 'comment-json';
 import { writeStderrLine } from './stdioHelpers.js';
 
 /**
- * Updates a JSON file while preserving comments and formatting.
+ * 更新 JSON 文件同时保留注释和格式
+ * @param filePath - 要更新的文件路径
+ * @param updates - 要应用的更新内容
  */
 export function updateSettingsFilePreservingFormat(
   filePath: string,
@@ -40,6 +42,12 @@ export function updateSettingsFilePreservingFormat(
   fs.writeFileSync(filePath, updatedContent, 'utf-8');
 }
 
+/**
+ * 递归应用更新到对象
+ * @param current - 当前对象
+ * @param updates - 更新内容
+ * @returns Record<string, unknown> 更新后的对象
+ */
 export function applyUpdates(
   current: Record<string, unknown>,
   updates: Record<string, unknown>,

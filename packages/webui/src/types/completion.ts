@@ -3,13 +3,15 @@
  * Copyright 2025 Qwen Team
  * SPDX-License-Identifier: Apache-2.0
  *
- * Completion item types for autocomplete menus
+ * 自动补全菜单项类型定义
  */
 
 import type { ReactNode } from 'react';
 
 /**
- * Completion item type categories
+ * 自动补全项类型分类
+ * @typedef {'file' | 'folder' | 'symbol' | 'command' | 'variable' | 'info'} CompletionItemType
+ * @description 定义自动补全菜单中项目的类型：文件、文件夹、符号、命令、变量、信息
  */
 export type CompletionItemType =
   | 'file'
@@ -20,23 +22,25 @@ export type CompletionItemType =
   | 'info';
 
 /**
- * Completion item for autocomplete menus
+ * 自动补全菜单项
+ * @interface CompletionItem
+ * @description 定义自动补全菜单中的单个选项，包含显示信息和选中后的行为
  */
 export interface CompletionItem {
-  /** Unique identifier */
+  /** 唯一标识符 */
   id: string;
-  /** Display label */
+  /** 显示标签 */
   label: string;
-  /** Optional description shown below label */
+  /** 可选的描述信息，显示在标签下方 */
   description?: string;
-  /** Optional icon to display */
+  /** 可选的图标，显示在标签左侧 */
   icon?: ReactNode;
-  /** Type of completion item */
+  /** 补全项的类型 */
   type: CompletionItemType;
-  /** Value inserted into the input when selected (e.g., filename or command) */
+  /** 选中后插入到输入框的值（如文件名或命令） */
   value?: string;
-  /** Optional full path for files (used to build @filename -> full path mapping) */
+  /** 文件的完整路径（用于构建 @文件名 -> 完整路径 的映射） */
   path?: string;
-  /** Optional group name for grouping items in the completion menu */
+  /** 分组名称，用于在补全菜单中对项目进行分组 */
   group?: string;
 }

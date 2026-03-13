@@ -5,10 +5,9 @@ import java.util.function.Consumer;
 import com.alibaba.acp.sdk.utils.Timeout;
 
 /**
- * Options for configuring ProcessTransport
- *
- * This class provides configuration options for ProcessTransport, including working directory,
- * command arguments, error handling, and timeouts for different operations.
+ * ProcessTransport配置选项类
+ * 
+ * 此类提供ProcessTransport的配置选项，包括工作目录、命令参数、错误处理和各操作的超时设置。
  *
  * @author SkyFire
  * @version 0.0.1
@@ -21,19 +20,19 @@ public class ProcessTransportOptions {
     private Timeout messageTimeout;
 
     /**
-     * Gets the current working directory for the process
+     * 获取进程的当前工作目录
      *
-     * @return The current working directory
+     * @return 当前工作目录
      */
     public String getCwd() {
         return cwd;
     }
 
     /**
-     * Sets the current working directory for the process
+     * 设置进程的当前工作目录
      *
-     * @param cwd The current working directory
-     * @return Current instance for method chaining
+     * @param cwd 当前工作目录
+     * @return 当前实例，用于方法链
      */
     public ProcessTransportOptions setCwd(String cwd) {
         this.cwd = cwd;
@@ -41,19 +40,19 @@ public class ProcessTransportOptions {
     }
 
     /**
-     * Gets the command arguments for the process
+     * 获取进程的命令参数
      *
-     * @return Array of command arguments
+     * @return 命令参数数组
      */
     public String[] getCommandArgs() {
         return commandArgs;
     }
 
     /**
-     * Sets the command arguments for the process
+     * 设置进程的命令参数
      *
-     * @param commandArgs Array of command arguments
-     * @return Current instance for method chaining
+     * @param commandArgs 命令参数数组
+     * @return 当前实例，用于方法链
      */
     public ProcessTransportOptions setCommandArgs(String[] commandArgs) {
         this.commandArgs = commandArgs;
@@ -61,19 +60,19 @@ public class ProcessTransportOptions {
     }
 
     /**
-     * Gets the error handler for processing error messages
+     * 获取错误处理器，用于处理错误消息
      *
-     * @return Consumer for handling error messages
+     * @return 错误消息的消费者
      */
     public Consumer<String> getErrorHandler() {
         return errorHandler;
     }
 
     /**
-     * Sets the error handler for processing error messages
+     * 设置错误处理器，用于处理错误消息
      *
-     * @param errorHandler Consumer for handling error messages
-     * @return Current instance for method chaining
+     * @param errorHandler 错误消息的消费者
+     * @return 当前实例，用于方法链
      */
     public ProcessTransportOptions setErrorHandler(Consumer<String> errorHandler) {
         this.errorHandler = errorHandler;
@@ -81,19 +80,19 @@ public class ProcessTransportOptions {
     }
 
     /**
-     * Gets the timeout for a turn (conversation round)
+     * 获取对话轮次的超时时间
      *
-     * @return Timeout for a turn
+     * @return 对话轮次的超时时间
      */
     public Timeout getTurnTimeout() {
         return turnTimeout;
     }
 
     /**
-     * Sets the timeout for a turn (conversation round)
+     * 设置对话轮次的超时时间
      *
-     * @param turnTimeout Timeout for a turn
-     * @return Current instance for method chaining
+     * @param turnTimeout 对话轮次的超时时间
+     * @return 当前实例，用于方法链
      */
     public ProcessTransportOptions setTurnTimeout(Timeout turnTimeout) {
         this.turnTimeout = turnTimeout;
@@ -101,19 +100,19 @@ public class ProcessTransportOptions {
     }
 
     /**
-     * Gets the timeout for individual messages
+     * 获取单条消息的超时时间
      *
-     * @return Timeout for individual messages
+     * @return 单条消息的超时时间
      */
     public Timeout getMessageTimeout() {
         return messageTimeout;
     }
 
     /**
-     * Sets the timeout for individual messages
+     * 设置单条消息的超时时间
      *
-     * @param messageTimeout Timeout for individual messages
-     * @return Current instance for method chaining
+     * @param messageTimeout 单条消息的超时时间
+     * @return 当前实例，用于方法链
      */
     public ProcessTransportOptions setMessageTimeout(Timeout messageTimeout) {
         this.messageTimeout = messageTimeout;

@@ -5,20 +5,18 @@
  */
 
 /**
- * Terminal Platform Constants
- *
- * This file contains terminal-related constants used throughout the application,
- * specifically for handling keyboard inputs and terminal protocols.
+ * 终端平台常量
+ * 此文件包含整个应用程序中使用的终端相关常量，专门用于处理键盘输入和终端协议
  */
 
 /**
- * Kitty keyboard protocol sequences for enhanced keyboard input.
+ * Kitty 键盘协议的增强键盘输入序列
  * @see https://sw.kovidgoyal.net/kitty/keyboard-protocol/
  */
 export const KITTY_CTRL_C = '[99;5u';
 
 /**
- * Kitty keyboard protocol keycodes
+ * Kitty 键盘协议按键码
  */
 export const KITTY_KEYCODE_ENTER = 13;
 export const KITTY_KEYCODE_NUMPAD_ENTER = 57414;
@@ -26,60 +24,56 @@ export const KITTY_KEYCODE_TAB = 9;
 export const KITTY_KEYCODE_BACKSPACE = 127;
 
 /**
- * Kitty modifier decoding constants
- *
- * In Kitty/Ghostty, the modifier parameter is encoded as (1 + bitmask).
- * Some terminals also set bit 7 (i.e., add 128) when reporting event types.
+ * Kitty 修饰键解码常量
+ * 在 Kitty/Ghostty 中，修饰键参数编码为 (1 + bitmask)
+ * 某些终端在报告事件类型时还设置第 7 位（即添加 128）
  */
-export const KITTY_MODIFIER_BASE = 1; // Base value per spec before bitmask decode
-export const KITTY_MODIFIER_EVENT_TYPES_OFFSET = 128; // Added when event types are included
+export const KITTY_MODIFIER_BASE = 1; // 解码前的基础值
+export const KITTY_MODIFIER_EVENT_TYPES_OFFSET = 128; // 包含事件类型时添加
 
 /**
- * Modifier bit flags for Kitty/Xterm-style parameters.
- *
- * Per spec, the modifiers parameter encodes (1 + bitmask) where:
- * - 1: no modifiers
- * - bit 0 (1): Shift
- * - bit 1 (2): Alt/Option (reported as "alt" in spec; we map to meta)
- * - bit 2 (4): Ctrl
- *
- * Some terminals add 128 to the entire modifiers field when reporting event types.
- * See: https://sw.kovidgoyal.net/kitty/keyboard-protocol/#modifiers
+ * Kitty/Xterm 风格参数的修饰键位标志
+ * 规范中修饰键参数编码为 (1 + bitmask)：
+ * - 1: 无修饰键
+ * - 位 0 (1): Shift
+ * - 位 1 (2): Alt/Option（在规范中报告为 "alt"，我们映射到 meta）
+ * - 位 2 (4): Ctrl
+ * 某些终端在报告事件类型时向整个修饰键字段添加 128
+ * @see https://sw.kovidgoyal.net/kitty/keyboard-protocol/#modifiers
  */
 export const MODIFIER_SHIFT_BIT = 1;
 export const MODIFIER_ALT_BIT = 2;
 export const MODIFIER_CTRL_BIT = 4;
 
 /**
- * Timing constants for terminal interactions
+ * 终端交互的时序常量
  */
 export const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
 /**
- * VS Code terminal integration constants
+ * VS Code 终端集成常量
  */
 export const VSCODE_SHIFT_ENTER_SEQUENCE = '\\\r\n';
 
 /**
- * Backslash + Enter detection window in milliseconds.
- * Used to detect Shift+Enter pattern where backslash
- * is followed by Enter within this timeframe.
+ * 反斜杠+回车检测窗口（毫秒）
+ * 用于检测反斜杠后跟回车的 Shift+Enter 模式
  */
 export const BACKSLASH_ENTER_DETECTION_WINDOW_MS = 5;
 
 /**
- * Maximum expected length of a Kitty keyboard protocol sequence.
- * Format: ESC [ <keycode> ; <modifiers> u/~
- * Example: \x1b[13;2u (Shift+Enter) = 8 chars
- * Longest reasonable: \x1b[127;15~ = 11 chars (Del with all modifiers)
- * We use 12 to provide a small buffer.
+ * Kitty 键盘协议序列的最大预期长度
+ * 格式：ESC [ <keycode> ; <modifiers> u/~
+ * 示例：\x1b[13;2u (Shift+Enter) = 8 个字符
+ * 最长合理：\x1b[127;15~ = 11 个字符（带所有修饰键的 Del）
+ * 我们使用 32 提供一个小缓冲区
  */
-// Increased to accommodate parameterized forms and occasional colon subfields
-// while still being small enough to avoid pathological buffering.
+// 增加以适应参数化形式和偶尔的冒号子字段
+// 同时仍然足够小以避免病态缓冲
 export const MAX_KITTY_SEQUENCE_LENGTH = 32;
 
 /**
- * Character codes for common escape sequences
+ * 常见转义序列的字符代码
  */
 export const CHAR_CODE_ESC = 27;
 export const CHAR_CODE_LEFT_BRACKET = 91;

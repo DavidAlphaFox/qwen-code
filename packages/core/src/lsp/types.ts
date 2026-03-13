@@ -4,50 +4,85 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * LSP 位置
+ */
 export interface LspPosition {
+  /** 行号 */
   line: number;
+  /** 字符位置 */
   character: number;
 }
 
+/**
+ * LSP 范围
+ */
 export interface LspRange {
+  /** 起始位置 */
   start: LspPosition;
+  /** 结束位置 */
   end: LspPosition;
 }
 
+/**
+ * LSP 位置
+ */
 export interface LspLocation {
+  /** 文件 URI */
   uri: string;
+  /** 范围 */
   range: LspRange;
 }
 
+/**
+ * 包含服务器名的 LSP 位置
+ */
 export interface LspLocationWithServer extends LspLocation {
+  /** 服务器名称 */
   serverName?: string;
 }
 
+/**
+ * LSP 符号信息
+ */
 export interface LspSymbolInformation {
+  /** 符号名称 */
   name: string;
+  /** 符号类型 */
   kind?: string;
+  /** 位置 */
   location: LspLocation;
+  /** 容器名称 */
   containerName?: string;
+  /** 服务器名称 */
   serverName?: string;
 }
 
+/**
+ * LSP 引用
+ */
 export interface LspReference extends LspLocationWithServer {
-  readonly serverName?: string;
-}
-
-export interface LspDefinition extends LspLocationWithServer {
+  /** 服务器名称（只读） */
   readonly serverName?: string;
 }
 
 /**
- * Hover result containing documentation or type information.
+ * LSP 定义
+ */
+export interface LspDefinition extends LspLocationWithServer {
+  /** 服务器名称（只读） */
+  readonly serverName?: string;
+}
+
+/**
+ * 悬停结果，包含文档或类型信息
  */
 export interface LspHoverResult {
-  /** The hover content as a string (normalized from MarkupContent/MarkedString). */
+  /** 悬停内容（字符串形式，从 MarkupContent/MarkedString 标准化而来） */
   contents: string;
-  /** Optional range that the hover applies to. */
+  /** 悬停适用的可选范围 */
   range?: LspRange;
-  /** The LSP server that provided this result. */
+  /** 提供此结果的 LSP 服务器 */
   serverName?: string;
 }
 

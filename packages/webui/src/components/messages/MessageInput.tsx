@@ -6,6 +6,12 @@
 
 import type { FC } from 'react';
 
-const MessageInput: FC = () => <div>MessageInput Component Placeholder</div>;
+/**
+ * 消息输入组件
+ * @component
+ * @description 用于输入消息的占位符组件
+ * @returns {JSX.Element} React元素
+ */
+const MessageInput: FC = () => <div>消息输入框组件占位符</div>;
 
 export default MessageInput;

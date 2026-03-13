@@ -3,7 +3,7 @@
  * Copyright 2025 Qwen Team
  * SPDX-License-Identifier: Apache-2.0
  *
- * Shared copy utilities for toolcall components
+ * 工具调用组件共享复制工具函数
  */
 
 import type { FC } from 'react';
@@ -11,10 +11,10 @@ import { useState, useCallback } from 'react';
 import { usePlatform } from '../../../context/PlatformContext.js';
 
 /**
- * Handle copy to clipboard using platform-specific API with fallback
- * @param text Text to copy
- * @param event Mouse event to stop propagation
- * @param platformCopy Optional platform-specific copy function
+ * 使用平台特定的API复制到剪贴板，带有回退方案
+ * @param {string} text - 要复制的文本
+ * @param {React.MouseEvent} event - 鼠标事件，用于阻止传播
+ * @param {(text: string) => Promise<void>} platformCopy - 可选的平台特定复制函数
  */
 export const handleCopyToClipboard = async (
   text: string,
@@ -35,16 +35,26 @@ export const handleCopyToClipboard = async (
 };
 
 /**
- * Copy button component props
+ * 复制按钮组件属性
+ * @interface CopyButtonProps
  */
 interface CopyButtonProps {
+  /** 要复制的文本 */
   text: string;
 }
 
 /**
- * CopyButton - Shared copy button component with Tailwind styles
- * Uses PlatformContext for platform-specific clipboard access with fallback
- * Note: Parent element should have 'group' class for hover effect
+ * 复制按钮组件
+ * @component
+ * @description 共享的复制按钮组件，使用Tailwind样式，通过PlatformContext访问平台特定的剪贴板功能，带有回退方案
+ * 注意：父元素应具有'group'类以实现悬停效果
+ *
+ * @param {CopyButtonProps} props - 组件属性
+ * @returns {JSX.Element | null} React按钮元素，如果复制功能不可用则返回null
+ *
+ * @example
+ * // 基本用法
+ * <CopyButton text="要复制的文本" />
  */
 export const CopyButton: FC<CopyButtonProps> = ({ text }) => {
   const [showTooltip, setShowTooltip] = useState(false);

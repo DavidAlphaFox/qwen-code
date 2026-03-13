@@ -21,17 +21,17 @@ const DEFAULT_IGNORED_FOLDERS = new Set(['node_modules', '.git', 'dist']);
 
 // --- Interfaces ---
 
-/** Options for customizing folder structure retrieval. */
+/** 文件夹结构选项 */
 interface FolderStructureOptions {
-  /** Maximum number of files and folders combined to display. Defaults to 20. */
+  /** 最大显示的文件和文件夹总数。默认为 20 */
   maxItems?: number;
-  /** Set of folder names to ignore completely. Case-sensitive. */
+  /** 完全忽略的文件夹名称集合。区分大小写 */
   ignoredFolders?: Set<string>;
-  /** Optional regex to filter included files by name. */
+  /** 用于按名称过滤包含文件的可选正则表达式 */
   fileIncludePattern?: RegExp;
-  /** For filtering files. */
+  /** 用于过滤文件 */
   fileService?: FileDiscoveryService;
-  /** File filtering ignore options. */
+  /** 文件过滤忽略选项 */
   fileFilteringOptions?: FileFilteringOptions;
 }
 // Define a type for the merged options where fileIncludePattern remains optional
@@ -43,17 +43,17 @@ type MergedFolderStructureOptions = Required<
   fileFilteringOptions?: FileFilteringOptions;
 };
 
-/** Represents the full, unfiltered information about a folder and its contents. */
+/** 表示文件夹及其内容的完整未过滤信息 */
 interface FullFolderInfo {
   name: string;
   path: string;
   files: string[];
   subFolders: FullFolderInfo[];
-  totalChildren: number; // Number of files and subfolders included from this folder during BFS scan
-  totalFiles: number; // Number of files included from this folder during BFS scan
-  isIgnored?: boolean; // Flag to easily identify ignored folders later
-  hasMoreFiles?: boolean; // Indicates if files were truncated for this specific folder
-  hasMoreSubfolders?: boolean; // Indicates if subfolders were truncated for this specific folder
+  totalChildren: number; // BFS 扫描期间从该文件夹包含的文件和子文件夹数量
+  totalFiles: number; // BFS 扫描期间从该文件夹包含的文件数量
+  isIgnored?: boolean; // 便于后续轻松识别被忽略的文件夹
+  hasMoreFiles?: boolean; // 指示此特定文件夹的文件是否被截断
+  hasMoreSubfolders?: boolean; // 指示此特定文件夹的子文件夹是否被截断
 }
 
 // --- Interfaces ---
@@ -218,11 +218,11 @@ async function readFullStructure(
 }
 
 /**
- * Reads the directory structure using BFS, respecting maxItems.
- * @param node The current node in the reduced structure.
- * @param indent The current indentation string.
- * @param isLast Sibling indicator.
- * @param builder Array to build the string lines.
+ * 使用 BFS 读取目录结构，遵守 maxItems 限制
+ * @param node - 简化结构中的当前节点
+ * @param currentIndent - 当前缩进字符串
+ * @param isLast - 兄弟节点指示器
+ * @param builder - 用于构建字符串行的数组
  */
 function formatStructure(
   node: FullFolderInfo,
@@ -289,13 +289,11 @@ function formatStructure(
 // --- Main Exported Function ---
 
 /**
- * Generates a string representation of a directory's structure,
- * limiting the number of items displayed. Ignored folders are shown
- * followed by '...' instead of their contents.
- *
- * @param directory The absolute or relative path to the directory.
- * @param options Optional configuration settings.
- * @returns A promise resolving to the formatted folder structure string.
+ * 生成目录结构的字符串表示
+ * 限制显示的项目数量。被忽略的文件夹会显示在后面跟着 "..."
+ * @param directory - 目录的绝对或相对路径
+ * @param options - 可选配置设置
+ * @returns 解析为格式化文件夹结构字符串的 Promise
  */
 export async function getFolderStructure(
   directory: string,

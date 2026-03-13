@@ -9,13 +9,11 @@ import { spawn } from 'node:child_process';
 import { createDebugLogger } from '@qwen-code/qwen-code-core';
 
 /**
- * Common Windows console code pages (CP) used for encoding conversions.
- *
- * @remarks
- * - `UTF8` (65001): Unicode (UTF-8) — recommended for cross-language scripts.
- * - `GBK` (936): Simplified Chinese — default on most Chinese Windows systems.
- * - `BIG5` (950): Traditional Chinese.
- * - `LATIN1` (1252): Western European — default on many Western systems.
+ * 常用的 Windows 控制台代码页 (CP)，用于编码转换
+ * - `UTF8` (65001): Unicode (UTF-8) — 推荐用于跨语言脚本
+ * - `GBK` (936): 简体中文 — 大多数中文 Windows 系统的默认设置
+ * - `BIG5` (950): 繁体中文
+ * - `LATIN1` (1252): 西欧 — 许多西方系统的默认设置
  */
 export const CodePage = {
   UTF8: 65001,
@@ -25,24 +23,22 @@ export const CodePage = {
 } as const;
 
 export type CodePage = (typeof CodePage)[keyof typeof CodePage];
+
 /**
- * Checks if a query string potentially represents an '@' command.
- * It triggers if the query starts with '@' or contains '@' preceded by whitespace
- * and followed by a non-whitespace character.
- *
- * @param query The input query string.
- * @returns True if the query looks like an '@' command, false otherwise.
+ * 检查查询字符串是否可能表示 '@' 命令
+ * 如果查询以 '@' 开头或包含 '@'（前面有空格，后面跟非空白字符），则触发
+ * @param query - 输入查询字符串
+ * @returns 如果查询看起来像 '@' 命令则返回 true，否则返回 false
  */
 export const isAtCommand = (query: string): boolean =>
   // Check if starts with @ OR has a space, then @
   query.startsWith('@') || /\s@/.test(query);
 
 /**
- * Checks if a query string potentially represents an '/' command.
- * It triggers if the query starts with '/' but excludes code comments like '//' and '/*'.
- *
- * @param query The input query string.
- * @returns True if the query looks like an '/' command, false otherwise.
+ * 检查查询字符串是否可能表示 '/' 命令
+ * 如果查询以 '/' 开头但排除像 '//' 和 '/*' 这样的代码注释
+ * @param query - 输入查询字符串
+ * @returns 如果查询看起来像 '/' 命令则返回 true，否则返回 false
  */
 export const isSlashCommand = (query: string): boolean => {
   if (!query.startsWith('/')) {

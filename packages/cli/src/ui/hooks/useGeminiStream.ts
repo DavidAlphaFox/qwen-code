@@ -141,8 +141,8 @@ function showCitations(settings: LoadedSettings): boolean {
 }
 
 /**
- * Manages the Gemini stream, including user input, command processing,
- * API interaction, and tool call lifecycle.
+ * 管理 Gemini 流，包括用户输入、命令处理、
+ * API 交互和工具调用生命周期
  */
 export const useGeminiStream = (
   geminiClient: GeminiClient,

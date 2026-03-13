@@ -20,31 +20,29 @@ import { accessSync, constants as fsConstants } from 'node:fs';
 const SHELL_TOOL_NAMES = ['run_shell_command', 'ShellTool'];
 
 /**
- * An identifier for the shell type.
+ * Shell 类型的标识符
  */
 export type ShellType = 'cmd' | 'powershell' | 'bash';
 
 /**
- * Defines the configuration required to execute a command string within a specific shell.
+ * 定义在特定 shell 中执行命令字符串所需的配置
  */
 export interface ShellConfiguration {
-  /** The path or name of the shell executable (e.g., 'bash', 'cmd.exe'). */
+  /** Shell 可执行文件的路径或名称（例如 'bash'、'cmd.exe'） */
   executable: string;
   /**
-   * The arguments required by the shell to execute a subsequent string argument.
+   * shell 执行后续字符串参数所需的参数
    */
   argsPrefix: string[];
-  /** An identifier for the shell type. */
+  /** Shell 类型的标识符 */
   shell: ShellType;
 }
 
 /**
- * Determines the appropriate shell configuration for the current platform.
- *
- * This ensures we can execute command strings predictably and securely across platforms
- * using the `spawn(executable, [...argsPrefix, commandString], { shell: false })` pattern.
- *
- * @returns The ShellConfiguration for the current environment.
+ * 确定当前平台的适当 shell 配置
+ * 这确保我们可以使用 spawn(executable, [...argsPrefix, commandString], { shell: false }) 模式
+ * 在不同平台上可预测且安全地执行命令字符串
+ * @returns 当前环境的 ShellConfiguration
  */
 export function getShellConfiguration(): ShellConfiguration {
   if (isWindows()) {
@@ -82,17 +80,16 @@ export function getShellConfiguration(): ShellConfiguration {
 }
 
 /**
- * Export the platform detection constant for use in process management (e.g., killing processes).
+ * 导出平台检测常量，用于进程管理（例如终止进程）
  */
 export const isWindows = () => os.platform() === 'win32';
 
 /**
- * Escapes a string so that it can be safely used as a single argument
- * in a shell command, preventing command injection.
- *
- * @param arg The argument string to escape.
- * @param shell The type of shell the argument is for.
- * @returns The shell-escaped string.
+ * 转义字符串，以便在 shell 命令中作为单个参数安全使用
+ * 防止命令注入
+ * @param arg - 要转义的参数字符串
+ * @param shell - 参数所在的 shell 类型
+ * @returns 转义后的字符串
  */
 export function escapeShellArg(arg: string, shell: ShellType): string {
   if (!arg) {
@@ -114,10 +111,10 @@ export function escapeShellArg(arg: string, shell: ShellType): string {
 }
 
 /**
- * Splits a shell command into a list of individual commands, respecting quotes.
- * This is used to separate chained commands (e.g., using &&, ||, ;).
- * @param command The shell command string to parse
- * @returns An array of individual command strings
+ * 将 shell 命令拆分为单独命令列表，尊重引号
+ * 用于分离链式命令（例如使用 &&、||、;）
+ * @param command - 要解析的 shell 命令字符串
+ * @returns 单独命令字符串数组
  */
 export function splitCommands(command: string): string[] {
   const commands: string[] = [];
@@ -179,10 +176,10 @@ export function splitCommands(command: string): string[] {
 }
 
 /**
- * Extracts the root command from a given shell command string.
- * This is used to identify the base command for permission checks.
- * @param command The shell command string to parse
- * @returns The root command name, or undefined if it cannot be determined
+ * 从给定的 shell 命令字符串中提取根命令
+ * 用于识别权限检查的基础命令
+ * @param command - 要解析的 shell 命令字符串
+ * @returns 根命令名称，如果无法确定则返回 undefined
  * @example getCommandRoot("ls -la /tmp") returns "ls"
  * @example getCommandRoot("git status && npm test") returns "git"
  */
@@ -236,18 +233,12 @@ export function stripShellWrapper(command: string): string {
 }
 
 /**
- * Detects command substitution patterns in a shell command, following bash quoting rules:
- * - Single quotes ('): Everything literal, no substitution possible
- * - Double quotes ("): Command substitution with $() and backticks unless escaped with \
- * - No quotes: Command substitution with $(), <(), and backticks
- *
- * This function also understands heredocs:
- * - If a heredoc delimiter is quoted (e.g. `<<'EOF'`), bash will not perform
- *   expansions in the heredoc body, so substitution-like text is allowed.
- * - If a heredoc delimiter is unquoted (e.g. `<<EOF`), bash will perform
- *   expansions in the heredoc body, so command substitution is blocked there too.
- * @param command The shell command string to check
- * @returns true if command substitution would be executed by bash
+ * 检测 shell 命令中的命令替换模式，遵循 bash 引号规则
+ * - 单引号 ('): 所有内容都是字面的，没有替换可能
+ * - 双引号 ("): 使用 $() 和反引号的命令替换，除非用 \ 转义
+ * - 无引号: 使用 $()、<() 和反引号的命令替换
+ * @param command - 要检查的 shell 命令字符串
+ * @returns 如果命令替换将被 bash 执行返回 true
  */
 export function detectCommandSubstitution(command: string): boolean {
   type PendingHeredoc = {
@@ -606,28 +597,11 @@ export function detectCommandSubstitution(command: string): boolean {
 }
 
 /**
- * Checks a shell command against security policies and allowlists.
- *
- * This function operates in one of two modes depending on the presence of
- * the `sessionAllowlist` parameter:
- *
- * 1.  **"Default Deny" Mode (sessionAllowlist is provided):** This is the
- *     strictest mode, used for user-defined scripts like custom commands.
- *     A command is only permitted if it is found on the global `coreTools`
- *     allowlist OR the provided `sessionAllowlist`. It must not be on the
- *     global `excludeTools` blocklist.
- *
- * 2.  **"Default Allow" Mode (sessionAllowlist is NOT provided):** This mode
- *     is used for direct tool invocations (e.g., by the model). If a strict
- *     global `coreTools` allowlist exists, commands must be on it. Otherwise,
- *     any command is permitted as long as it is not on the `excludeTools`
- *     blocklist.
- *
- * @param command The shell command string to validate.
- * @param config The application configuration.
- * @param sessionAllowlist A session-level list of approved commands. Its
- *   presence activates "Default Deny" mode.
- * @returns An object detailing which commands are not allowed.
+ * 根据安全策略和允许列表检查 shell 命令
+ * @param command - 要验证的 shell 命令字符串
+ * @param config - 应用程序配置
+ * @param sessionAllowlist - 批准命令的会话级列表
+ * @returns 详细说明哪些命令不允许的对象
  */
 export function checkCommandPermissions(
   command: string,
@@ -775,20 +749,13 @@ export function checkCommandPermissions(
 }
 
 /**
- * Executes a command with the given arguments without using a shell.
- *
- * This is a wrapper around Node.js's `execFile`, which spawns a process
- * directly without invoking a shell, making it safer than `exec`.
- * It's suitable for short-running commands with limited output.
- *
- * @param command The command to execute (e.g., 'git', 'osascript').
- * @param args Array of arguments to pass to the command.
- * @param options Optional spawn options including:
- *   - preserveOutputOnError: If false (default), rejects on error.
- *                           If true, resolves with output and error code.
- *   - Other standard spawn options (e.g., cwd, env).
- * @returns A promise that resolves with stdout, stderr strings, and exit code.
- * @throws Rejects with an error if the command fails (unless preserveOutputOnError is true).
+ * 使用给定参数执行命令，而不使用 shell
+ * 这是 Node.js execFile 的包装器，直接生成进程而不调用 shell，比 exec 更安全
+ * 适用于输出有限的短期命令
+ * @param command - 要执行的命令（例如 'git'、'osascript'）
+ * @param args - 传递给命令的参数数组
+ * @param options - 可选的生成选项
+ * @returns 解析为 stdout、stderr 字符串和退出代码的 Promise
  */
 export function execCommand(
   command: string,
@@ -821,9 +788,9 @@ export function execCommand(
 }
 
 /**
- * Resolves the path of a command in the system's PATH.
- * @param {string} command The command name (e.g., 'git', 'grep').
- * @returns {path: string | null; error?: Error} The path of the command, or null if it is not found and any error that occurred.
+ * 解析系统中 PATH 中命令的路径
+ * @param command - 命令名称（例如 'git'、'grep'）
+ * @returns 命令的路径，如果未找到则为 null，以及发生的任何错误
  */
 export function resolveCommandPath(command: string): {
   path: string | null;
@@ -874,9 +841,9 @@ export function resolveCommandPath(command: string): {
 }
 
 /**
- * Checks if a command is available in the system's PATH.
- * @param {string} command The command name (e.g., 'git', 'grep').
- * @returns {available: boolean; error?: Error} The availability of the command and any error that occurred.
+ * 检查命令是否在系统的 PATH 中可用
+ * @param command - 命令名称（例如 'git'、'grep'）
+ * @returns 命令的可用性以及发生的任何错误
  */
 export function isCommandAvailable(command: string): {
   available: boolean;

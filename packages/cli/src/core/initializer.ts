@@ -16,6 +16,9 @@ import { performInitialAuth } from './auth.js';
 import { validateTheme } from './theme.js';
 import { initializeI18n, type SupportedLanguage } from '../i18n/index.js';
 
+/**
+ * 应用程序初始化结果接口
+ */
 export interface InitializationResult {
   authError: string | null;
   themeError: string | null;
@@ -24,11 +27,11 @@ export interface InitializationResult {
 }
 
 /**
- * Orchestrates the application's startup initialization.
- * This runs BEFORE the React UI is rendered.
- * @param config The application config.
- * @param settings The loaded application settings.
- * @returns The results of the initialization.
+ * 协调应用程序的启动初始化
+ * 此函数在 React UI 渲染之前运行
+ * @param config - 应用程序配置
+ * @param settings - 已加载的应用程序设置
+ * @returns 初始化结果
  */
 export async function initializeApp(
   config: Config,

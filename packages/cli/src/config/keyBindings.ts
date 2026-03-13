@@ -5,7 +5,7 @@
  */
 
 /**
- * Command enum for all available keyboard shortcuts
+ * 所有可用键盘快捷键的命令枚举
  */
 export enum Command {
   // Basic bindings
@@ -64,34 +64,34 @@ export enum Command {
 }
 
 /**
- * Data-driven key binding structure for user configuration
+ * 用于用户配置的按键绑定结构
  */
 export interface KeyBinding {
-  /** The key name (e.g., 'a', 'return', 'tab', 'escape') */
+  /** 键名（例如 'a', 'return', 'tab', 'escape'） */
   key?: string;
-  /** The key sequence (e.g., '\x18' for Ctrl+X) - alternative to key name */
+  /** 键序列（例如 '\x18' 表示 Ctrl+X）- 作为键名的替代方案 */
   sequence?: string;
-  /** Control key requirement: true=must be pressed, false=must not be pressed, undefined=ignore */
+  /** Control 键要求：true=必须按下，false=必须不按下，undefined=忽略 */
   ctrl?: boolean;
-  /** Shift key requirement: true=must be pressed, false=must not be pressed, undefined=ignore */
+  /** Shift 键要求：true=必须按下，false=必须不按下，undefined=忽略 */
   shift?: boolean;
-  /** Command/meta key requirement: true=must be pressed, false=must not be pressed, undefined=ignore */
+  /** Command/Meta 键要求：true=必须按下，false=必须不按下，undefined=忽略 */
   command?: boolean;
-  /** Paste operation requirement: true=must be paste, false=must not be paste, undefined=ignore */
+  /** 粘贴操作要求：true=必须是粘贴，false=必须不是粘贴，undefined=忽略 */
   paste?: boolean;
   meta?: boolean;
 }
 
 /**
- * Configuration type mapping commands to their key bindings
+ * 配置类型，将命令映射到其按键绑定
  */
 export type KeyBindingConfig = {
   readonly [C in Command]: readonly KeyBinding[];
 };
 
 /**
- * Default key binding configuration
- * Matches the original hard-coded logic exactly
+ * 默认按键绑定配置
+ * 与原始硬编码逻辑完全匹配
  */
 export const defaultKeyBindings: KeyBindingConfig = {
   // Basic bindings

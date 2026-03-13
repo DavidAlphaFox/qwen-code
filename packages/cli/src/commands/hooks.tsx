@@ -8,10 +8,14 @@ import type { CommandModule } from 'yargs';
 import { enableCommand } from './hooks/enable.js';
 import { disableCommand } from './hooks/disable.js';
 
+/**
+ * Hooks 命令模块
+ * 用于管理 Qwen Code 钩子的 yargs 命令定义
+ */
 export const hooksCommand: CommandModule = {
   command: 'hooks <command>',
   aliases: ['hook'],
-  describe: 'Manage Qwen Code hooks.',
+  describe: '管理 Qwen Code 钩子',
   builder: (yargs) =>
     yargs
       .command(enableCommand)

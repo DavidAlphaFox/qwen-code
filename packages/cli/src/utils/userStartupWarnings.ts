@@ -9,18 +9,27 @@ import * as os from 'node:os';
 import path from 'node:path';
 import { canUseRipgrep } from '@qwen-code/qwen-code-core';
 
+/** 警告检查选项 */
 type WarningCheckOptions = {
+  /** 工作区根目录 */
   workspaceRoot: string;
+  /** 是否使用 ripgrep */
   useRipgrep: boolean;
+  /** 是否使用内置 ripgrep */
   useBuiltinRipgrep: boolean;
 };
 
+/** 警告检查定义 */
 type WarningCheck = {
+  /** 检查 ID */
   id: string;
+  /** 检查函数 */
   check: (options: WarningCheckOptions) => Promise<string | null>;
 };
 
-// Individual warning checks
+// 单独的警告检查
+
+/** 主目录检查 */
 const homeDirectoryCheck: WarningCheck = {
   id: 'home-directory',
   check: async (options: WarningCheckOptions) => {
@@ -40,6 +49,7 @@ const homeDirectoryCheck: WarningCheck = {
   },
 };
 
+/** 根目录检查 */
 const rootDirectoryCheck: WarningCheck = {
   id: 'root-directory',
   check: async (options: WarningCheckOptions) => {
@@ -48,7 +58,7 @@ const rootDirectoryCheck: WarningCheck = {
       const errorMessage =
         'Warning: You are running Qwen Code in the root directory. Your entire folder structure will be used for context. It is strongly recommended to run in a project-specific directory.';
 
-      // Check for Unix root directory
+      // 检查 Unix 根目录
       if (path.dirname(workspaceRealPath) === workspaceRealPath) {
         return errorMessage;
       }
@@ -60,6 +70,7 @@ const rootDirectoryCheck: WarningCheck = {
   },
 };
 
+/** ripgrep 可用性检查 */
 const ripgrepAvailabilityCheck: WarningCheck = {
   id: 'ripgrep-availability',
   check: async (options: WarningCheckOptions) => {
@@ -79,13 +90,18 @@ const ripgrepAvailabilityCheck: WarningCheck = {
   },
 };
 
-// All warning checks
+// 所有警告检查
 const WARNING_CHECKS: readonly WarningCheck[] = [
   homeDirectoryCheck,
   rootDirectoryCheck,
   ripgrepAvailabilityCheck,
 ];
 
+/**
+ * 获取用户启动警告
+ * @param options - 警告检查选项
+ * @returns Promise<string[]> 警告消息数组
+ */
 export async function getUserStartupWarnings(
   options: WarningCheckOptions,
 ): Promise<string[]> {

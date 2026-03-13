@@ -7,20 +7,38 @@
 import type { FC } from 'react';
 
 /**
- * Tooltip component props
+ * 提示框组件属性
+ * @interface TooltipProps
+ * @description Tooltip组件的属性定义，用于在鼠标悬停时显示提示信息
  */
 export interface TooltipProps {
-  /** Content to wrap with tooltip */
+  /** 需要包裹提示框的子元素 */
   children: React.ReactNode;
-  /** Tooltip content (can be string or ReactNode) */
+  /** 提示框内容（可以是字符串或React节点） */
   content: React.ReactNode;
-  /** Tooltip position relative to children */
+  /** 提示框相对于子元素的位置 */
   position?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 /**
- * Tooltip component using CSS group-hover for display
- * Supports CSS variables for theming
+ * 提示框组件
+ * @component
+ * @description 使用CSS group-hover实现鼠标悬停显示提示信息，支持主题变量定制
+ *
+ * @param {TooltipProps} props - 组件属性
+ * @returns {JSX.Element} React元素
+ *
+ * @example
+ * // 顶部提示
+ * <Tooltip content="这是一个提示">
+ *   <span>鼠标悬停在我上面</span>
+ * </Tooltip>
+ *
+ * @example
+ * // 右侧提示
+ * <Tooltip content="查看详情" position="right">
+ *   <Button>更多信息</Button>
+ * </Tooltip>
  */
 export const Tooltip: FC<TooltipProps> = ({
   children,

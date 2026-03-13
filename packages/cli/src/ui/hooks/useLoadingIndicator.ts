@@ -9,6 +9,13 @@ import { useTimer } from './useTimer.js';
 import { usePhraseCycler } from './usePhraseCycler.js';
 import { useState, useEffect, useRef } from 'react'; // Added useRef
 
+/**
+ * 管理加载指示器状态的 Hook
+ * 根据流式状态显示加载短语和计时器
+ * @param streamingState - 当前流式状态
+ * @param customWittyPhrases - 可选的自定义加载短语数组
+ * @returns 包含加载指示器相关状态的对象
+ */
 export const useLoadingIndicator = (
   streamingState: StreamingState,
   customWittyPhrases?: string[],

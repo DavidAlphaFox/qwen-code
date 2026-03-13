@@ -5,17 +5,17 @@
  */
 
 /**
- * ModelConfigResolver - Unified resolver for model-related configuration.
+ * ModelConfigResolver - 模型相关配置的统一解析器
  *
- * This module consolidates all model configuration resolution logic,
- * eliminating duplicate code between CLI and Core layers.
+ * 此模块整合了所有模型配置解析逻辑，
+ * 消除了 CLI 和 Core 层之间的重复代码
  *
- * Configuration priority (highest to lowest):
- * 1. modelProvider - Explicit selection from ModelProviders config
- * 2. CLI arguments - Command line flags (--model, --openaiApiKey, etc.)
- * 3. Environment variables - OPENAI_API_KEY, OPENAI_MODEL, etc.
- * 4. Settings - User/workspace settings file
- * 5. Defaults - Built-in default values
+ * 配置优先级（从高到低）：
+ * 1. modelProvider - 来自 ModelProviders 配置的显式选择
+ * 2. CLI 参数 - 命令行标志（--model, --openaiApiKey 等）
+ * 3. 环境变量 - OPENAI_API_KEY, OPENAI_MODEL 等
+ * 4. 设置 - 用户/工作区设置文件
+ * 5. 默认值 - 内置默认值
  */
 
 import { AuthType } from '../core/contentGenerator.js';
@@ -48,7 +48,7 @@ export {
 } from '../core/contentGenerator.js';
 
 /**
- * CLI-provided configuration values
+ * CLI 提供的配置值
  */
 export interface ModelConfigCliInput {
   model?: string;
@@ -57,64 +57,64 @@ export interface ModelConfigCliInput {
 }
 
 /**
- * Settings-provided configuration values
+ * 设置文件提供的配置值
  */
 export interface ModelConfigSettingsInput {
-  /** Model name from settings.model.name */
+  /** 来自 settings.model.name 的模型名称 */
   model?: string;
-  /** API key from settings.security.auth.apiKey */
+  /** 来自 settings.security.auth.apiKey 的 API 密钥 */
   apiKey?: string;
-  /** Base URL from settings.security.auth.baseUrl */
+  /** 来自 settings.security.auth.baseUrl 的基础 URL */
   baseUrl?: string;
-  /** Generation config from settings.model.generationConfig */
+  /** 来自 settings.model.generationConfig 的生成配置 */
   generationConfig?: Partial<ContentGeneratorConfig>;
 }
 
 /**
- * All input sources for model configuration resolution
+ * 模型配置解析的所有输入源
  */
 export interface ModelConfigSourcesInput {
-  /** Authentication type */
+  /** 认证类型 */
   authType?: AuthType;
 
-  /** CLI arguments (highest priority for user-provided values) */
+  /** CLI 参数（用户提供的值具有最高优先级） */
   cli?: ModelConfigCliInput;
 
-  /** Settings file configuration */
+  /** 设置文件配置 */
   settings?: ModelConfigSettingsInput;
 
-  /** Environment variables (injected for testability) */
+  /** 环境变量（为了可测试性而注入） */
   env: Record<string, string | undefined>;
 
-  /** Model from ModelProviders (explicit selection, highest priority) */
+  /** 来自 ModelProviders 的模型（显式选择，最高优先级） */
   modelProvider?: ModelProviderConfig;
 
-  /** Proxy URL (computed from Config) */
+  /** 代理 URL（从 Config 计算） */
   proxy?: string;
 }
 
 /**
- * Result of model configuration resolution
+ * 模型配置解析的结果
  */
 export interface ModelConfigResolutionResult {
-  /** The fully resolved configuration */
+  /** 完全解析后的配置 */
   config: ContentGeneratorConfig;
-  /** Source attribution for each field */
+  /** 每个字段的来源归属 */
   sources: ConfigSources;
-  /** Warnings generated during resolution */
+  /** 解析过程中生成的警告 */
   warnings: string[];
 }
 
 /**
- * Resolve model configuration from all input sources.
+ * 从所有输入源解析模型配置
  *
- * This is the single entry point for model configuration resolution.
- * It replaces the duplicate logic in:
+ * 这是模型配置解析的单一入口点
+ * 它替换了以下位置的重复逻辑：
  * - packages/cli/src/utils/modelProviderUtils.ts (resolveCliGenerationConfig)
  * - packages/core/src/core/contentGenerator.ts (resolveContentGeneratorConfigWithSources)
  *
- * @param input - All configuration sources
- * @returns Resolved configuration with source tracking
+ * @param input - 所有配置源
+ * @returns 带有源跟踪的解析后配置
  */
 export function resolveModelConfig(
   input: ModelConfigSourcesInput,
@@ -270,8 +270,8 @@ export function resolveModelConfig(
 }
 
 /**
- * Special resolver for Qwen OAuth authentication.
- * Qwen OAuth has fixed model options and uses dynamic tokens.
+ * Qwen OAuth 认证的特殊解析器
+ * Qwen OAuth 具有固定的模型选项并使用动态令牌
  */
 function resolveQwenOAuthConfig(
   input: ModelConfigSourcesInput,
@@ -337,7 +337,13 @@ function resolveQwenOAuthConfig(
 }
 
 /**
- * Resolve generation config fields (samplingParams, timeout, etc.)
+ * 解析生成配置字段（samplingParams、timeout 等）
+ * @param settingsConfig - 来自设置文件的配置
+ * @param modelProviderConfig - 来自模型提供者的配置
+ * @param authType - 认证类型
+ * @param modelId - 模型 ID
+ * @param sources - 配置源跟踪对象
+ * @returns 解析后的生成配置
  */
 function resolveGenerationConfig(
   settingsConfig: Partial<ContentGeneratorConfig> | undefined,

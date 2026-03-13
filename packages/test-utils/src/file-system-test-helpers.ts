@@ -4,20 +4,26 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 文件系统测试助手模块
+ * 提供用于创建和管理测试用临时文件系统的工具函数。
+ * @module
+ */
+
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 
 /**
- * Defines the structure of a virtual file system to be created for testing.
- * Keys are file or directory names, and values can be:
- * - A string: The content of a file.
- * - A `FileSystemStructure` object: Represents a subdirectory with its own structure.
- * - An array of strings or `FileSystemStructure` objects: Represents a directory
- *   where strings are empty files and objects are subdirectories.
+ * 定义测试用虚拟文件系统的结构。
+ * 键是文件或目录名称，值可以是：
+ * - 字符串：文件内容
+ * - FileSystemStructure 对象：表示具有自身结构的子目录
+ * - 字符串或 FileSystemStructure 对象数组：表示目录，
+ *   其中字符串是空文件，对象是子目录
  *
  * @example
- * // Example 1: Simple files and directories
+ * // 示例1：简单文件和目录
  * const structure1 = {
  *   'file1.txt': 'Hello, world!',
  *   'empty-dir': [],
@@ -28,7 +34,7 @@ import * as os from 'node:os';
  * };
  *
  * @example
- * // Example 2: Nested directories and empty files within an array
+ * // 示例2：嵌套目录和数组中的空文件
  * const structure2 = {
  *   'config.json': '{ "port": 3000 }',
  *   'data': [
@@ -51,9 +57,9 @@ export type FileSystemStructure = {
 };
 
 /**
- * Recursively creates files and directories based on the provided `FileSystemStructure`.
- * @param dir The base directory where the structure will be created.
- * @param structure The `FileSystemStructure` defining the files and directories.
+ * 根据提供的 FileSystemStructure 递归创建文件和目录。
+ * @param dir 基础目录，结构将在此目录下创建
+ * @param structure 定义文件和目录的 FileSystemStructure
  */
 async function create(dir: string, structure: FileSystemStructure) {
   for (const [name, content] of Object.entries(structure)) {
@@ -77,9 +83,9 @@ async function create(dir: string, structure: FileSystemStructure) {
 }
 
 /**
- * Creates a temporary directory and populates it with a given file system structure.
- * @param structure The `FileSystemStructure` to create within the temporary directory.
- * @returns A promise that resolves to the absolute path of the created temporary directory.
+ * 创建一个临时目录并在其中填充给定的文件系统结构。
+ * @param structure 要在临时目录内创建的 FileSystemStructure
+ * @returns 一个 Promise resolves 为创建的临时目录的绝对路径
  */
 export async function createTmpDir(
   structure: FileSystemStructure,
@@ -90,8 +96,8 @@ export async function createTmpDir(
 }
 
 /**
- * Cleans up (deletes) a temporary directory and its contents.
- * @param dir The absolute path to the temporary directory to clean up.
+ * 清理（删除）临时目录及其内容。
+ * @param dir 要清理的临时目录的绝对路径
  */
 export async function cleanupTmpDir(dir: string) {
   await fs.rm(dir, { recursive: true, force: true });

@@ -2,20 +2,21 @@ type Model = string;
 type TokenCount = number;
 
 /**
- * Token limit types for different use cases.
- * - 'input': Maximum input context window size
- * - 'output': Maximum output tokens that can be generated in a single response
+ * 令牌限制类型，用于不同场景
+ * - 'input': 最大输入上下文窗口大小
+ * - 'output': 单次响应中可以生成的最大输出令牌数
  */
 export type TokenLimitType = 'input' | 'output';
 
+/** 默认令牌限制：131072 (128K，2的幂次) */
 export const DEFAULT_TOKEN_LIMIT: TokenCount = 131_072; // 128K (power-of-two)
+/** 默认输出令牌限制：8192 (8K) */
 export const DEFAULT_OUTPUT_TOKEN_LIMIT: TokenCount = 8_192; // 8K tokens
 
 /**
- * Accurate numeric limits:
- * - power-of-two approximations (128K -> 131072, 256K -> 262144, etc.)
- * - vendor-declared exact values (e.g., 200k -> 200000, 1m -> 1000000) are
- *   used as stated in docs.
+ * 精确的数值限制：
+ * - 2的幂次近似值（128K -> 131072, 256K -> 262144 等）
+ * - 供应商声明的精确值（例如 200k -> 200000, 1m -> 1000000）按文档中声明使用
  */
 const LIMITS = {
   '32k': 32_768,
@@ -26,13 +27,13 @@ const LIMITS = {
   '400k': 400_000, // vendor-declared decimal, used by OpenAI GPT-5.x
   '512k': 524_288,
   '1m': 1_000_000,
-  // Output token limits (typically much smaller than input limits)
+  // 输出令牌限制（通常比输入限制小得多）
   '4k': 4_096,
   '8k': 8_192,
   '16k': 16_384,
 } as const;
 
-/** Robust normalizer: strips provider prefixes, pipes/colons, date/version suffixes, etc. */
+/** 健壮的正则化器：去除供应商前缀、管道/冒号、日期/版本后缀等 */
 export function normalize(model: string): string {
   let s = (model ?? '').toLowerCase().trim();
 
@@ -76,7 +77,7 @@ export function normalize(model: string): string {
   return s;
 }
 
-/** Ordered regex patterns: most specific -> most general (first match wins). */
+/** 有序的正则表达式模式：最具体 -> 最一般（首次匹配优先） */
 const PATTERNS: Array<[RegExp, TokenCount]> = [
   // -------------------
   // Google Gemini

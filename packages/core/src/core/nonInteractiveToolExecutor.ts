@@ -16,14 +16,20 @@ import {
   type ToolCallsUpdateHandler,
 } from './coreToolScheduler.js';
 
+/**
+ * 执行工具调用的选项
+ */
 export interface ExecuteToolCallOptions {
+  /** 输出更新处理器 */
   outputUpdateHandler?: OutputUpdateHandler;
+  /** 所有工具调用完成时的处理器 */
   onAllToolCallsComplete?: AllToolCallsCompleteHandler;
+  /** 工具调用更新处理器 */
   onToolCallsUpdate?: ToolCallsUpdateHandler;
 }
 
 /**
- * Executes a single tool call non-interactively by leveraging the CoreToolScheduler.
+ * 通过利用 CoreToolScheduler 非交互式执行单个工具调用
  */
 export async function executeToolCall(
   config: Config,

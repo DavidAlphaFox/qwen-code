@@ -6,6 +6,10 @@
 
 import { MergeStrategy } from '../config/settingsSchema.js';
 
+/**
+ * 可合并的类型定义
+ * 支持基本类型、对象和数组
+ */
 export type Mergeable =
   | string
   | number
@@ -15,12 +19,27 @@ export type Mergeable =
   | object
   | Mergeable[];
 
+/**
+ * 可合并的对象类型
+ */
 export type MergeableObject = Record<string, Mergeable>;
 
+/**
+ * 检查是否为普通对象
+ * @param item - 要检查的项
+ * @returns boolean 是否为普通对象
+ */
 function isPlainObject(item: unknown): item is MergeableObject {
   return !!item && typeof item === 'object' && !Array.isArray(item);
 }
 
+/**
+ * 递归合并对象
+ * @param target - 目标对象
+ * @param source - 源对象
+ * @param getMergeStrategyForPath - 获取合并策略的函数
+ * @param path - 当前路径
+ */
 function mergeRecursively(
   target: MergeableObject,
   source: MergeableObject,
@@ -74,6 +93,13 @@ function mergeRecursively(
   return target;
 }
 
+/**
+ * 自定义深度合并函数
+ * 根据指定的合并策略合并多个对象
+ * @param getMergeStrategyForPath - 获取合并策略的函数
+ * @param sources - 要合并的源对象列表
+ * @returns MergeableObject 合并后的结果对象
+ */
 export function customDeepMerge(
   getMergeStrategyForPath: (path: string[]) => MergeStrategy | undefined,
   ...sources: MergeableObject[]

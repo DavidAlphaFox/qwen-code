@@ -23,9 +23,9 @@ const debugLogger = createDebugLogger('MODEL_REGISTRY');
 export { QWEN_OAUTH_MODELS } from './constants.js';
 
 /**
- * Validates if a string key is a valid AuthType enum value.
- * @param key - The key to validate
- * @returns The validated AuthType or undefined if invalid
+ * 验证字符串键是否为有效的 AuthType 枚举值
+ * @param key - 要验证的键
+ * @returns 验证后的 AuthType，如果无效则返回 undefined
  */
 function validateAuthTypeKey(key: string): AuthType | undefined {
   // Check if the key is a valid AuthType enum value
@@ -38,8 +38,8 @@ function validateAuthTypeKey(key: string): AuthType | undefined {
 }
 
 /**
- * Central registry for managing model configurations.
- * Models are organized by authType.
+ * 模型配置注册表
+ * 模型按 authType（认证类型）组织
  */
 export class ModelRegistry {
   private modelsByAuthType: Map<AuthType, Map<string, ResolvedModelConfig>>;
@@ -84,8 +84,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Register models for an authType.
-   * If multiple models have the same id, the first one takes precedence.
+   * 为指定 authType 注册模型
+   * 如果多个模型具有相同的 id，则优先使用第一个注册的模型
+   * @param authType - 认证类型
+   * @param models - 模型配置数组
    */
   private registerAuthTypeModels(
     authType: AuthType,
@@ -109,8 +111,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Get all models for a specific authType.
-   * This is used by /model command to show only relevant models.
+   * 获取指定 authType 的所有模型
+   * 用于 /model 命令仅显示相关模型
+   * @param authType - 认证类型
+   * @returns 可用模型数组
    */
   getModelsForAuthType(authType: AuthType): AvailableModel[] {
     const models = this.modelsByAuthType.get(authType);
@@ -133,7 +137,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Get model configuration by authType and modelId
+   * 根据 authType 和 modelId 获取模型配置
+   * @param authType - 认证类型
+   * @param modelId - 模型 ID
+   * @returns 解析后的模型配置，如果不存在则返回 undefined
    */
   getModel(
     authType: AuthType,
@@ -144,7 +151,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Check if model exists for given authType
+   * 检查指定 authType 和 modelId 的模型是否存在
+   * @param authType - 认证类型
+   * @param modelId - 模型 ID
+   * @returns 是否存在
    */
   hasModel(authType: AuthType, modelId: string): boolean {
     const models = this.modelsByAuthType.get(authType);
@@ -152,9 +162,11 @@ export class ModelRegistry {
   }
 
   /**
-   * Get default model for an authType.
-   * For qwen-oauth, returns the coder model.
-   * For others, returns the first configured model.
+   * 获取指定 authType 的默认模型
+   * 对于 qwen-oauth，返回 coder 模型
+   * 对于其他类型，返回第一个配置的模型
+   * @param authType - 认证类型
+   * @returns 默认模型配置，如果不存在则返回 undefined
    */
   getDefaultModelForAuthType(
     authType: AuthType,
@@ -168,7 +180,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Resolve model config by applying defaults
+   * 通过应用默认值来解析模型配置
+   * @param config - 模型配置
+   * @param authType - 认证类型
+   * @returns 解析后的模型配置
    */
   private resolveModelConfig(
     config: ModelConfig,
@@ -187,7 +202,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Validate model configuration
+   * 验证模型配置
+   * @param config - 模型配置
+   * @param authType - 认证类型
+   * @throws 如果缺少必需字段则抛出错误
    */
   private validateModelConfig(config: ModelConfig, authType: AuthType): void {
     if (!config.id) {
@@ -198,9 +216,10 @@ export class ModelRegistry {
   }
 
   /**
-   * Reload models from updated configuration.
-   * Clears existing user-configured models and re-registers from new config.
-   * Preserves hard-coded qwen-oauth models.
+   * 从更新后的配置重新加载模型
+   * 清除现有用户配置的模型并从新配置重新注册
+   * 保留硬编码的 qwen-oauth 模型
+   * @param modelProvidersConfig - 新的模型提供者配置
    */
   reloadModels(modelProvidersConfig?: ModelProvidersConfig): void {
     // Clear existing user-configured models (preserve qwen-oauth)

@@ -6,6 +6,11 @@
 
 import { writeStderrLine } from './stdioHelpers.js';
 
+/**
+ * 从标准输入读取数据
+ * 最多读取 8MB 数据，超出部分会被截断
+ * @returns Promise<string> 从 stdin 读取的字符串数据
+ */
 export async function readStdin(): Promise<string> {
   const MAX_STDIN_SIZE = 8 * 1024 * 1024; // 8MB
   return new Promise((resolve, reject) => {
@@ -15,9 +20,8 @@ export async function readStdin(): Promise<string> {
 
     const pipedInputShouldBeAvailableInMs = 500;
     let pipedInputTimerId: null | NodeJS.Timeout = setTimeout(() => {
-      // stop reading if input is not available yet, this is needed
-      // in terminals where stdin is never TTY and nothing's piped
-      // which causes the program to get stuck expecting data from stdin
+      // 如果输入还不可用则停止读取，这在 stdin 从不是 TTY 且没有管道输入的终端中是必需的
+      // 否则程序会卡住等待 stdin 数据
       onEnd();
     }, pipedInputShouldBeAvailableInMs);
 
@@ -35,7 +39,7 @@ export async function readStdin(): Promise<string> {
           writeStderrLine(
             `Warning: stdin input truncated to ${MAX_STDIN_SIZE} bytes.`,
           );
-          process.stdin.destroy(); // Stop reading further
+          process.stdin.destroy(); // 停止继续读取
           break;
         }
         data += chunk;

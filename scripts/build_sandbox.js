@@ -1,4 +1,10 @@
 /**
+ * @file build_sandbox.js
+ * @description 沙箱镜像构建脚本
+ * 使用 Docker/Podman 构建 Qwen Code 沙箱镜像
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -111,6 +117,13 @@ const buildStdout = process.env.VERBOSE ? 'inherit' : 'ignore';
 const isWindows = os.platform() === 'win32';
 const shellToUse = isWindows ? 'powershell.exe' : '/bin/bash';
 
+/**
+ * 构建 Docker/Podman 镜像
+ * @param {string} imageName - 镜像名称（含标签）
+ * @param {string} dockerfile - Dockerfile 文件名
+ * @example
+ * buildImage('qwen-code:v1.0.0', 'Dockerfile');
+ */
 function buildImage(imageName, dockerfile) {
   console.log(`building ${imageName} ... (can be slow first time)`);
 

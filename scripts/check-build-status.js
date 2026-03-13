@@ -1,4 +1,10 @@
 /**
+ * @file check-build-status.js
+ * @description 构建状态检查脚本
+ * 检查源代码是否在最后一次构建后被修改
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -20,6 +26,13 @@ const buildDir = path.join(cliPackageDir, 'dist'); // Build output directory wit
 const warningsFilePath = path.join(os.tmpdir(), 'qwen-code-warnings.txt'); // Temp file for warnings
 // ---------------------
 
+/**
+ * 获取文件的修改时间
+ * @param {string} filePath - 文件路径
+ * @returns {number|null} 文件的修改时间戳（毫秒），如果文件不存在则返回 null
+ * @example
+ * const mtime = getMtime('./package.json');
+ */
 function getMtime(filePath) {
   try {
     return fs.statSync(filePath).mtimeMs; // Use mtimeMs for higher precision
@@ -32,6 +45,15 @@ function getMtime(filePath) {
   }
 }
 
+/**
+ * 递归查找目录中的所有源文件
+ * 排除 node_modules 和构建目录
+ * @param {string} dir - 要搜索的目录路径
+ * @param {string[]} [allFiles=[]] - 累积的文件列表
+ * @returns {string[]} 源文件路径数组
+ * @example
+ * const files = findSourceFiles('./src');
+ */
 function findSourceFiles(dir, allFiles = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {

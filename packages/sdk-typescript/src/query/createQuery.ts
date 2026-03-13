@@ -1,5 +1,5 @@
 /**
- * Factory function for creating Query instances.
+ * 创建Query实例的工厂函数
  */
 
 import type { SDKUserMessage } from '../types/protocol.js';
@@ -17,20 +17,26 @@ export type { QueryOptions };
 
 const logger = SdkLogger.createLogger('createQuery');
 
+/**
+ * 创建查询会话
+ *
+ * @param params - 查询参数
+ * @returns Query实例
+ */
 export function query({
   prompt,
   options = {},
 }: {
   /**
-   * The prompt to send to the Qwen Code CLI process.
-   * - `string` for single-turn query,
-   * - `AsyncIterable<SDKUserMessage>` for multi-turn query.
+   * 发送到Qwen Code CLI进程的提示词
+   * - 字符串类型用于单轮查询
+   * - AsyncIterable<SDKUserMessage>用于多轮查询
    *
-   * The transport will remain open until the prompt is done.
+   * 传输层将保持打开状态直到查询完成
    */
   prompt: string | AsyncIterable<SDKUserMessage>;
   /**
-   * Configuration options for the query.
+   * 查询配置选项
    */
   options?: QueryOptions;
 }): Query {
@@ -112,6 +118,12 @@ export function query({
   return queryInstance;
 }
 
+/**
+ * 验证查询选项
+ * @param options - 查询选项
+ * @returns SpawnInfo对象
+ * @throws 如果选项无效则抛出错误
+ */
 function validateOptions(options: QueryOptions): SpawnInfo | undefined {
   const validationResult = QueryOptionsSchema.safeParse(options);
   if (!validationResult.success) {

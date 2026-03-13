@@ -5,7 +5,7 @@
  */
 
 /**
- * CLI path resolution and subprocess spawning utilities
+ * CLI路径解析和子进程生成工具模块
  */
 
 import * as fs from 'node:fs';
@@ -15,21 +15,21 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 /**
- * Executable types supported by the SDK
+ * SDK支持的可执行文件类型
  */
 export type ExecutableType = 'node' | 'bun' | 'tsx' | 'native';
 
 /**
- * Spawn information for CLI process
+ * CLI进程生成信息
  */
 export type SpawnInfo = {
-  /** Command to execute (e.g., 'node', 'bun', 'tsx', or native binary path) */
+  /** 要执行的命令（如'node'、'bun'、'tsx'或原生二进制路径） */
   command: string;
-  /** Arguments to pass to command */
+  /** 传递给命令的参数 */
   args: string[];
-  /** Type of executable detected */
+  /** 检测到的可执行文件类型 */
   type: ExecutableType;
-  /** Original input that was resolved */
+  /** 解析所使用的原始输入 */
   originalInput: string;
 };
 

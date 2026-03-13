@@ -6,4 +6,8 @@
 
 import { spawn } from 'node:child_process';
 
+/**
+ * 子进程 spawn 函数的包装器
+ * 用于启动子进程执行命令
+ */
 export const spawnWrapper = spawn;

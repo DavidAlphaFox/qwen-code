@@ -7,87 +7,87 @@ import com.alibaba.qwen.code.cli.protocol.data.PermissionMode;
 import com.alibaba.qwen.code.cli.utils.Timeout;
 
 /**
- * Configuration options for the transport layer.
+ * 传输层配置选项类
  *
  * @author skyfire
  * @version $Id: 0.0.1
  */
 public class TransportOptions implements Cloneable {
     /**
-     * Path to the Qwen executable.
+     * Qwen可执行文件路径
      */
     private String pathToQwenExecutable;
     /**
-     * Current working directory for the CLI process.
+     * CLI进程的当前工作目录
      */
     private String cwd;
     /**
-     * Model to use for the session.
+     * 会话使用的模型
      */
     private String model;
     /**
-     * Permission mode for the session.
+     * 会话的权限模式
      */
     private PermissionMode permissionMode;
     /**
-     * Environment variables to pass to the CLI process.
+     * 传递给CLI进程的环境变量
      */
     private Map<String, String> env;
     /**
-     * Maximum number of turns in a session.
+     * 会话的最大轮次数
      */
     private Integer maxSessionTurns;
     /**
-     * List of core tools to enable.
+     * 启用的核心工具列表
      */
     private List<String> coreTools;
     /**
-     * List of tools to exclude.
+     * 排除的工具列表
      */
     private List<String> excludeTools;
     /**
-     * List of tools that are allowed.
+     * 允许使用的工具列表
      */
     private List<String> allowedTools;
     /**
-     * Authentication type to use.
+     * 使用的认证类型
      */
     private String authType;
     /**
-     * Whether to include partial messages in responses.
+     * 是否在响应中包含部分消息
      */
     private Boolean includePartialMessages;
     /**
-     * Timeout for individual turns.
+     * 单轮的超时时间
      */
     private Timeout turnTimeout;
     /**
-     * Timeout for messages.
+     * 消息的超时时间
      */
     private Timeout messageTimeout;
     /**
-     * Session ID to resume.
+     * 要恢复的会话ID
      */
     private String resumeSessionId;
     /**
-     * Additional options to pass to the CLI.
+     * 传递给CLI的其他选项
      */
     private List<String> otherOptions;
 
     /**
-     * Gets the path to the Qwen executable.
+     * 获取Qwen可执行文件路径
      *
-     * @return The path to the Qwen executable
+     * @return Qwen可执行文件路径
      */
     public String getPathToQwenExecutable() {
         return pathToQwenExecutable;
     }
 
     /**
-     * Sets the path to the Qwen executable.
+     * 设置Qwen可执行文件路径
      *
-     * @param pathToQwenExecutable The path to the Qwen executable
-     * @return This instance for method chaining
+     * @param pathToQwenExecutable Qwen可执行文件路径
+     * @return 当前实例，用于方法链
      */
     public TransportOptions setPathToQwenExecutable(String pathToQwenExecutable) {
         this.pathToQwenExecutable = pathToQwenExecutable;
@@ -95,9 +95,9 @@ public class TransportOptions implements Cloneable {
     }
 
     /**
-     * Gets the current working directory.
+     * 获取当前工作目录
      *
-     * @return The current working directory
+     * @return 当前工作目录
      */
     public String getCwd() {
         return cwd;

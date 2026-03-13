@@ -18,7 +18,12 @@ import type { InsightData } from './types';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React from 'react';
 
-// Main App Component
+/**
+ * 洞察应用主组件
+ * 渲染完整的 Qwen Code 洞察页面
+ * @param props - 组件属性
+ * @param props.data - 洞察数据
+ */
 function InsightApp({ data }: { data: InsightData }) {
   const [cardTheme, setCardTheme] = useState<Theme>('dark');
   const pendingExport = useRef(false);
@@ -67,6 +72,10 @@ function InsightApp({ data }: { data: InsightData }) {
     }
   }, [cardTheme]);
 
+  /**
+   * 使用指定主题导出卡片
+   * @param theme - 要使用的主题
+   */
   const handleExportWithTheme = (theme: Theme) => {
     if (theme === cardTheme) {
       performExport();
@@ -164,6 +173,12 @@ function InsightApp({ data }: { data: InsightData }) {
 }
 
 // Export Card Button with theme dropdown
+/**
+ * 导出卡片按钮组件
+ * 提供主题选择下拉菜单
+ * @param props - 组件属性
+ * @param props.onExport - 导出回调函数
+ */
 function ExportCardButton({ onExport }: { onExport: (theme: Theme) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);

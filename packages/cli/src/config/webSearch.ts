@@ -9,7 +9,7 @@ import type { WebSearchProviderConfig } from '@qwen-code/qwen-code-core';
 import type { Settings } from './settings.js';
 
 /**
- * CLI arguments related to web search configuration
+ * 与网络搜索配置相关的 CLI 参数
  */
 export interface WebSearchCliArgs {
   tavilyApiKey?: string;
@@ -19,7 +19,7 @@ export interface WebSearchCliArgs {
 }
 
 /**
- * Web search configuration structure
+ * 网络搜索配置结构
  */
 export interface WebSearchConfig {
   provider: WebSearchProviderConfig[];
@@ -27,15 +27,14 @@ export interface WebSearchConfig {
 }
 
 /**
- * Build webSearch configuration from multiple sources with priority:
- * 1. settings.json (new format) - highest priority
- * 2. Command line args + environment variables
- * 3. Legacy tavilyApiKey (backward compatibility)
- *
- * @param argv - Command line arguments
- * @param settings - User settings from settings.json
- * @param authType - Authentication type (e.g., 'qwen-oauth')
- * @returns WebSearch configuration or undefined if no providers available
+ * 从多个来源构建网络搜索配置，优先级如下：
+ * 1. settings.json（新格式）- 最高优先级
+ * 2. 命令行参数 + 环境变量
+ * 3. 传统的 tavilyApiKey（向后兼容）
+ * @param argv - 命令行参数
+ * @param settings - 来自 settings.json 的用户设置
+ * @param authType - 认证类型（例如 'qwen-oauth'）
+ * @returns 网络搜索配置，如果没有可用提供商则返回 undefined
  */
 export function buildWebSearchConfig(
   argv: WebSearchCliArgs,

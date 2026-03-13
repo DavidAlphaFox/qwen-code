@@ -8,14 +8,23 @@ import { useStdin, useStdout } from 'ink';
 import { useEffect, useState } from 'react';
 import { useKeypress } from './useKeypress.js';
 
-// ANSI escape codes to enable/disable terminal focus reporting
+// 用于启用/禁用终端焦点报告的 ANSI 转义码
+/** 启用焦点报告的 ANSI 转义码 */
 export const ENABLE_FOCUS_REPORTING = '\x1b[?1004h';
+/** 禁用焦点报告的 ANSI 转义码 */
 export const DISABLE_FOCUS_REPORTING = '\x1b[?1004l';
 
-// ANSI escape codes for focus events
+// 焦点事件的 ANSI 转义码
+/** 焦点进入的 ANSI 转义码 */
 export const FOCUS_IN = '\x1b[I';
+/** 焦点离开的 ANSI 转义码 */
 export const FOCUS_OUT = '\x1b[O';
 
+/**
+ * 管理终端焦点状态的 Hook
+ * 监听终端焦点事件并更新焦点状态
+ * @returns 包含 isFocused 状态的对象
+ */
 export const useFocus = () => {
   const { stdin } = useStdin();
   const { stdout } = useStdout();

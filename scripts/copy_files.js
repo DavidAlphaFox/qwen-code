@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 /**
+ * @file copy_files.js
+ * @description 文件复制脚本
+ * 将源目录中的特定类型文件（.md、.json、.sb）复制到目标目录
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -28,6 +34,13 @@ const targetDir = path.join('dist', 'src');
 
 const extensionsToCopy = ['.md', '.json', '.sb'];
 
+/**
+ * 递归复制文件
+ * 根据文件扩展名或路径规则选择性复制文件
+ * @param {string} source - 源目录路径
+ * @param {string} target - 目标目录路径
+ * @param {string} rootSourceDir - 根源目录路径（用于计算相对路径）
+ */
 function copyFilesRecursive(source, target, rootSourceDir) {
   if (!fs.existsSync(target)) {
     fs.mkdirSync(target, { recursive: true });

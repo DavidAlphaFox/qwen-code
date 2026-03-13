@@ -7,9 +7,15 @@ import { CopyButton, MarkdownText } from './Components';
 import React from 'react';
 
 // -----------------------------------------------------------------------------
-// Qualitative Insight Components
+// 定性洞察组件
 // -----------------------------------------------------------------------------
 
+/**
+ * 一览组件
+ * 显示定性数据的关键要点概览
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ */
 export function AtAGlance({ qualitative }: { qualitative: QualitativeData }) {
   const { atAGlance } = qualitative;
   if (!atAGlance) return null;
@@ -51,6 +57,10 @@ export function AtAGlance({ qualitative }: { qualitative: QualitativeData }) {
   );
 }
 
+/**
+ * 导航目录组件
+ * 显示页面各章节的快速导航链接
+ */
 export function NavToc() {
   return (
     <nav className="nav-toc">
@@ -65,6 +75,14 @@ export function NavToc() {
   );
 }
 
+/**
+ * 项目领域组件
+ * 显示用户工作的项目类型和目标
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ * @param props.topGoals - 热门目标数据
+ * @param props.topTools - 热门工具数据
+ */
 export function ProjectAreas({
   qualitative,
   topGoals,
@@ -135,6 +153,13 @@ export function ProjectAreas({
   );
 }
 
+/**
+ * 交互方式组件
+ * 展示用户与 Qwen Code 的交互方式和使用模式
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ * @param props.insights - 洞察数据
+ */
 export function InteractionStyle({
   qualitative,
   insights,
@@ -171,6 +196,14 @@ export function InteractionStyle({
   );
 }
 
+/**
+ * 令人印象深刻的工作流组件
+ * 展示用户使用 Qwen Code 完成的有价值的工作
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ * @param props.primarySuccess - 主要成功因素数据
+ * @param props.outcomes - 结果数据
+ */
 export function ImpressiveWorkflows({
   qualitative,
   primarySuccess,
@@ -251,7 +284,13 @@ export function ImpressiveWorkflows({
   );
 }
 
-// Format label for display (capitalize and replace underscores with spaces)
+// 格式化标签以便显示（首字母大写并用空格替换下划线）
+/**
+ * 格式化标签
+ * 将标签转换为可读的显示格式
+ * @param label - 原始标签
+ * @returns 格式化后的标签
+ */
 function formatLabel(label: string) {
   if (label === 'unclear_from_transcript') {
     return 'Unclear';
@@ -262,7 +301,16 @@ function formatLabel(label: string) {
     .join(' ');
 }
 
-// Horizontal Bar Chart Component
+// 水平条形图组件
+/**
+ * 水平条形图组件
+ * 用于展示分类数据的条形图
+ * @param props - 组件属性
+ * @param props.data - 数据对象
+ * @param props.title - 图表标题
+ * @param props.color - 图表颜色
+ * @param props.allowedKeys - 允许显示的键（可选）
+ */
 function HorizontalBarChart({
   data,
   title,
@@ -395,6 +443,14 @@ function HorizontalBarChart({
   );
 }
 
+/**
+ * 摩擦点组件
+ * 展示用户使用中遇到的困难和挫折
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ * @param props.satisfaction - 满意度数据
+ * @param props.friction - 摩擦数据
+ */
 export function FrictionPoints({
   qualitative,
   satisfaction,
@@ -484,7 +540,13 @@ export function FrictionPoints({
   );
 }
 
-// Qwen.md Additions Section Component
+// Qwen.md 添加部分组件
+/**
+ * QWEN.md 建议添加组件
+ * 展示用户可以添加到 QWEN.md 文件的建议
+ * @param props - 组件属性
+ * @param props.additions - 添加建议列表
+ */
 function QwenMdAdditionsSection({
   additions,
 }: {
@@ -558,6 +620,12 @@ function QwenMdAdditionsSection({
   );
 }
 
+/**
+ * 改进建议组件
+ * 展示可以尝试的功能和使用模式
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ */
 export function Improvements({
   qualitative,
 }: {
@@ -645,6 +713,12 @@ export function Improvements({
   );
 }
 
+/**
+ * 未来机会组件
+ * 展示即将推出的新功能和使用方式
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ */
 export function FutureOpportunities({
   qualitative,
 }: {
@@ -699,6 +773,12 @@ export function FutureOpportunities({
   );
 }
 
+/**
+ * 难忘时刻组件
+ * 展示用户最难忘的经历
+ * @param props - 组件属性
+ * @param props.qualitative - 定性数据
+ */
 export function MemorableMoment({
   qualitative,
 }: {

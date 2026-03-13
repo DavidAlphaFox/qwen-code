@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * ACP 连接处理模块
+ * @module
+ */
+
 import {
   ClientSideConnection,
   ndJsonStream,
@@ -41,10 +46,10 @@ import { AcpFileHandler } from './acpFileHandler.js';
 import { ACP_ERROR_CODES } from '../constants/acpSchema.js';
 
 /**
- * ACP Connection Handler for VSCode Extension
- *
- * External API preserved for backward compatibility.
- * Internally uses SDK ClientSideConnection + ndJsonStream for protocol handling.
+ * ACP 连接处理类
+ * VSCode 扩展的 ACP 连接处理器
+ * 保留外部 API 以保持向后兼容性
+ * 内部使用 SDK ClientSideConnection + ndJsonStream 处理协议
  */
 export class AcpConnection {
   private child: ChildProcess | null = null;

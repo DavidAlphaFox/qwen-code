@@ -3,6 +3,12 @@
  * Copyright 2025 Qwen Team
  * SPDX-License-Identifier: Apache-2.0
  */
+
+/**
+ * Qwen Agent 管理器服务模块
+ * @module
+ */
+
 import { AcpConnection } from './acpConnection.js';
 import type {
   ModelInfo,
@@ -42,10 +48,10 @@ import { handleAuthenticateUpdate } from '../utils/authNotificationHandler.js';
 export type { ChatMessage, PlanEntry, ToolCallUpdateData };
 
 /**
- * Extract session list items from ACP response.
- * Handles both 'sessions' (new) and 'items' (legacy) response shapes.
- * @param response - The ACP session/list response
- * @returns Array of session items, or empty array if invalid
+ * 从 ACP 响应中提取会话列表项
+ * 处理两种响应格式：'sessions'（新格式）和 'items'（旧格式）
+ * @param response - ACP 会话/列表响应
+ * @returns 会话项数组，如果无效则返回空数组
  */
 export function extractSessionListItems(
   response: unknown,
@@ -72,9 +78,8 @@ export function extractSessionListItems(
 }
 
 /**
- * Qwen Agent Manager
- *
- * Coordinates various modules and provides unified interface
+ * Qwen Agent 管理器
+ * 协调各个模块并提供统一的接口
  */
 interface AgentConnectOptions {
   autoAuthenticate?: boolean;

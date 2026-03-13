@@ -18,12 +18,18 @@ import { writeStderrLine } from './stdioHelpers.js';
 
 const debugLogger = createDebugLogger('CLI_ERRORS');
 
+/**
+ * 从任意类型的错误中提取错误消息字符串
+ * 支持 Error 对象、具有 message 属性的对象以及基本类型
+ * @param error - 任意类型的错误对象
+ * @returns string 错误消息字符串
+ */
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
 
-  // Handle objects with message property (error-like objects)
+  // 处理具有 message 属性的类错误对象
   if (
     error !== null &&
     typeof error === 'object' &&
@@ -33,14 +39,14 @@ export function getErrorMessage(error: unknown): string {
     return (error as { message: string }).message;
   }
 
-  // Handle plain objects by stringifying them
+  // 通过字符串化处理普通对象
   if (error !== null && typeof error === 'object') {
     try {
       const stringified = JSON.stringify(error);
-      // JSON.stringify can return undefined for objects with toJSON() returning undefined
+      // JSON.stringify 可以为 toJSON() 返回 undefined 的对象返回 undefined
       return stringified ?? String(error);
     } catch {
-      // If JSON.stringify fails (circular reference, etc.), fall back to String
+      // 如果 JSON.stringify 失败（如循环引用等），回退到 String
       return String(error);
     }
   }
@@ -48,19 +54,25 @@ export function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
+/** 扩展的 Error 接口，包含退出码和状态信息 */
 interface ErrorWithCode extends Error {
+  /** 退出码 */
   exitCode?: number;
+  /** 错误代码 */
   code?: string | number;
+  /** HTTP 状态码 */
   status?: string | number;
 }
 
 /**
- * Extracts the appropriate error code from an error object.
+ * 从错误对象中提取适当的错误代码
+ * @param error - 错误对象
+ * @returns string | number 错误代码
  */
 function extractErrorCode(error: unknown): string | number {
   const errorWithCode = error as ErrorWithCode;
 
-  // Prioritize exitCode for FatalError types, fall back to other codes
+  // 优先使用 FatalError 类型的 exitCode，其次回退到其他代码
   if (typeof errorWithCode.exitCode === 'number') {
     return errorWithCode.exitCode;
   }
@@ -71,20 +83,26 @@ function extractErrorCode(error: unknown): string | number {
     return errorWithCode.status;
   }
 
-  return 1; // Default exit code
+  return 1; // 默认退出码
 }
 
 /**
- * Converts an error code to a numeric exit code.
+ * 将错误代码转换为数字退出码
+ * @param errorCode - 错误代码（字符串或数字）
+ * @returns number 数字退出码
  */
 function getNumericExitCode(errorCode: string | number): number {
   return typeof errorCode === 'number' ? errorCode : 1;
 }
 
 /**
- * Handles errors consistently for both JSON and text output formats.
- * In JSON mode, outputs formatted JSON error and exits.
- * In text mode, outputs error message and re-throws.
+ * 统一处理 JSON 和文本输出格式的错误
+ * 在 JSON 模式下，输出格式化的 JSON 错误并退出
+ * 在文本模式下，输出错误消息并重新抛出
+ * @param error - 错误对象
+ * @param config - 应用程序配置
+ * @param customErrorCode - 可选的自定义错误代码
+ * @returns never 此函数不会返回，总是终止进程
  */
 export function handleError(
   error: unknown,
@@ -114,17 +132,15 @@ export function handleError(
 }
 
 /**
- * Handles tool execution errors specifically.
- * In JSON/STREAM_JSON mode, outputs error message to stderr only and does not exit.
- * The error will be properly formatted in the tool_result block by the adapter,
- * allowing the session to continue so the LLM can decide what to do next.
- * In text mode, outputs error message to stderr only.
- *
- * @param toolName - Name of the tool that failed
- * @param toolError - The error that occurred during tool execution
- * @param config - Configuration object
- * @param errorCode - Optional error code
- * @param resultDisplay - Optional display message for the error
+ * 专门处理工具执行错误
+ * 在 JSON/STREAM_JSON 模式下，仅将错误消息输出到 stderr 不退出
+ * 错误将由适配器在 tool_result 块中正确格式化，允许会话继续以便 LLM 决定下一步操作
+ * 在文本模式下，仅将错误消息输出到 stderr
+ * @param toolName - 失败的工具名称
+ * @param toolError - 工具执行期间发生的错误
+ * @param config - 应用程序配置对象
+ * @param errorCode - 可选的错误代码
+ * @param resultDisplay - 可选的错误显示消息
  */
 export function handleToolError(
   toolName: string,
@@ -133,12 +149,12 @@ export function handleToolError(
   errorCode?: string | number,
   resultDisplay?: string,
 ): void {
-  // Check if this is a permission denied error in non-interactive mode
+  // 检查是否是非交互模式下的权限拒绝错误
   const isExecutionDenied = errorCode === ToolErrorType.EXECUTION_DENIED;
   const isNonInteractive = !config.isInteractive();
   const isTextMode = config.getOutputFormat() === OutputFormat.TEXT;
 
-  // Show warning for permission denied errors in non-interactive text mode
+  // 在非交互式文本模式下显示权限拒绝警告
   if (isExecutionDenied && isNonInteractive && isTextMode) {
     const warningMessage =
       `Warning: Tool "${toolName}" requires user approval but cannot execute in non-interactive mode.\n` +
@@ -153,7 +169,9 @@ export function handleToolError(
 }
 
 /**
- * Handles cancellation/abort signals consistently.
+ * 统一处理取消/中止信号
+ * @param config - 应用程序配置
+ * @returns never 此函数不会返回，总是终止进程
  */
 export function handleCancellationError(config: Config): never {
   const cancellationError = new FatalCancellationError('Operation cancelled.');
@@ -174,7 +192,9 @@ export function handleCancellationError(config: Config): never {
 }
 
 /**
- * Handles max session turns exceeded consistently.
+ * 统一处理最大会话轮次超出错误
+ * @param config - 应用程序配置
+ * @returns never 此函数不会返回，总是终止进程
  */
 export function handleMaxTurnsExceededError(config: Config): never {
   const maxTurnsError = new FatalTurnLimitedError(

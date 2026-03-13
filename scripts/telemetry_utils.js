@@ -1,3 +1,9 @@
+/**
+ * @file telemetry_utils.js
+ * @description 遥测工具模块 - 提供遥测数据收集所需的工具函数
+ * 包括二进制文件下载、文件操作、进程管理等功能
+ */
+
 #!/usr/bin/env node
 
 /**
@@ -20,10 +26,15 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
 /**
- * Generates a unique hash for a project based on its root path.
- * On Windows, paths are case-insensitive, so we normalize to lowercase
- * to ensure the same physical path always produces the same hash.
- * This logic must match getProjectHash() in packages/core/src/utils/paths.ts
+ * 根据项目根路径生成唯一的哈希值
+ * 在 Windows 上，路径不区分大小写，因此我们将其规范化为小写
+ * 以确保相同的物理路径始终产生相同的哈希值
+ * 此逻辑必须与 packages/core/src/utils/paths.ts 中的 getProjectHash() 保持一致
+ * @param {string} projectRoot - 项目根目录的绝对路径
+ * @returns {string} SHA256 哈希值的十六进制表示
+ * @example
+ * const hash = getProjectHash('/Users/username/project');
+ * // 返回类似 'a1b2c3d4e5f6...'
  */
 function getProjectHash(projectRoot) {
   // On Windows, normalize path to lowercase for case-insensitive matching
@@ -40,15 +51,36 @@ const USER_GEMINI_DIR = path.join(os.homedir(), '.qwen');
 const WORKSPACE_QWEN_DIR = path.join(projectRoot, '.qwen');
 
 // Telemetry artifacts are stored in a hashed directory under the user's ~/.qwen/tmp
+/**
+ * 遥测数据目录 - 存储在用户主目录下的 .qwen/tmp 中
+ * @type {string}
+ */
 export const OTEL_DIR = path.join(USER_GEMINI_DIR, 'tmp', projectHash, 'otel');
+/**
+ * 二进制文件目录 - 存储下载的 otelcol、jaeger 等二进制文件
+ * @type {string}
+ */
 export const BIN_DIR = path.join(OTEL_DIR, 'bin');
 
 // Workspace settings remain in the project's .gemini directory
+/**
+ * 工作区设置文件路径 - 存储在工作区的 .qwen 目录下
+ * @type {string}
+ */
 export const WORKSPACE_SETTINGS_FILE = path.join(
   WORKSPACE_QWEN_DIR,
   'settings.json',
 );
 
+/**
+ * 从指定 URL 获取 JSON 数据
+ * 使用 curl 下载并解析 JSON 响应
+ * @param {string} url - 要请求的 URL 地址
+ * @returns {Promise<object>} 解析后的 JSON 对象
+ * @throws {Error} 如果请求失败或 JSON 解析失败
+ * @example
+ * const data = await getJson('https://api.github.com/repos/owner/repo/releases');
+ */
 export function getJson(url) {
   const tmpFile = path.join(
     os.tmpdir(),
@@ -71,330 +103,16 @@ export function getJson(url) {
   } finally {
     if (fs.existsSync(tmpFile)) {
       fs.unlinkSync(tmpFile);
-    }
   }
 }
 
-export function downloadFile(url, dest) {
-  try {
-    const result = spawnSync('curl', ['-fL', '-sS', '-o', dest, url], {
-      stdio: 'pipe',
-      encoding: 'utf-8',
-    });
-    if (result.status !== 0) {
-      throw new Error(result.stderr);
-    }
-    return dest;
-  } catch (e) {
-    console.error(`Failed to download file from ${url}`);
-    throw e;
-  }
-}
-
-export function findFile(startPath, filter) {
-  if (!fs.existsSync(startPath)) {
-    return null;
-  }
-  const files = fs.readdirSync(startPath);
-  for (const file of files) {
-    const filename = path.join(startPath, file);
-    const stat = fs.lstatSync(filename);
-    if (stat.isDirectory()) {
-      const result = findFile(filename, filter);
-      if (result) return result;
-    } else if (filter(file)) {
-      return filename;
-    }
-  }
-  return null;
-}
-
-export function fileExists(filePath) {
-  return fs.existsSync(filePath);
-}
-
-export function readJsonFile(filePath) {
-  if (!fileExists(filePath)) {
-    return {};
-  }
-  const content = fs.readFileSync(filePath, 'utf-8');
-  try {
-    return JSON.parse(content);
-  } catch (e) {
-    console.error(`Error parsing JSON from ${filePath}: ${e.message}`);
-    return {};
-  }
-}
-
-export function writeJsonFile(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-export function moveBinary(source, destination) {
-  try {
-    fs.renameSync(source, destination);
-  } catch (error) {
-    if (error.code !== 'EXDEV') {
-      throw error;
-    }
-    // Handle a cross-device error: copy-to-temp-then-rename.
-    const destDir = path.dirname(destination);
-    const destFile = path.basename(destination);
-    const tempDest = path.join(destDir, `${destFile}.tmp`);
-
-    try {
-      fs.copyFileSync(source, tempDest);
-      fs.renameSync(tempDest, destination);
-    } catch (moveError) {
-      // If copy or rename fails, clean up the intermediate temp file.
-      if (fs.existsSync(tempDest)) {
-        fs.unlinkSync(tempDest);
-      }
-      throw moveError;
-    }
-    fs.unlinkSync(source);
-  }
-}
-
-export function waitForPort(port, timeout = 10000) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
-    const tryConnect = () => {
-      const socket = new net.Socket();
-      socket.once('connect', () => {
-        socket.end();
-        resolve();
-      });
-      socket.once('error', (_) => {
-        if (Date.now() - startTime > timeout) {
-          reject(new Error(`Timeout waiting for port ${port} to open.`));
-        } else {
-          setTimeout(tryConnect, 500);
-        }
-      });
-      socket.connect(port, 'localhost');
-    };
-    tryConnect();
-  });
-}
-
-export async function ensureBinary(
-  executableName,
-  repo,
-  assetNameCallback,
-  binaryNameInArchive,
-  isJaeger = false,
-) {
-  const executablePath = path.join(BIN_DIR, executableName);
-  if (fileExists(executablePath)) {
-    console.log(`✅ ${executableName} already exists at ${executablePath}`);
-    return executablePath;
-  }
-
-  console.log(`🔍 ${executableName} not found. Downloading from ${repo}...`);
-
-  const platform = process.platform === 'win32' ? 'windows' : process.platform;
-  const arch = process.arch === 'x64' ? 'amd64' : process.arch;
-  const ext = platform === 'windows' ? 'zip' : 'tar.gz';
-
-  if (isJaeger && platform === 'windows' && arch === 'arm64') {
-    console.warn(
-      `⚠️ Jaeger does not have a release for Windows on ARM64. Skipping.`,
-    );
-    return null;
-  }
-
-  let release;
-  let asset;
-
-  if (isJaeger) {
-    console.log(`🔍 Finding latest Jaeger v2+ asset...`);
-    const releases = getJson(`https://api.github.com/repos/${repo}/releases`);
-    const sortedReleases = releases
-      .filter((r) => !r.prerelease && r.tag_name.startsWith('v'))
-      .sort((a, b) => {
-        const aVersion = a.tag_name.substring(1).split('.').map(Number);
-        const bVersion = b.tag_name.substring(1).split('.').map(Number);
-        for (let i = 0; i < Math.max(aVersion.length, bVersion.length); i++) {
-          if ((aVersion[i] || 0) > (bVersion[i] || 0)) return -1;
-          if ((aVersion[i] || 0) < (bVersion[i] || 0)) return 1;
-        }
-        return 0;
-      });
-
-    for (const r of sortedReleases) {
-      const expectedSuffix =
-        platform === 'windows'
-          ? `-${platform}-${arch}.zip`
-          : `-${platform}-${arch}.tar.gz`;
-      const foundAsset = r.assets.find(
-        (a) =>
-          a.name.startsWith('jaeger-2.') && a.name.endsWith(expectedSuffix),
-      );
-
-      if (foundAsset) {
-        release = r;
-        asset = foundAsset;
-        console.log(
-          `⬇️  Found ${asset.name} in release ${r.tag_name}, downloading...`,
-        );
-        break;
-      }
-    }
-    if (!asset) {
-      throw new Error(
-        `Could not find a suitable Jaeger v2 asset for platform ${platform}/${arch}.`,
-      );
-    }
-  } else {
-    release = getJson(`https://api.github.com/repos/${repo}/releases/latest`);
-    const version = release.tag_name.startsWith('v')
-      ? release.tag_name.substring(1)
-      : release.tag_name;
-    const assetName = assetNameCallback(version, platform, arch, ext);
-    asset = release.assets.find((a) => a.name === assetName);
-    if (!asset) {
-      throw new Error(
-        `Could not find a suitable asset for ${repo} (version ${version}) on platform ${platform}/${arch}. Searched for: ${assetName}`,
-      );
-    }
-  }
-
-  const downloadUrl = asset.browser_download_url;
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'qwen-code-telemetry-'));
-  const archivePath = path.join(tmpDir, asset.name);
-
-  try {
-    console.log(`⬇️  Downloading ${asset.name}...`);
-    downloadFile(downloadUrl, archivePath);
-    console.log(`📦 Extracting ${asset.name}...`);
-
-    const actualExt = asset.name.endsWith('.zip') ? 'zip' : 'tar.gz';
-
-    let result;
-    if (actualExt === 'zip') {
-      result = spawnSync('unzip', ['-o', archivePath, '-d', tmpDir], {
-        stdio: 'pipe',
-        encoding: 'utf-8',
-      });
-    } else {
-      result = spawnSync('tar', ['-xzf', archivePath, '-C', tmpDir], {
-        stdio: 'pipe',
-        encoding: 'utf-8',
-      });
-    }
-    if (result.status !== 0) {
-      throw new Error(result.stderr);
-    }
-
-    const nameToFind = binaryNameInArchive || executableName;
-    const foundBinaryPath = findFile(tmpDir, (file) => {
-      if (platform === 'windows') {
-        return file === `${nameToFind}.exe`;
-      }
-      return file === nameToFind;
-    });
-
-    if (!foundBinaryPath) {
-      throw new Error(
-        `Could not find binary "${nameToFind}" in extracted archive at ${tmpDir}. Contents: ${fs.readdirSync(tmpDir).join(', ')}`,
-      );
-    }
-
-    moveBinary(foundBinaryPath, executablePath);
-
-    if (platform !== 'windows') {
-      fs.chmodSync(executablePath, '755');
-    }
-
-    console.log(`✅ ${executableName} installed at ${executablePath}`);
-    return executablePath;
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    if (fs.existsSync(archivePath)) {
-      fs.unlinkSync(archivePath);
-    }
-  }
-}
-
-export function manageTelemetrySettings(
-  enable,
-  oTelEndpoint = 'http://localhost:4317',
-  target = 'local',
-  originalSandboxSettingToRestore,
-) {
-  const workspaceSettings = readJsonFile(WORKSPACE_SETTINGS_FILE);
-  const currentSandboxSetting = workspaceSettings.sandbox;
-  let settingsModified = false;
-
-  if (typeof workspaceSettings.telemetry !== 'object') {
-    workspaceSettings.telemetry = {};
-  }
-
-  if (enable) {
-    if (workspaceSettings.telemetry.enabled !== true) {
-      workspaceSettings.telemetry.enabled = true;
-      settingsModified = true;
-      console.log('⚙️  Enabled telemetry in workspace settings.');
-    }
-    if (workspaceSettings.sandbox !== false) {
-      workspaceSettings.sandbox = false;
-      settingsModified = true;
-      console.log('✅ Disabled sandbox mode for telemetry.');
-    }
-    if (workspaceSettings.telemetry.otlpEndpoint !== oTelEndpoint) {
-      workspaceSettings.telemetry.otlpEndpoint = oTelEndpoint;
-      settingsModified = true;
-      console.log(`🔧 Set telemetry OTLP endpoint to ${oTelEndpoint}.`);
-    }
-    if (workspaceSettings.telemetry.target !== target) {
-      workspaceSettings.telemetry.target = target;
-      settingsModified = true;
-      console.log(`🎯 Set telemetry target to ${target}.`);
-    }
-  } else {
-    if (workspaceSettings.telemetry.enabled === true) {
-      delete workspaceSettings.telemetry.enabled;
-      settingsModified = true;
-      console.log('⚙️  Disabled telemetry in workspace settings.');
-    }
-    if (workspaceSettings.telemetry.otlpEndpoint) {
-      delete workspaceSettings.telemetry.otlpEndpoint;
-      settingsModified = true;
-      console.log('🔧 Cleared telemetry OTLP endpoint.');
-    }
-    if (workspaceSettings.telemetry.target) {
-      delete workspaceSettings.telemetry.target;
-      settingsModified = true;
-      console.log('🎯 Cleared telemetry target.');
-    }
-    if (Object.keys(workspaceSettings.telemetry).length === 0) {
-      delete workspaceSettings.telemetry;
-    }
-
-    if (
-      originalSandboxSettingToRestore !== undefined &&
-      workspaceSettings.sandbox !== originalSandboxSettingToRestore
-    ) {
-      workspaceSettings.sandbox = originalSandboxSettingToRestore;
-      settingsModified = true;
-      console.log('✅ Restored original sandbox setting.');
-    }
-  }
-
-  if (settingsModified) {
-    writeJsonFile(WORKSPACE_SETTINGS_FILE, workspaceSettings);
-    console.log('✅ Workspace settings updated.');
-  } else {
-    console.log(
-      enable
-        ? '✅ Workspace settings are already configured for telemetry.'
-        : '✅ Workspace settings already reflect telemetry disabled.',
-    );
-  }
-  return currentSandboxSetting;
-}
-
+/**
+ * 注册清理函数
+ * 在进程退出时自动清理遥测相关的进程和文件描述符
+ * @param {function} getProcesses - 获取要终止的进程列表的函数
+ * @param {function} getLogFileDescriptors - 获取要关闭的文件描述符列表的函数
+ * @param {string} originalSandboxSetting - 原始沙箱设置值，用于恢复
+ */
 export function registerCleanup(
   getProcesses,
   getLogFileDescriptors,

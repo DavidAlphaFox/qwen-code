@@ -17,29 +17,41 @@ import { type ReactNode } from 'react';
 
 export type { ThoughtSummary };
 
+/**
+ * 认证状态枚举
+ */
 export enum AuthState {
-  // Attemtping to authenticate or re-authenticate
+  // 尝试认证或重新认证
   Unauthenticated = 'unauthenticated',
-  // Auth dialog is open for user to select auth method
+  // 认证对话框已打开，用户可以选择认证方式
   Updating = 'updating',
-  // Successfully authenticated
+  // 认证成功
   Authenticated = 'authenticated',
 }
 
-// Only defining the state enum needed by the UI
+// 仅定义 UI 所需的状态枚举
+/**
+ * 流式传输状态枚举
+ */
 export enum StreamingState {
   Idle = 'idle',
   Responding = 'responding',
   WaitingForConfirmation = 'waiting_for_confirmation',
 }
 
-// Copied from server/src/core/turn.ts for CLI usage
+// 从 server/src/turn.ts 复制用于 CLI
+/**
+ * Gemini 事件类型枚举
+ */
 export enum GeminiEventType {
   Content = 'content',
   ToolCallRequest = 'tool_call_request',
   // Add other event types if the UI hook needs to handle them
 }
 
+/**
+ * 工具调用状态枚举
+ */
 export enum ToolCallStatus {
   Pending = 'Pending',
   Canceled = 'Canceled',
@@ -49,6 +61,9 @@ export enum ToolCallStatus {
   Error = 'Error',
 }
 
+/**
+ * 工具调用事件接口
+ */
 export interface ToolCallEvent {
   type: 'tool_call';
   status: ToolCallStatus;
@@ -59,6 +74,9 @@ export interface ToolCallEvent {
   confirmationDetails: ToolCallConfirmationDetails | undefined;
 }
 
+/**
+ * 单个工具调用显示接口
+ */
 export interface IndividualToolCallDisplay {
   callId: string;
   name: string;
@@ -295,7 +313,10 @@ export type HistoryItemWithoutId =
 
 export type HistoryItem = HistoryItemWithoutId & { id: number };
 
-// Message types used by internal command feedback (subset of HistoryItem types)
+// 内部命令反馈使用的消息类型（HistoryItem 类型的子集）
+/**
+ * 消息类型枚举
+ */
 export enum MessageType {
   INFO = 'info',
   ERROR = 'error',
@@ -403,8 +424,7 @@ export interface ConsoleMessageItem {
 }
 
 /**
- * Result type for a slash command that should immediately result in a prompt
- * being submitted to the Gemini model.
+ * 斜杠命令处理结果类型，用于应立即提交提示给 Gemini 模型
  */
 export interface SubmitPromptResult {
   type: 'submit_prompt';
@@ -412,7 +432,7 @@ export interface SubmitPromptResult {
 }
 
 /**
- * Defines the result of the slash command processor for its consumer (useGeminiStream).
+ * 定义斜杠命令处理器对其消费者（useGeminiStream）的结果
  */
 export type SlashCommandProcessorResult =
   | {

@@ -1,15 +1,31 @@
+/**
+ * 日志级别类型
+ */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
+/**
+ * 日志配置接口
+ */
 export interface LoggerConfig {
+  /** 调试模式 */
   debug?: boolean;
+  /** 自定义错误输出函数 */
   stderr?: (message: string) => void;
+  /** 日志级别 */
   logLevel?: LogLevel;
 }
 
+/**
+ * 分作用域日志记录器接口
+ */
 export interface ScopedLogger {
+  /** 调试级别日志 */
   debug(message: string, ...args: unknown[]): void;
+  /** 信息级别日志 */
   info(message: string, ...args: unknown[]): void;
+  /** 警告级别日志 */
   warn(message: string, ...args: unknown[]): void;
+  /** 错误级别日志 */
   error(message: string, ...args: unknown[]): void;
 }
 
@@ -20,10 +36,18 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   error: 3,
 };
 
+/**
+ * SDK日志记录器类
+ * 提供带时间戳和级别的日志输出功能
+ */
 export class SdkLogger {
   private static config: LoggerConfig = {};
   private static effectiveLevel: LogLevel = 'error';
 
+  /**
+   * 配置日志记录器
+   * @param config - 日志配置
+   */
   static configure(config: LoggerConfig): void {
     this.config = config;
     this.effectiveLevel = this.determineLogLevel();
@@ -124,6 +148,11 @@ export class SdkLogger {
     }
   }
 
+  /**
+   * 创建分作用域日志记录器
+   * @param scope - 作用域名称
+   * @returns 分作用域日志记录器
+   */
   static createLogger(scope: string): ScopedLogger {
     return {
       debug: (message: string, ...args: unknown[]) => {
@@ -141,6 +170,9 @@ export class SdkLogger {
     };
   }
 
+  /**
+   * 获取当前有效日志级别
+   */
   static getEffectiveLevel(): LogLevel {
     return this.effectiveLevel;
   }

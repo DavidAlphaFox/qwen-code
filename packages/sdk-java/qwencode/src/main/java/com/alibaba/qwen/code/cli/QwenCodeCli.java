@@ -25,7 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Main entry point for interacting with the Qwen Code CLI. Provides static methods for simple queries and session management.
+ * Qwen Code CLI交互主入口类
+ * 
+ * 提供静态方法用于简单查询和会话管理。
  *
  * @author skyfire
  * @version $Id: 0.0.1
@@ -34,21 +36,21 @@ public class QwenCodeCli {
     private static final Logger log = LoggerFactory.getLogger(QwenCodeCli.class);
 
     /**
-     * Sends a simple query to the Qwen Code CLI and returns a list of responses.
+     * 发送简单查询到Qwen Code CLI并返回响应列表
      *
-     * @param prompt The input prompt to send to the CLI
-     * @return A list of strings representing the CLI's responses
+     * @param prompt 要发送给CLI的输入提示
+     * @return 包含CLI响应的字符串列表
      */
     public static List<String> simpleQuery(String prompt) {
         return simpleQuery(prompt, new TransportOptions());
     }
 
     /**
-     * Sends a simple query with custom transport options.
+     * 使用自定义传输选项发送简单查询
      *
-     * @param prompt The input prompt to send to the CLI
-     * @param transportOptions Configuration options for the transport layer
-     * @return A list of strings representing the CLI's responses
+     * @param prompt 要发送给CLI的输入提示
+     * @param transportOptions 传输层配置选项
+     * @return 包含CLI响应的字符串列表
      */
     public static List<String> simpleQuery(String prompt, TransportOptions transportOptions) {
         final List<String> response = new ArrayList<>();

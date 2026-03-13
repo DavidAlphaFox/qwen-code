@@ -6,69 +6,69 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 /**
- * ACP (Agent Client Protocol) Transport Interface
- *
- * Defines the transport layer contract for communication with AI agents, including message sending, receiving, and connection management functions.
- * Classes implementing this interface should provide a reliable message transmission mechanism.
+ * 传输层接口
+ * 
+ * 定义与AI代理通信的传输层契约，包括消息发送、接收和连接管理功能。
+ * 实现此接口的类应提供可靠的消息传输机制。
  *
  * @author SkyFire
  * @version 0.0.1
  */
 public interface Transport {
     /**
-     * Checks if the transport is currently reading.
+     * 检查传输层是否正在读取
      *
-     * @return true if reading, false otherwise
+     * @return 如果正在读取返回true，否则返回false
      */
     boolean isReading();
 
     /**
-     * Starts the transport.
+     * 启动传输层
      *
-     * @throws IOException if starting fails
+     * @throws IOException 如果启动失败抛出IO异常
      */
     void start() throws IOException;
 
     /**
-     * Closes the transport and releases resources.
+     * 关闭传输层并释放资源
      *
-     * @throws IOException if closing fails
+     * @throws IOException 如果关闭失败抛出IO异常
      */
     void close() throws IOException;
 
     /**
-     * Checks if the transport is available for communication.
+     * 检查传输层是否可用于通信
      *
-     * @return true if available, false otherwise
+     * @return 如果可用返回true，否则返回false
      */
     boolean isAvailable();
 
     /**
-     * Sends a message and waits for a single-line response.
+     * 发送消息并等待单行响应
      *
-     * @param message The message to send
-     * @return The response message
-     * @throws IOException if an I/O error occurs
-     * @throws ExecutionException if an execution error occurs
-     * @throws InterruptedException if the operation is interrupted
-     * @throws TimeoutException if the operation times out
+     * @param message 要发送的消息
+     * @return 响应消息
+     * @throws IOException 如果发生IO错误
+     * @throws ExecutionException 如果发生执行错误
+     * @throws InterruptedException 如果操作被中断
+     * @throws TimeoutException 如果操作超时
      */
     String inputWaitForOneLine(String message) throws IOException, ExecutionException, InterruptedException, TimeoutException;
 
     /**
-     * Sends a message and waits for a multi-line response.
+     * 发送消息并等待多行响应
      *
-     * @param message The message to send
-     * @param callBackFunction A function to process each line of the response
-     * @throws IOException if an I/O error occurs
+     * @param message 要发送的消息
+     * @param callBackFunction 处理每行响应的函数
+     * @throws IOException 如果发生IO错误
      */
     void inputWaitForMultiLine(String message, Function<String, Boolean> callBackFunction) throws IOException;
 
     /**
-     * Sends a message without waiting for a response.
+     * 发送消息而不等待响应
      *
-     * @param message The message to send
-     * @throws IOException if an I/O error occurs
+     * @param message 要发送的消息
+     * @throws IOException 如果发生IO错误
      */
     void inputNoWaitResponse(String message) throws IOException;
 }

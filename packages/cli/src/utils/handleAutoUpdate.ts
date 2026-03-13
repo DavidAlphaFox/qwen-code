@@ -14,6 +14,15 @@ import { spawnWrapper } from './spawnWrapper.js';
 import type { spawn } from 'node:child_process';
 import os from 'node:os';
 
+/**
+ * 处理自动更新
+ * 检查更新可用性并根据安装方式执行更新
+ * @param info - 更新对象，可能包含更新信息
+ * @param settings - 已加载的设置
+ * @param projectRoot - 项目根目录
+ * @param spawnFn - 可选的 spawn 函数
+ * @returns 子进程（如果启动更新）
+ */
 export function handleAutoUpdate(
   info: UpdateObject | null,
   settings: LoadedSettings,
@@ -24,8 +33,8 @@ export function handleAutoUpdate(
     return;
   }
 
-  // enableAutoUpdate is checked in gemini.tsx before calling this function,
-  // so if we get here, auto-update is enabled (or undefined, which defaults to enabled).
+  // enableAutoUpdate 在 gemini.tsx 中调用此函数之前检查，
+  // 所以如果到达这里，自动更新是启用的（或未定义，默认为启用）
   const isAutoUpdateEnabled =
     settings.merged.general?.enableAutoUpdate !== false;
 
@@ -43,7 +52,7 @@ export function handleAutoUpdate(
     message: combinedMessage,
   });
 
-  // Don't automatically run the update if auto-update is disabled or no update command
+  // 如果自动更新被禁用或没有更新命令，则不自动运行更新
   if (!installationInfo.updateCommand || !isAutoUpdateEnabled) {
     return;
   }
@@ -83,6 +92,13 @@ export function handleAutoUpdate(
   return updateProcess;
 }
 
+/**
+ * 设置更新处理器
+ * 监听更新事件并更新 UI
+ * @param addItem - 添加历史项的函数
+ * @param setUpdateInfo - 设置更新信息的函数
+ * @returns 清理函数
+ */
 export function setUpdateHandler(
   addItem: (item: Omit<HistoryItem, 'id'>, timestamp: number) => void,
   setUpdateInfo: (info: UpdateObject | null) => void,

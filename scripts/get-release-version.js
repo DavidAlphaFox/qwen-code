@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 /**
+ * @file get-release-version.js
+ * @description 版本号获取与计算脚本
+ * 用于确定下一个发布版本号，支持 nightly、preview、stable 和 patch 类型
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -341,6 +347,21 @@ function getPatchVersion(patchFrom) {
   }
 }
 
+/**
+ * 获取并验证发布版本号
+ * 根据指定类型（nightly、preview、stable、patch）计算下一个版本号
+ * 并检查版本号是否已存在，避免冲突
+ * @param {object} [options={}] - 选项对象
+ * @param {string} [options.type='nightly'] - 发布类型：'nightly'、'promote-nightly'、'stable'、'preview'、'patch'
+ * @param {string} [options.stable_version_override] - 稳定版版本号覆盖值
+ * @param {string} [options.preview_version_override] - 预览版版本号覆盖值
+ * @param {string} [options.patch-from] - patch 类型时指定基础版本：'stable' 或 'preview'
+ * @returns {object} 包含 releaseTag、releaseVersion、npmTag、previousReleaseTag 的对象
+ * @throws {Error} 如果版本号已存在或参数无效
+ * @example
+ * const version = getVersion({ type: 'stable' });
+ * console.log(version.releaseVersion); // '0.7.0'
+ */
 export function getVersion(options = {}) {
   const args = { ...getArgs(), ...options };
   const type = args.type || 'nightly';

@@ -23,22 +23,22 @@ import { getFunctionCalls } from '../utils/generateContentResponseUtilities.js';
 const DEFAULT_MAX_ATTEMPTS = 7;
 
 /**
- * Options for the generateJson utility function.
+ * generateJson 工具函数的选项
  */
 export interface GenerateJsonOptions {
-  /** The input prompt or history. */
+  /** 输入提示或历史 */
   contents: Content[];
-  /** The required JSON schema for the output. */
+  /** 输出的必需 JSON schema */
   schema: Record<string, unknown>;
-  /** The specific model to use for this task. */
+  /** 用于此任务的特定模型 */
   model: string;
   /**
-   * Task-specific system instructions.
-   * If omitted, no system instruction is sent.
+   * 任务特定的系统指令
+   * 如果省略，则不发送系统指令
    */
   systemInstruction?: string | Part | Part[] | Content;
   /**
-   * Overrides for generation configuration (e.g., temperature).
+   * 生成配置覆盖（例如 temperature）
    */
   config?: Omit<
     GenerateContentConfig,
@@ -48,20 +48,20 @@ export interface GenerateJsonOptions {
     | 'tools'
     | 'abortSignal'
   >;
-  /** Signal for cancellation. */
+  /** 取消信号 */
   abortSignal: AbortSignal;
   /**
-   * A unique ID for the prompt, used for logging/telemetry correlation.
+   * 提示的唯一 ID，用于日志/遥测关联
    */
   promptId?: string;
   /**
-   * The maximum number of attempts for the request.
+   * 请求的最大尝试次数
    */
   maxAttempts?: number;
 }
 
 /**
- * A client dedicated to stateless, utility-focused LLM calls.
+ * 专用于无状态、工具导向的 LLM 调用的客户端
  */
 export class BaseLlmClient {
   constructor(

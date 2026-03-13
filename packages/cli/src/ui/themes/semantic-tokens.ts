@@ -6,6 +6,10 @@
 
 import { lightTheme, darkTheme, ansiTheme } from './theme.js';
 
+/**
+ * 语义颜色接口
+ * 定义了应用程序中使用的语义颜色结构
+ */
 export interface SemanticColors {
   text: {
     primary: string;
@@ -34,7 +38,7 @@ export interface SemanticColors {
     error: string;
     success: string;
     warning: string;
-    // Dim variants for less intense UI elements
+    // 较暗的变体，用于较不强烈的 UI 元素
     errorDim: string;
     warningDim: string;
   };

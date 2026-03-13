@@ -14,38 +14,57 @@ import { formatMemoryUsage } from '../ui/utils/formatters.js';
 import { GIT_COMMIT_INFO } from '../generated/git-commit.js';
 
 /**
- * System information interface containing all system-related details
- * that can be collected for debugging and reporting purposes.
+ * 系统信息接口
+ * 包含可用于调试和报告的所有系统相关详细信息
  */
 export interface SystemInfo {
+  /** CLI 版本 */
   cliVersion: string;
+  /** 操作系统平台 */
   osPlatform: string;
+  /** 操作系统架构 */
   osArch: string;
+  /** 操作系统版本 */
   osRelease: string;
+  /** Node.js 版本 */
   nodeVersion: string;
+  /** NPM 版本 */
   npmVersion: string;
+  /** 沙箱环境 */
   sandboxEnv: string;
+  /** 模型版本 */
   modelVersion: string;
+  /** 选定的认证类型 */
   selectedAuthType: string;
+  /** IDE 客户端 */
   ideClient: string;
+  /** 会话 ID */
   sessionId: string;
+  /** 代理（可选） */
   proxy?: string;
 }
 
 /**
- * Additional system information for bug reports
+ * 扩展系统信息（用于错误报告）
  */
 export interface ExtendedSystemInfo extends SystemInfo {
+  /** 内存使用情况 */
   memoryUsage: string;
+  /** 基础 URL（可选） */
   baseUrl?: string;
+  /** API 密钥环境变量名（可选） */
   apiKeyEnvKey?: string;
+  /** Git 提交信息（可选） */
   gitCommit?: string;
+  /** 代理（可选） */
   proxy?: string;
 }
 
 /**
- * Gets the NPM version, handling cases where npm might not be available.
- * Returns 'unknown' if npm command fails or is not found.
+ * 获取 NPM 版本
+ * 处理 npm 可能不可用的情况
+ * 如果 npm 命令失败或未找到则返回 'unknown'
+ * @returns Promise<string> NPM 版本字符串
  */
 export async function getNpmVersion(): Promise<string> {
   try {
@@ -56,8 +75,10 @@ export async function getNpmVersion(): Promise<string> {
 }
 
 /**
- * Gets the IDE client name if IDE mode is enabled.
- * Returns empty string if IDE mode is disabled or IDE client is not detected.
+ * 获取 IDE 客户端名称（如果 IDE 模式已启用）
+ * 如果 IDE 模式禁用或未检测到 IDE 客户端则返回空字符串
+ * @param context - 命令上下文
+ * @returns Promise<string> IDE 客户端名称
  */
 export async function getIdeClientName(
   context: CommandContext,
@@ -74,11 +95,11 @@ export async function getIdeClientName(
 }
 
 /**
- * Gets the sandbox environment information.
- * Handles different sandbox types including sandbox-exec and custom sandbox environments.
- * For bug reports, removes 'qwen-' or 'qwen-code-' prefixes from sandbox names.
- *
- * @param stripPrefix - Whether to strip 'qwen-' prefix (used for bug reports)
+ * 获取沙箱环境信息
+ * 处理不同类型的沙箱环境，包括 sandbox-exec 和自定义沙箱
+ * 对于错误报告，从沙箱名称中移除 'qwen-' 或 'qwen-code-' 前缀
+ * @param stripPrefix - 是否移除 'qwen-' 前缀（用于错误报告）
+ * @returns string 沙箱环境信息
  */
 export function getSandboxEnv(stripPrefix = false): string {
   const sandbox = process.env['SANDBOX'];
@@ -91,7 +112,7 @@ export function getSandboxEnv(stripPrefix = false): string {
     return 'no sandbox';
   }
 
-  // For bug reports, remove qwen- prefix
+  // 对于错误报告，移除 qwen- 前缀
   if (stripPrefix) {
     return sandbox.replace(/^qwen-(?:code-)?/, '');
   }
@@ -100,12 +121,10 @@ export function getSandboxEnv(stripPrefix = false): string {
 }
 
 /**
- * Collects comprehensive system information for debugging and reporting.
- * This function gathers all system-related details including OS, versions,
- * sandbox environment, authentication, and session information.
- *
- * @param context - Command context containing config and settings
- * @returns Promise resolving to SystemInfo object with all collected information
+ * 收集综合系统信息用于调试和报告
+ * 此函数收集所有系统相关信息，包括操作系统、版本、沙箱环境、认证和会话信息
+ * @param context - 包含配置和设置的命令上下文
+ * @returns Promise<SystemInfo> 包含所有收集信息的 SystemInfo 对象
  */
 export async function getSystemInfo(
   context: CommandContext,
@@ -140,11 +159,10 @@ export async function getSystemInfo(
 }
 
 /**
- * Collects extended system information for bug reports.
- * Includes all standard system info plus memory usage and optional base URL.
- *
- * @param context - Command context containing config and settings
- * @returns Promise resolving to ExtendedSystemInfo object
+ * 收集扩展系统信息用于错误报告
+ * 包含所有标准系统信息以及内存使用情况和可选的基础 URL
+ * @param context - 包含配置和设置的命令上下文
+ * @returns Promise<ExtendedSystemInfo> ExtendedSystemInfo 对象
  */
 export async function getExtendedSystemInfo(
   context: CommandContext,
@@ -152,10 +170,10 @@ export async function getExtendedSystemInfo(
   const baseInfo = await getSystemInfo(context);
   const memoryUsage = formatMemoryUsage(process.memoryUsage().rss);
 
-  // For bug reports, use sandbox name without prefix
+  // 对于错误报告，使用不带前缀的沙箱名称
   const sandboxEnv = getSandboxEnv(true);
 
-  // Get base URL and apiKeyEnvKey if using OpenAI or Anthropic auth
+  // 如果使用 OpenAI 或 Anthropic 认证，获取基础 URL 和 apiKeyEnvKey
   const contentGeneratorConfig =
     baseInfo.selectedAuthType === AuthType.USE_OPENAI ||
     baseInfo.selectedAuthType === AuthType.USE_ANTHROPIC
@@ -164,7 +182,7 @@ export async function getExtendedSystemInfo(
   const baseUrl = contentGeneratorConfig?.baseUrl;
   const apiKeyEnvKey = contentGeneratorConfig?.apiKeyEnvKey;
 
-  // Get git commit info
+  // 获取 git 提交信息
   const gitCommit =
     GIT_COMMIT_INFO && !['N/A'].includes(GIT_COMMIT_INFO)
       ? GIT_COMMIT_INFO

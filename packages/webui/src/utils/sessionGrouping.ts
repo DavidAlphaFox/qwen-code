@@ -3,37 +3,40 @@
  * Copyright 2025 Qwen Team
  * SPDX-License-Identifier: Apache-2.0
  *
- * Session grouping utilities
- * Functions for organizing sessions by date and formatting time ago
+ * 会话分组工具函数
+ * 用于按日期组织会话并格式化相对时间
  */
 
 /**
- * Session group structure
+ * 会话分组结构
+ * @interface SessionGroup
+ * @description 表示按日期分组的会话集合
  */
 export interface SessionGroup {
-  /** Group label (e.g., "Today", "Yesterday") */
+  /** 分组标签（如 "Today"、"Yesterday"） */
   label: string;
-  /** Sessions in this group */
+  /** 该分组中的会话列表 */
   sessions: Array<Record<string, unknown>>;
 }
 
 /**
- * Group sessions by date
+ * 按日期分组会话
+ * @function groupSessionsByDate
+ * @description 将会话数组按日期分组到不同的时间段
  *
- * Categories:
- * - Today: Sessions from today
- * - Yesterday: Sessions from yesterday
- * - This Week: Sessions from the last 7 days (excluding today/yesterday)
- * - Older: Sessions older than a week
+ * 分组类别：
+ * - Today: 今天的会话
+ * - Yesterday: 昨天的会话
+ * - This Week: 最近7天的会话（不包括今天和昨天）
+ * - Older: 超过一周的会话
  *
- * @param sessions - Array of session objects (must have lastUpdated or startTime)
- * @returns Array of grouped sessions, only includes non-empty groups
+ * @param {Array<Record<string, unknown>>} sessions - 会话对象数组（必须包含 lastUpdated 或 startTime 字段）
+ * @returns {SessionGroup[]} 分组后的会话数组，只包含非空分组
  *
  * @example
- * ```ts
+ * // 基本用法
  * const grouped = groupSessionsByDate(sessions);
- * // [{ label: 'Today', sessions: [...] }, { label: 'Older', sessions: [...] }]
- * ```
+ * // 结果示例：[{ label: 'Today', sessions: [...] }, { label: 'Older', sessions: [...] }]
  */
 export const groupSessionsByDate = (
   sessions: Array<Record<string, unknown>>,
@@ -84,17 +87,20 @@ export const groupSessionsByDate = (
 };
 
 /**
- * Format timestamp as relative time string
+ * 格式化时间戳为相对时间字符串
+ * @function getTimeAgo
+ * @description 将ISO时间戳格式化为相对时间表示
  *
- * @param timestamp - ISO timestamp string
- * @returns Formatted relative time (e.g., "now", "5m", "2h", "Yesterday", "3d", or date)
+ * @param {string} timestamp - ISO时间戳字符串
+ * @returns {string} 格式化后的相对时间（如 "now"、"5m"、"2h"、"Yesterday"、"3d" 或日期）
  *
  * @example
- * ```ts
+ * // 基本用法
  * getTimeAgo(new Date().toISOString()) // "now"
  * getTimeAgo(thirtyMinutesAgo.toISOString()) // "30m"
  * getTimeAgo(twoHoursAgo.toISOString()) // "2h"
- * ```
+ * getTimeAgo(yesterday.toISOString()) // "Yesterday"
+ * getTimeAgo(threeDaysAgo.toISOString()) // "3d"
  */
 export const getTimeAgo = (timestamp: string): string => {
   if (!timestamp) {

@@ -56,9 +56,9 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validates if a string is a valid UUID format
- * @param value - The string to validate
- * @returns True if the string is a valid UUID, false otherwise
+ * 验证字符串是否为有效的 UUID 格式
+ * @param value - 要验证的字符串
+ * @returns 如果字符串是有效的 UUID 则返回 true，否则返回 false
  */
 function isValidUUID(value: string): boolean {
   return UUID_REGEX.test(value);
@@ -70,6 +70,11 @@ import { writeStderrLine } from '../utils/stdioHelpers.js';
 
 const debugLogger = createDebugLogger('CONFIG');
 
+/**
+ * 有效的审批模式值列表
+ * @readonly
+ * @enum {string}
+ */
 const VALID_APPROVAL_MODE_VALUES = [
   'plan',
   'default',
@@ -77,6 +82,11 @@ const VALID_APPROVAL_MODE_VALUES = [
   'yolo',
 ] as const;
 
+/**
+ * 格式化审批模式错误信息
+ * @param value - 无效的审批模式值
+ * @returns 包含有效值列表的错误对象
+ */
 function formatApprovalModeError(value: string): Error {
   return new Error(
     `Invalid approval mode: ${value}. Valid values are: ${VALID_APPROVAL_MODE_VALUES.join(
@@ -85,6 +95,12 @@ function formatApprovalModeError(value: string): Error {
   );
 }
 
+/**
+ * 解析审批模式字符串值转换为对应的 ApprovalMode 枚举
+ * @param value - 审批模式字符串值
+ * @returns 对应的 ApprovalMode 枚举值
+ * @throws Error 当值无效时抛出错误
+ */
 function parseApprovalModeValue(value: string): ApprovalMode {
   const normalized = value.trim().toLowerCase();
   switch (normalized) {
@@ -103,6 +119,10 @@ function parseApprovalModeValue(value: string): ApprovalMode {
   }
 }
 
+/**
+ * CLI 命令行参数接口
+ * 定义了所有可用的命令行选项和参数
+ */
 export interface CliArgs {
   query: string | undefined;
   model: string | undefined;
@@ -143,15 +163,15 @@ export interface CliArgs {
   outputFormat: string | undefined;
   includePartialMessages?: boolean;
   /**
-   * If chat recording is disabled, the chat history would not be recorded,
-   * so --continue and --resume would not take effect.
+   * 如果禁用聊天录制，聊天历史将不会被记录，
+   * 因此 --continue 和 --resume 选项将不会生效。
    */
   chatRecording: boolean | undefined;
-  /** Resume the most recent session for the current project */
+  /** 恢复当前项目的最近会话 */
   continue: boolean | undefined;
-  /** Resume a specific session by its ID */
+  /** 通过会话 ID 恢复特定会话 */
   resume: string | undefined;
-  /** Specify a session ID without session resumption */
+  /** 指定会话 ID 而不恢复会话 */
   sessionId: string | undefined;
   maxSessionTurns: number | undefined;
   coreTools: string[] | undefined;
@@ -160,6 +180,11 @@ export interface CliArgs {
   channel: string | undefined;
 }
 
+/**
+ * 规范化输出格式字符串为 OutputFormat 枚举
+ * @param format - 输出格式字符串或枚举值
+ * @returns 规范化的 OutputFormat 枚举值，未提供时返回 undefined
+ */
 function normalizeOutputFormat(
   format: string | OutputFormat | undefined,
 ): OutputFormat | undefined {
@@ -175,6 +200,13 @@ function normalizeOutputFormat(
   return OutputFormat.TEXT;
 }
 
+/**
+ * 解析命令行参数
+ * @returns 解析后的 CLI 参数对象
+ * @example
+ * const args = await parseArguments();
+ * console.log(args.query);
+ */
 export async function parseArguments(): Promise<CliArgs> {
   let rawArgv = hideBin(process.argv);
 
@@ -640,9 +672,19 @@ export async function parseArguments(): Promise<CliArgs> {
   return result as unknown as CliArgs;
 }
 
-// This function is now a thin wrapper around the server's implementation.
-// It's kept in the CLI for now as App.tsx directly calls it for memory refresh.
-// TODO: Consider if App.tsx should get memory via a server call or if Config should refresh itself.
+// 此函数现在是服务器实现的薄包装。
+// 之所以保留在 CLI 中，是因为 App.tsx 直接调用它来刷新内存。
+// TODO: 考虑是否应该让 App.tsx 通过服务器调用获取内存，或者让 Config 自行刷新。
+/**
+ * 加载分层 Gemini 记忆
+ * @param currentWorkingDirectory - 当前工作目录
+ * @param includeDirectoriesToReadGemini - 要包含的额外目录列表
+ * @param fileService - 文件发现服务实例
+ * @param extensionContextFilePaths - 扩展上下文文件路径列表
+ * @param folderTrust - 是否信任当前文件夹
+ * @param memoryImportFormat - 记忆导入格式 ('flat' | 'tree')
+ * @returns 包含记忆内容和文件数量的对象
+ */
 export async function loadHierarchicalGeminiMemory(
   currentWorkingDirectory: string,
   includeDirectoriesToReadGemini: readonly string[] = [],
@@ -671,6 +713,11 @@ export async function loadHierarchicalGeminiMemory(
   );
 }
 
+/**
+ * 判断是否处于调试模式
+ * @param argv - CLI 参数对象
+ * @returns 如果处于调试模式则返回 true，否则返回 false
+ */
 export function isDebugMode(argv: CliArgs): boolean {
   return (
     argv.debug ||
@@ -680,6 +727,15 @@ export function isDebugMode(argv: CliArgs): boolean {
   );
 }
 
+/**
+ * 加载 CLI 配置
+ * 根据设置和命令行参数构建完整的 Config 对象
+ * @param settings - 用户设置对象
+ * @param argv - 解析后的命令行参数
+ * @param cwd - 当前工作目录，默认为 process.cwd()
+ * @param overrideExtensions - 要覆盖的扩展列表
+ * @returns 完整的 Config 对象
+ */
 export async function loadCliConfig(
   settings: Settings,
   argv: CliArgs,
@@ -1075,6 +1131,14 @@ export async function loadCliConfig(
   return config;
 }
 
+/**
+ * 合并排除的工具列表
+ * 将设置中的排除工具、CLI 参数和额外排除项合并为一个唯一的列表
+ * @param settings - 用户设置对象
+ * @param extraExcludes - 额外的排除项列表
+ * @param cliExcludeTools - CLI 指定的排除工具列表
+ * @returns 合并后的排除工具数组
+ */
 function mergeExcludeTools(
   settings: Settings,
   extraExcludes?: string[] | undefined,

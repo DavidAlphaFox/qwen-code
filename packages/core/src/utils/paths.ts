@@ -11,22 +11,32 @@ import * as crypto from 'node:crypto';
 import type { Config } from '../config/config.js';
 import { isNodeError } from './errors.js';
 
+/**
+ * Qwen 配置目录名称
+ */
 export const QWEN_DIR = '.qwen';
+/**
+ * Google 账户文件名
+ */
 export const GOOGLE_ACCOUNTS_FILENAME = 'google_accounts.json';
 
 /**
- * Special characters that need to be escaped in file paths for shell compatibility.
- * Includes: spaces, parentheses, brackets, braces, semicolons, ampersands, pipes,
- * asterisks, question marks, dollar signs, backticks, quotes, hash, and other shell metacharacters.
+ * 需要在文件路径中转义的 shell 特殊字符
+ * 包括：空格、圆括号、方括号、大括号、分号、&、管道符、
+ * 星号、问号、美元符号、反引号、引号、# 号和其他 shell 元字符
+ * @example
+ * const escaped = escapePath('my file.txt'); // 'my\ file.txt'
  */
 export const SHELL_SPECIAL_CHARS = /[ \t()[\]{};|*?$`'"#&<>!~]/;
 
 /**
- * Replaces the home directory with a tilde.
- * @param path - The path to tildeify.
- * @returns The tildeified path.
+ * 将路径中的主目录替换为波浪号 (~)
+ * @param pathStr - 要转换的路径
+ * @returns 替换后的路径，如果不在主目录下则返回原路径
+ * @example
+ * tildeifyPath('/home/user/documents/file.txt') // '~/documents/file.txt'
  */
-export function tildeifyPath(path: string): string {
+export function tildeifyPath(pathStr: string): string {
   const homeDir = os.homedir();
   if (path.startsWith(homeDir)) {
     return path.replace(homeDir, '~');
@@ -35,9 +45,13 @@ export function tildeifyPath(path: string): string {
 }
 
 /**
- * Shortens a path string if it exceeds maxLen, prioritizing the start and end segments.
- * Shows root + first segment + "..." + end segments when middle segments are omitted.
- * Example: /path/to/a/very/long/file.txt -> /path/.../long/file.txt
+ * 缩短路径字符串，如果超过最大长度则优先保留开头和结尾部分
+ * 当省略中间段时显示根目录 + 第一段 + "..." + 末尾段
+ * @param filePath - 要缩短的文件路径
+ * @param maxLen - 最大长度，默认为 80
+ * @returns 缩短后的路径
+ * @example
+ * shortenPath('/path/to/a/very/long/file.txt', 30) // '/path/.../file.txt'
  */
 export function shortenPath(filePath: string, maxLen: number = 80): string {
   if (filePath.length <= maxLen) {
@@ -123,13 +137,12 @@ export function shortenPath(filePath: string, maxLen: number = 80): string {
 }
 
 /**
- * Calculates the relative path from a root directory to a target path.
- * Ensures both paths are resolved before calculating.
- * Returns '.' if the target path is the same as the root directory.
- *
- * @param targetPath The absolute or relative path to make relative.
- * @param rootDirectory The absolute path of the directory to make the target path relative to.
- * @returns The relative path from rootDirectory to targetPath.
+ * 计算从根目录到目标路径的相对路径
+ * 在计算前会先解析两个路径
+ * 如果目标路径与根目录相同则返回 '.'
+ * @param targetPath - 要转为相对路径的目标路径（绝对或相对路径）
+ * @param rootDirectory - 根目录的绝对路径
+ * @returns 从根目录到目标路径的相对路径
  */
 export function makeRelative(
   targetPath: string,
@@ -149,9 +162,11 @@ export function makeRelative(
 }
 
 /**
- * Escapes special characters in a file path like macOS terminal does.
- * Escapes: spaces, parentheses, brackets, braces, semicolons, ampersands, pipes,
- * asterisks, question marks, dollar signs, backticks, quotes, hash, and other shell metacharacters.
+ * 转义文件路径中的特殊字符，模拟 macOS 终端的行为
+ * 转义：空格、圆括号、方括号、大括号、分号、&、管道符、
+ * 星号、问号、美元符号、反引号、引号、# 号和其他 shell 元字符
+ * @param filePath - 要转义的文件路径
+ * @returns 转义后的文件路径
  */
 export function escapePath(filePath: string): string {
   let result = '';
@@ -178,8 +193,10 @@ export function escapePath(filePath: string): string {
 }
 
 /**
- * Unescapes special characters in a file path.
- * Removes backslash escaping from shell metacharacters.
+ * 取消转义文件路径中的特殊字符
+ * 移除 shell 元字符的反斜杠转义
+ * @param filePath - 要取消转义的文件路径
+ * @returns 取消转义后的文件路径
  */
 export function unescapePath(filePath: string): string {
   return filePath.replace(
@@ -189,11 +206,10 @@ export function unescapePath(filePath: string): string {
 }
 
 /**
- * Generates a unique hash for a project based on its root path.
- * On Windows, paths are case-insensitive, so we normalize to lowercase
- * to ensure the same physical path always produces the same hash.
- * @param projectRoot The absolute path to the project's root directory.
- * @returns A SHA256 hash of the project root path.
+ * 根据项目根路径生成唯一的项目哈希值
+ * 在 Windows 上路径不区分大小写，因此会转换为小写以确保相同物理路径始终产生相同的哈希
+ * @param projectRoot - 项目根目录的绝对路径
+ * @returns 项目根路径的 SHA256 哈希值
  */
 export function getProjectHash(projectRoot: string): string {
   // On Windows, normalize path to lowercase for case-insensitive matching
@@ -203,17 +219,14 @@ export function getProjectHash(projectRoot: string): string {
 }
 
 /**
- * Sanitizes a directory path to create a safe project ID.
- *
- * - On Windows: normalizes to lowercase for case-insensitive matching
- * - Replaces all non-alphanumeric characters with hyphens
- *
- * This is used for:
- * - Creating project-specific directories
- * - Generating session IDs for debug logging during startup
- *
- * @param cwd - The directory path to sanitize
- * @returns A sanitized string safe for use as a project identifier
+ * 清理目录路径以创建安全的项目 ID
+ * - 在 Windows 上：规范化为小写以实现不区分大小写的匹配
+ * - 将所有非字母数字字符替换为连字符
+ * 用于：
+ * - 创建项目特定的目录
+ * - 生成调试日志的会话 ID
+ * @param cwd - 要清理的目录路径
+ * @returns 可用作项目标识符的安全字符串
  */
 export function sanitizeCwd(cwd: string): string {
   // On Windows, normalize to lowercase for case-insensitive matching
@@ -222,10 +235,10 @@ export function sanitizeCwd(cwd: string): string {
 }
 
 /**
- * Checks if a path is a subpath of another path.
- * @param parentPath The parent path.
- * @param childPath The child path.
- * @returns True if childPath is a subpath of parentPath, false otherwise.
+ * 检查路径是否是另一个路径的子路径
+ * @param parentPath - 父路径
+ * @param childPath - 子路径
+ * @returns 如果 childPath 是 parentPath 的子路径返回 true，否则返回 false
  */
 export function isSubpath(parentPath: string, childPath: string): boolean {
   const isWindows = os.platform() === 'win32';
@@ -242,13 +255,11 @@ export function isSubpath(parentPath: string, childPath: string): boolean {
 }
 
 /**
- * Resolves a path with tilde (~) expansion and relative path resolution.
- * Handles tilde expansion for home directory and resolves relative paths
- * against the provided base directory or current working directory.
- *
- * @param baseDir The base directory to resolve relative paths against (defaults to current working directory)
- * @param relativePath The path to resolve (can be relative, absolute, or tilde-prefixed)
- * @returns The resolved absolute path
+ * 解析路径，支持波浪号 (~) 展开和相对路径解析
+ * 处理主目录的波浪号展开，并根据提供的基准目录或当前工作目录解析相对路径
+ * @param baseDir - 解析相对路径的基准目录（默认为当前工作目录）
+ * @param relativePath - 要解析的路径（可以是相对路径、绝对路径或以波浪号开头的路径）
+ * @returns 解析后的绝对路径
  */
 export function resolvePath(
   baseDir: string | undefined = process.cwd(),
@@ -267,20 +278,22 @@ export function resolvePath(
   }
 }
 
+/**
+ * 路径验证选项
+ */
 export interface PathValidationOptions {
   /**
-   * If true, allows both files and directories. If false (default), only allows directories.
+   * 如果为 true，允许文件和目录。如果为 false（默认），仅允许目录
    */
   allowFiles?: boolean;
 }
 
 /**
- * Validates that a resolved path exists within the workspace boundaries.
- *
- * @param config The configuration object containing workspace context
- * @param resolvedPath The absolute path to validate
- * @param options Validation options
- * @throws Error if the path is outside workspace boundaries, doesn't exist, or is not a directory (when allowFiles is false)
+ * 验证解析后的路径是否在工作区边界内
+ * @param config - 包含工作区上下文的配置对象
+ * @param resolvedPath - 要验证的绝对路径
+ * @param options - 验证选项
+ * @throws 如果路径在工作区边界之外、不存在或不是目录（当 allowFiles 为 false 时）则抛出错误
  */
 export function validatePath(
   config: Config,
@@ -308,12 +321,11 @@ export function validatePath(
 }
 
 /**
- * Resolves a path relative to the workspace root and verifies that it exists
- * within the workspace boundaries defined in the config.
- *
- * @param config The configuration object
- * @param relativePath The relative path to resolve (optional, defaults to target directory)
- * @param options Validation options (e.g., allowFiles to permit file paths)
+ * 解析相对于工作区根目录的路径，并验证它是否在工作区边界内
+ * @param config - 配置对象
+ * @param relativePath - 要解析的相对路径（可选，默认为目标目录）
+ * @param options - 验证选项（例如，允许文件路径的 allowFiles）
+ * @returns 解析并验证后的绝对路径
  */
 export function resolveAndValidatePath(
   config: Config,

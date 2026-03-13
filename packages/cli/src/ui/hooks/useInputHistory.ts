@@ -20,6 +20,16 @@ export interface UseInputHistoryReturn {
   navigateDown: () => boolean;
 }
 
+/**
+ * 管理输入历史导航的自定义 Hook
+ * 允许用户在提交历史中上下导航
+ * @param userMessages - 用户消息历史数组
+ * @param onSubmit - 提交值时的回调函数
+ * @param isActive - Hook 是否激活
+ * @param currentQuery - 当前查询字符串
+ * @param onChange - 查询更改时的回调函数
+ * @returns 包含提交和导航函数的对象
+ */
 export function useInputHistory({
   userMessages,
   onSubmit,

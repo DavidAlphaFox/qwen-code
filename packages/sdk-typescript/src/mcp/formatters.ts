@@ -1,21 +1,34 @@
 /**
- * Tool result formatting utilities for MCP responses
+ * MCP响应工具结果格式化工具模块
  *
- * Converts various output types to MCP content blocks.
+ * 将各种输出类型转换为MCP内容块
  */
 
+/**
+ * MCP内容块联合类型
+ */
 export type McpContentBlock =
   | { type: 'text'; text: string }
   | { type: 'image'; data: string; mimeType: string }
   | { type: 'resource'; uri: string; mimeType?: string; text?: string };
 
+/**
+ * 工具结果接口
+ */
 export interface ToolResult {
+  /** 内容块列表 */
   content: McpContentBlock[];
+  /** 是否为错误 */
   isError?: boolean;
 }
 
+/**
+ * 格式化工具结果为MCP格式
+ * @param result - 要格式化的结果
+ * @returns 格式化后的工具结果
+ */
 export function formatToolResult(result: unknown): ToolResult {
-  // Handle Error objects
+  // 处理Error对象
   if (result instanceof Error) {
     return {
       content: [
@@ -28,7 +41,7 @@ export function formatToolResult(result: unknown): ToolResult {
     };
   }
 
-  // Handle null/undefined
+  // 处理null/undefined
   if (result === null || result === undefined) {
     return {
       content: [
@@ -40,7 +53,7 @@ export function formatToolResult(result: unknown): ToolResult {
     };
   }
 
-  // Handle string
+  // 处理字符串
   if (typeof result === 'string') {
     return {
       content: [
@@ -52,7 +65,7 @@ export function formatToolResult(result: unknown): ToolResult {
     };
   }
 
-  // Handle number
+  // 处理数字
   if (typeof result === 'number') {
     return {
       content: [
@@ -64,7 +77,7 @@ export function formatToolResult(result: unknown): ToolResult {
     };
   }
 
-  // Handle boolean
+  // 处理布尔值
   if (typeof result === 'boolean') {
     return {
       content: [
@@ -76,7 +89,7 @@ export function formatToolResult(result: unknown): ToolResult {
     };
   }
 
-  // Handle object (including arrays)
+  // 处理对象（包括数组）
   if (typeof result === 'object') {
     try {
       return {
@@ -88,7 +101,7 @@ export function formatToolResult(result: unknown): ToolResult {
         ],
       };
     } catch {
-      // JSON.stringify failed
+      // JSON.stringify失败
       return {
         content: [
           {
@@ -100,7 +113,7 @@ export function formatToolResult(result: unknown): ToolResult {
     }
   }
 
-  // Fallback: convert to string
+  // 回退：转换为字符串
   return {
     content: [
       {
@@ -111,6 +124,11 @@ export function formatToolResult(result: unknown): ToolResult {
   };
 }
 
+/**
+ * 格式化工具错误为MCP格式
+ * @param error - 错误对象或错误消息
+ * @returns 格式化后的错误结果
+ */
 export function formatToolError(error: Error | string): ToolResult {
   const message = error instanceof Error ? error.message : error;
 
@@ -125,6 +143,11 @@ export function formatToolError(error: Error | string): ToolResult {
   };
 }
 
+/**
+ * 格式化文本结果为MCP格式
+ * @param text - 文本内容
+ * @returns 格式化后的工具结果
+ */
 export function formatTextResult(text: string): ToolResult {
   return {
     content: [
@@ -136,6 +159,11 @@ export function formatTextResult(text: string): ToolResult {
   };
 }
 
+/**
+ * 格式化JSON结果为MCP格式
+ * @param data - 要格式化的数据
+ * @returns 格式化后的工具结果
+ */
 export function formatJsonResult(data: unknown): ToolResult {
   return {
     content: [
@@ -147,6 +175,11 @@ export function formatJsonResult(data: unknown): ToolResult {
   };
 }
 
+/**
+ * 合并多个工具结果
+ * @param results - 工具结果数组
+ * @returns 合并后的工具结果
+ */
 export function mergeToolResults(results: ToolResult[]): ToolResult {
   const mergedContent: McpContentBlock[] = [];
   let hasError = false;
@@ -164,6 +197,11 @@ export function mergeToolResults(results: ToolResult[]): ToolResult {
   };
 }
 
+/**
+ * 验证内容块是否有效
+ * @param block - 要验证的内容块
+ * @returns 如果内容块有效返回true
+ */
 export function isValidContentBlock(block: unknown): block is McpContentBlock {
   if (!block || typeof block !== 'object') {
     return false;

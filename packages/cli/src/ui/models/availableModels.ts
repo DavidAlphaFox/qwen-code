@@ -12,6 +12,9 @@ import {
 } from '@qwen-code/qwen-code-core';
 import { t } from '../../i18n/index.js';
 
+/**
+ * 可用模型类型
+ */
 export type AvailableModel = {
   id: string;
   label: string;
@@ -19,30 +22,18 @@ export type AvailableModel = {
   isVision?: boolean;
 };
 
-const CACHED_QWEN_OAUTH_MODELS: AvailableModel[] = QWEN_OAUTH_MODELS.map(
-  (model) => ({
-    id: model.id,
-    label: model.name ?? model.id,
-    description: model.description,
-    isVision: model.capabilities?.vision ?? false,
-  }),
-);
-
-function getQwenOAuthModels(): readonly AvailableModel[] {
-  return CACHED_QWEN_OAUTH_MODELS;
-}
-
 /**
- * Get available Qwen models
- * coder-model now has vision capabilities by default.
+ * 获取可用的 Qwen 模型
+ * coder-model 现在默认具有视觉能力
  */
 export function getFilteredQwenModels(): AvailableModel[] {
   return [...getQwenOAuthModels()];
 }
 
 /**
- * Currently we use the single model of `OPENAI_MODEL` in the env.
- * In the future, after settings.json is updated, we will allow users to configure this themselves.
+ * 目前我们使用环境变量中的单个 `OPENAI_MODEL` 模型
+ * 将来，更新 settings.json 后，我们将允许用户自行配置
+ * @returns 可用模型，如果环境变量未设置则返回 null
  */
 export function getOpenAIAvailableModelFromEnv(): AvailableModel | null {
   const id = process.env['OPENAI_MODEL']?.trim();
@@ -71,7 +62,9 @@ export function getAnthropicAvailableModelFromEnv(): AvailableModel | null {
 }
 
 /**
- * Convert core AvailableModel to CLI AvailableModel format
+ * 将核心 AvailableModel 转换为 CLI AvailableModel 格式
+ * @param coreModel - 核心模型对象
+ * @returns CLI 格式的可用模型
  */
 function convertCoreModelToCliModel(
   coreModel: CoreAvailableModel,
@@ -85,10 +78,12 @@ function convertCoreModelToCliModel(
 }
 
 /**
- * Get available models for the given authType.
- *
- * If a Config object is provided, uses config.getAvailableModelsForAuthType().
- * Falls back to environment variables only when no config is provided.
+ * 获取给定 authType 的可用模型
+ * 如果提供了 Config 对象，使用 config.getAvailableModelsForAuthType()
+ * 仅在未提供配置时回退到环境变量
+ * @param authType - 认证类型
+ * @param config - 可选的 Config 对象
+ * @returns 可用模型数组
  */
 export function getAvailableModelsForAuthType(
   authType: AuthType,

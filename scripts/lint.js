@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 /**
+ * @file lint.js
+ * @description 代码检查脚本 - 运行多种 linter 工具检查代码质量
+ * 包括 ESLint、actionlint、shellcheck、yamllint 和 Prettier
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -114,6 +120,13 @@ function runCommand(command, stdio = 'inherit') {
   }
 }
 
+/**
+ * 设置 linters
+ * 检查并安装所需的 linter 工具（如果不存在）
+ * 如果工具已安装则跳过，否则从网络下载
+ * @example
+ * setupLinters();
+ */
 export function setupLinters() {
   console.log('Setting up linters...');
   rmSync(TEMP_DIR, { recursive: true, force: true });
@@ -134,6 +147,13 @@ export function setupLinters() {
   console.log('All required linters are available.');
 }
 
+/**
+ * 运行 ESLint 检查 JavaScript/TypeScript 代码
+ * 使用 npm run lint:ci 命令执行
+ * @throws {Error} 如果 ESLint 检查失败则退出进程
+ * @example
+ * runESLint();
+ */
 export function runESLint() {
   console.log('\nRunning ESLint...');
   if (!runCommand('npm run lint:ci')) {
@@ -141,6 +161,12 @@ export function runESLint() {
   }
 }
 
+/**
+ * 运行 actionlint 检查 GitHub Actions 工作流文件
+ * @throws {Error} 如果 actionlint 检查失败则退出进程
+ * @example
+ * runActionlint();
+ */
 export function runActionlint() {
   console.log('\nRunning actionlint...');
   if (!runCommand(LINTERS.actionlint.run)) {
@@ -148,6 +174,12 @@ export function runActionlint() {
   }
 }
 
+/**
+ * 运行 shellcheck 检查 Shell 脚本
+ * @throws {Error} 如果 shellcheck 检查失败则退出进程
+ * @example
+ * runShellcheck();
+ */
 export function runShellcheck() {
   console.log('\nRunning shellcheck...');
   if (!runCommand(LINTERS.shellcheck.run)) {
@@ -155,6 +187,12 @@ export function runShellcheck() {
   }
 }
 
+/**
+ * 运行 yamllint 检查 YAML 文件
+ * @throws {Error} 如果 yamllint 检查失败则退出进程
+ * @example
+ * runYamllint();
+ */
 export function runYamllint() {
   console.log('\nRunning yamllint...');
   if (!runCommand(LINTERS.yamllint.run)) {
@@ -162,6 +200,13 @@ export function runYamllint() {
   }
 }
 
+/**
+ * 运行 Prettier 格式化代码
+ * 使用 prettier --write 格式化所有支持的文件
+ * @throws {Error} 如果 Prettier 格式化失败则退出进程
+ * @example
+ * runPrettier();
+ */
 export function runPrettier() {
   console.log('\nRunning Prettier...');
   if (!runCommand('prettier --write .')) {

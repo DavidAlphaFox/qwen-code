@@ -7,7 +7,7 @@
 import type { SessionListItem } from '@qwen-code/qwen-code-core';
 
 /**
- * State for managing loaded sessions in the session picker.
+ * 会话选择器中用于管理已加载会话的状态
  */
 export interface SessionState {
   sessions: SessionListItem[];
@@ -16,12 +16,15 @@ export interface SessionState {
 }
 
 /**
- * Page size for loading sessions.
+ * 加载会话的页面大小
  */
 export const SESSION_PAGE_SIZE = 20;
 
 /**
- * Truncates text to fit within a given width, adding ellipsis if needed.
+ * 截断文本以适应给定宽度，必要时添加省略号
+ * @param text - 要截断的文本
+ * @param maxWidth - 最大宽度
+ * @returns 截断后的文本
  */
 export function truncateText(text: string, maxWidth: number): string {
   const firstLine = text.split(/\r?\n/, 1)[0];
@@ -35,7 +38,11 @@ export function truncateText(text: string, maxWidth: number): string {
 }
 
 /**
- * Filters sessions optionally by branch.
+ * 可选地按分支过滤会话
+ * @param sessions - 会话列表
+ * @param filterByBranch - 是否按分支过滤
+ * @param currentBranch - 当前分支
+ * @returns 过滤后的会话列表
  */
 export function filterSessions(
   sessions: SessionListItem[],
@@ -52,7 +59,9 @@ export function filterSessions(
 }
 
 /**
- * Formats message count for display with proper pluralization.
+ * 格式化消息数量显示，带有正确的复数形式
+ * @param count - 消息数量
+ * @returns 格式化的字符串
  */
 export function formatMessageCount(count: number): string {
   return count === 1 ? '1 message' : `${count} messages`;

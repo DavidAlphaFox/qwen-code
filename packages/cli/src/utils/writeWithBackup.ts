@@ -7,38 +7,33 @@
 import * as fs from 'node:fs';
 
 /**
- * Options for writeWithBackup function.
+ * writeWithBackup 函数的选项
  */
 export interface WriteWithBackupOptions {
-  /** Suffix for backup file (default: '.orig') */
+  /** 备份文件后缀（默认：'.orig'） */
   backupSuffix?: string;
-  /** File encoding (default: 'utf-8') */
+  /** 文件编码（默认：'utf-8'） */
   encoding?: BufferEncoding;
 }
 
 /**
- * Safely writes content to a file with backup protection.
- *
- * This function ensures data safety by:
- * 1. Writing content to a temporary file first
- * 2. Backing up the existing target file (if any)
- * 3. Renaming the temporary file to the target path
- *
- * If any step fails, an error is thrown and no partial changes are left on disk.
- * The backup file (if created) can be used for manual recovery.
- *
- * Note: This is not 100% atomic but provides good protection. In the worst case,
- * a .orig backup file remains that can be manually restored.
- *
- * @param targetPath - The path to write to
- * @param content - The content to write
- * @param options - Optional configuration
- * @throws Error if any step of the write process fails
- *
+ * 安全地写入文件并提供备份保护
+ * 此函数通过以下方式确保数据安全：
+ * 1. 首先将内容写入临时文件
+ * 2. 备份现有目标文件（如果有）
+ * 3. 将临时文件重命名为目标路径
+ * 如果任何步骤失败，会抛出错误并且磁盘上不会留下部分更改
+ * 备份文件（如果创建）可以用于手动恢复
+ * 注意：这不是 100% 原子的，但提供了良好的保护。在最坏的情况下，
+ * .orig 备份文件仍然存在，可以手动恢复
+ * @param targetPath - 要写入的路径
+ * @param content - 要写入的内容
+ * @param options - 可选配置
+ * @throws Error 如果写入过程的任何步骤失败
  * @example
  * ```typescript
  * await writeWithBackup('/path/to/settings.json', JSON.stringify(settings, null, 2));
- * // If /path/to/settings.json existed, it's now backed up to /path/to/settings.json.orig
+ * // 如果 /path/to/settings.json 存在，它现在已备份到 /path/to/settings.json.orig
  * ```
  */
 export async function writeWithBackup(
@@ -46,17 +41,16 @@ export async function writeWithBackup(
   content: string,
   options: WriteWithBackupOptions = {},
 ): Promise<void> {
-  // Async version delegates to sync version since file operations are synchronous
+  // 异步版本委托给同步版本，因为文件操作是同步的
   writeWithBackupSync(targetPath, content, options);
 }
 
 /**
- * Synchronous version of writeWithBackup.
- *
- * @param targetPath - The path to write to
- * @param content - The content to write
- * @param options - Optional configuration
- * @throws Error if any step of the write process fails
+ * writeWithBackup 的同步版本
+ * @param targetPath - 要写入的路径
+ * @param content - 要写入的内容
+ * @param options - 可选配置
+ * @throws Error 如果写入过程的任何步骤失败
  */
 export function writeWithBackupSync(
   targetPath: string,
@@ -67,29 +61,29 @@ export function writeWithBackupSync(
   const tempPath = `${targetPath}.tmp`;
   const backupPath = `${targetPath}${backupSuffix}`;
 
-  // Clean up any existing temp file from previous failed attempts
+  // 清理之前失败尝试留下的任何临时文件
   try {
     if (fs.existsSync(tempPath)) {
       fs.unlinkSync(tempPath);
     }
   } catch (_e) {
-    // Ignore cleanup errors
+    // 忽略清理错误
   }
 
   try {
-    // Step 1: Write to temporary file
+    // 步骤 1：写入临时文件
     fs.writeFileSync(tempPath, content, { encoding });
 
-    // Step 2: If target exists, back it up
+    // 步骤 2：如果目标存在，则备份
     if (fs.existsSync(targetPath)) {
-      // Check if target is a directory - we can't write to a directory
+      // 检查目标是否是目录 - 我们不能写入目录
       const targetStat = fs.statSync(targetPath);
       if (targetStat.isDirectory()) {
-        // Clean up temp file before throwing
+        // 在抛出之前清理临时文件
         try {
           fs.unlinkSync(tempPath);
         } catch (_e) {
-          // Ignore cleanup error
+          // 忽略清理错误
         }
         throw new Error(
           `Cannot write to '${targetPath}' because it is a directory`,
@@ -99,11 +93,11 @@ export function writeWithBackupSync(
       try {
         fs.renameSync(targetPath, backupPath);
       } catch (backupError) {
-        // Clean up temp file before throwing
+        // 在抛出之前清理临时文件
         try {
           fs.unlinkSync(tempPath);
         } catch (_e) {
-          // Ignore cleanup error
+          // 忽略清理错误
         }
         throw new Error(
           `Failed to backup existing file: ${backupError instanceof Error ? backupError.message : String(backupError)}`,
@@ -111,14 +105,14 @@ export function writeWithBackupSync(
       }
     }
 
-    // Step 3: Rename temp file to target
+    // 步骤 3：将临时文件重命名为目标
     try {
       fs.renameSync(tempPath, targetPath);
     } catch (renameError) {
       let restoreFailedMessage: string | undefined;
       let backupExisted = false;
 
-      // Attempt to restore backup if rename failed
+      // 如果重命名失败，尝试恢复备份
       if (fs.existsSync(backupPath)) {
         backupExisted = true;
         try {
@@ -156,13 +150,13 @@ export function writeWithBackupSync(
       );
     }
   } catch (error) {
-    // Ensure temp file is cleaned up on any error
+    // 确保任何错误时清理临时文件
     try {
       if (fs.existsSync(tempPath)) {
         fs.unlinkSync(tempPath);
       }
     } catch (_e) {
-      // Ignore cleanup error
+      // 忽略清理错误
     }
     throw error;
   }

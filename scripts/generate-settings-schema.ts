@@ -1,4 +1,11 @@
 /**
+ * @file generate-settings-schema.ts
+ * @description 设置模式生成脚本
+ * 从内部 SETTINGS_SCHEMA 定义生成 JSON Schema
+ * 供 VS Code 在 settings.json 文件中提供智能提示
+ */
+
+/**
  * @license
  * Copyright 2025 Qwen team
  * SPDX-License-Identifier: Apache-2.0
@@ -39,6 +46,11 @@ interface JsonSchemaProperty {
   additionalProperties?: boolean | JsonSchemaProperty;
 }
 
+/**
+ * 将单个设置定义转换为 JSON Schema 属性
+ * @param {SettingDefinition} setting - 设置定义对象
+ * @returns {JsonSchemaProperty} JSON Schema 属性对象
+ */
 function convertSettingToJsonSchema(
   setting: SettingDefinition,
 ): JsonSchemaProperty {
@@ -104,6 +116,11 @@ function convertSettingToJsonSchema(
   return schema;
 }
 
+/**
+ * 从设置模式生成完整的 JSON Schema
+ * @param {SettingsSchema} settingsSchema - 设置模式对象
+ * @returns {JsonSchemaProperty} 完整的 JSON Schema 对象
+ */
 function generateJsonSchema(
   settingsSchema: SettingsSchema,
 ): JsonSchemaProperty {

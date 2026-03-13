@@ -37,10 +37,9 @@ import { getAvailableCommands } from '../nonInteractiveCliCommands.js';
 const debugLogger = createDebugLogger('NON_INTERACTIVE');
 
 /**
- * Normalizes various part list formats into a consistent Part[] array.
- *
- * @param parts - Input parts in various formats (string, Part, Part[], or null)
- * @returns Normalized array of Part objects
+ * 将各种部分列表格式规范化为一致的 Part[] 数组
+ * @param parts - 各种格式的输入部分（string、Part、Part[] 或 null）
+ * @returns 规范化的 Part 对象数组
  */
 export function normalizePartList(parts: PartListUnion | null): Part[] {
   if (!parts) {
@@ -61,10 +60,9 @@ export function normalizePartList(parts: PartListUnion | null): Part[] {
 }
 
 /**
- * Extracts user message parts from a CLI protocol message.
- *
- * @param message - User message sourced from the CLI protocol layer
- * @returns Extracted parts or null if the message lacks textual content
+ * 从 CLI 协议消息中提取用户消息部分
+ * @param message - 来自 CLI 协议层的用户消息
+ * @returns 提取的部分，如果消息缺少文本内容则返回 null
  */
 export function extractPartsFromUserMessage(
   message: CLIUserMessage | undefined,
@@ -97,10 +95,9 @@ export function extractPartsFromUserMessage(
 }
 
 /**
- * Extracts usage metadata from the Gemini client's debug responses.
- *
- * @param geminiClient - The Gemini client instance
- * @returns Usage information or undefined if not available
+ * 从 Gemini 客户端的调试响应中提取使用元数据
+ * @param geminiClient - Gemini 客户端实例
+ * @returns 使用信息，如果不可用则返回 undefined
  */
 export function extractUsageFromGeminiClient(
   geminiClient: unknown,
@@ -158,11 +155,10 @@ export function extractUsageFromGeminiClient(
 }
 
 /**
- * Computes Usage information from SessionMetrics using computeSessionStats.
- * Aggregates token usage across all models in the session.
- *
- * @param metrics - Session metrics from uiTelemetryService
- * @returns Usage object with token counts
+ * 使用 computeSessionStats 从 SessionMetrics 计算使用信息
+ * 聚合会话中所有模型的令牌使用情况
+ * @param metrics - 来自 uiTelemetryService 的会话指标
+ * @returns 包含令牌计数的 Usage 对象
  */
 export function computeUsageFromMetrics(metrics: SessionMetrics): Usage {
   const stats = computeSessionStats(metrics);
@@ -226,23 +222,15 @@ async function loadSlashCommandNames(
 }
 
 /**
- * Build system message for SDK
- *
- * Constructs a system initialization message including tools, MCP servers,
- * and model configuration. System messages are independent of the control
- * system and are sent before every turn regardless of whether control
- * system is available.
- *
- * Note: Control capabilities are NOT included in system messages. They
- * are only included in the initialize control response, which is handled
- * separately by SystemController.
- *
- * @param config - Config instance
- * @param sessionId - Session identifier
- * @param permissionMode - Current permission/approval mode
- * @param allowedBuiltinCommandNames - Optional array of allowed built-in command names.
- *   If not provided, defaults to empty array (only file commands will be included).
- * @returns Promise resolving to CLISystemMessage
+ * 为 SDK 构建系统消息
+ * 构造包含工具、MCP 服务器和模型配置的系统初始化消息
+ * 系统消息独立于控制层，每一轮都会在控制层可用之前发送
+ * 注意：控制能力不包括在系统消息中，它们只包含在初始化控制响应中
+ * @param config - Config 实例
+ * @param sessionId - 会话标识符
+ * @param permissionMode - 当前权限/审批模式
+ * @param allowedBuiltinCommandNames - 可选的内置命令名称数组
+ * @returns Promise resolves to CLISystemMessage
  */
 export async function buildSystemMessage(
   config: Config,
@@ -307,14 +295,11 @@ function isMcpToolProgressData(
 }
 
 /**
- * Creates a generic output update handler for tools with canUpdateOutput=true.
- * This handler forwards MCP progress data (McpToolProgressData) as tool_progress
- * stream events via the adapter. Progress events are only emitted when the adapter
- * supports partial messages (i.e., includePartialMessages is true).
- *
- * @param request - Tool call request info
- * @param adapter - The adapter instance for emitting messages
- * @returns An object containing the output update handler
+ * 为 canUpdateOutput=true 的工具创建通用输出更新处理程序
+ * 此处理程序将 MCP 进度数据 (McpToolProgressData) 作为 tool_progress 流事件转发
+ * @param request - 工具调用请求信息
+ * @param adapter - 用于发送消息的适配器实例
+ * @returns 包含输出更新处理程序的对象
  */
 export function createToolProgressHandler(
   request: ToolCallRequestInfo,
@@ -335,15 +320,12 @@ export function createToolProgressHandler(
 }
 
 /**
- * Creates an output update handler specifically for Task tool subagent execution.
- * This handler monitors TaskResultDisplay updates and converts them to protocol messages
- * using the unified adapter's subagent APIs. All emitted messages will have parent_tool_use_id set to
- * the task tool's callId.
- *
- * @param config - Config instance for getting output format
- * @param taskToolCallId - The task tool's callId to use as parent_tool_use_id for all subagent messages
- * @param adapter - The unified adapter instance (JsonOutputAdapter or StreamJsonOutputAdapter)
- * @returns An object containing the output update handler
+ * 为 Task 工具子代理执行创建专门的输出更新处理程序
+ * 此处理程序监控 TaskResultDisplay 更新并使用统一适配器的子代理 API 将其转换为协议消息
+ * @param config - Config 实例，用于获取输出格式
+ * @param taskToolCallId - 任务工具的 callId，用作所有子代理消息的 parent_tool_use_id
+ * @param adapter - 统一适配器实例
+ * @returns 包含输出更新处理程序的对象
  */
 export function createTaskToolProgressHandler(
   config: Config,
@@ -618,11 +600,10 @@ export function createTaskToolProgressHandler(
 }
 
 /**
- * Converts function response parts to a string representation.
- * Handles functionResponse parts specially by extracting their output content.
- *
- * @param parts - Array of Part objects to convert
- * @returns String representation of the parts
+ * 将函数响应部分转换为字符串表示
+ * 特别处理 functionResponse 部分，提取其输出内容
+ * @param parts - 要转换的 Part 对象数组
+ * @returns 部分的字符串表示
  */
 export function functionResponsePartsToString(parts: Part[]): string {
   return parts
@@ -637,13 +618,10 @@ export function functionResponsePartsToString(parts: Part[]): string {
 }
 
 /**
- * Extracts content from a tool call response for inclusion in tool_result blocks.
- * Uses functionResponsePartsToString to properly handle functionResponse parts,
- * which correctly extracts output content from functionResponse objects rather
- * than simply concatenating text or JSON.stringify.
- *
- * @param response - Tool call response information
- * @returns String content for the tool_result block, or undefined if no content available
+ * 从工具调用响应中提取内容，用于包含在 tool_result 块中
+ * 使用 functionResponsePartsToString 正确处理 functionResponse 部分
+ * @param response - 工具调用响应信息
+ * @returns tool_result 块的字符串内容，如果没有可用内容则返回 undefined
  */
 export function toolResultContent(
   response: ToolCallResponseInfo,

@@ -1,25 +1,25 @@
 /**
- * UUID validation utilities
+ * UUID验证工具模块
  */
 
-// UUID v4 regex pattern
+// UUID v4正则表达式
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * Validates if a string is a valid UUID format
- * @param value - The string to validate
- * @returns True if the string is a valid UUID, false otherwise
+ * 验证字符串是否为有效的UUID格式
+ * @param value - 要验证的字符串
+ * @returns 如果是有效的UUID返回true，否则返回false
  */
 export function isValidUUID(value: string): boolean {
   return UUID_REGEX.test(value);
 }
 
 /**
- * Validates a session ID and throws an error if invalid
- * @param sessionId - The session ID to validate
- * @param paramName - The name of the parameter (for error messages)
- * @throws Error if the session ID is not a valid UUID
+ * 验证会话ID格式，如果无效则抛出错误
+ * @param sessionId - 要验证的会话ID
+ * @param paramName - 参数名称（用于错误消息）
+ * @throws 如果会话ID不是有效的UUID则抛出错误
  */
 export function validateSessionId(
   sessionId: string,

@@ -6,73 +6,75 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 /**
- * Defines the contract for communication with the Qwen Code CLI.
+ * 传输层接口
+ * 
+ * 定义与Qwen Code CLI通信的契约。
  *
  * @author skyfire
  * @version $Id: 0.0.1
  */
 public interface Transport {
     /**
-     * Gets the transport options used by this transport.
+     * 获取此传输层使用的传输选项
      *
-     * @return The transport options
+     * @return 传输选项
      */
     TransportOptions getTransportOptions();
 
     /**
-     * Checks if the transport is currently reading.
+     * 检查传输层是否正在读取
      *
-     * @return true if reading, false otherwise
+     * @return 如果正在读取返回true，否则返回false
      */
     boolean isReading();
 
     /**
-     * Starts the transport.
+     * 启动传输层
      *
-     * @throws java.io.IOException if starting fails
+     * @throws java.io.IOException 如果启动失败
      */
     void start() throws IOException;
 
     /**
-     * Closes the transport and releases resources.
+     * 关闭传输层并释放资源
      *
-     * @throws java.io.IOException if closing fails
+     * @throws java.io.IOException 如果关闭失败
      */
     void close() throws IOException;
 
     /**
-     * Checks if the transport is available for communication.
+     * 检查传输层是否可用于通信
      *
-     * @return true if available, false otherwise
+     * @return 如果可用返回true，否则返回false
      */
     boolean isAvailable();
 
     /**
-     * Sends a message and waits for a single-line response.
+     * 发送消息并等待单行响应
      *
-     * @param message The message to send
-     * @return The response message
-     * @throws java.io.IOException if an I/O error occurs
-     * @throws java.util.concurrent.ExecutionException if an execution error occurs
-     * @throws java.lang.InterruptedException if the operation is interrupted
-     * @throws java.util.concurrent.TimeoutException if the operation times out
+     * @param message 要发送的消息
+     * @return 响应消息
+     * @throws java.io.IOException 如果发生IO错误
+     * @throws java.util.concurrent.ExecutionException 如果发生执行错误
+     * @throws java.lang.InterruptedException 如果操作被中断
+     * @throws java.util.concurrent.TimeoutException 如果操作超时
      */
     String inputWaitForOneLine(String message) throws IOException, ExecutionException, InterruptedException, TimeoutException;
 
     /**
-     * Sends a message and waits for a multi-line response.
+     * 发送消息并等待多行响应
      *
-     * @param message The message to send
-     * @param callBackFunction A function to process each line of the response
-     * @throws java.io.IOException if an I/O error occurs
+     * @param message 要发送的消息
+     * @param callBackFunction 处理每行响应的函数
+     * @throws java.io.IOException 如果发生IO错误
      */
     void inputWaitForMultiLine(String message, Function<String, Boolean> callBackFunction) throws IOException;
 
     /**
-     * Sends a message without waiting for a response.
+     * 发送消息而不等待响应
      *
-     * @param message The message to send
-     * @throws java.io.IOException if an I/O error occurs
+     * @param message 要发送的消息
+     * @throws java.io.IOException 如果发生IO错误
      */
     void inputNoWaitResponse(String message) throws IOException;
 }

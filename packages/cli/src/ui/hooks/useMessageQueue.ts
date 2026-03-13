@@ -21,9 +21,8 @@ export interface UseMessageQueueReturn {
 }
 
 /**
- * Hook for managing message queuing during streaming responses.
- * Allows users to queue messages while the AI is responding and automatically
- * sends them when streaming completes.
+ * 用于在流式响应期间管理消息队列的 Hook
+ * 允许用户在 AI 响应时排队消息，并在流式传输完成时自动发送
  */
 export function useMessageQueue({
   isConfigInitialized,

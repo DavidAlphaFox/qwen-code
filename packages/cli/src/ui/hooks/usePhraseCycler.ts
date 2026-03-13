@@ -7,15 +7,18 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { t, ta } from '../../i18n/index.js';
 
+/** 默认的幽默加载短语 */
 export const WITTY_LOADING_PHRASES: string[] = ["I'm Feeling Lucky"];
 
+/** 短语切换间隔（毫秒） */
 export const PHRASE_CHANGE_INTERVAL_MS = 15000;
 
 /**
- * Custom hook to manage cycling through loading phrases.
- * @param isActive Whether the phrase cycling should be active.
- * @param isWaiting Whether to show a specific waiting phrase.
- * @returns The current loading phrase.
+ * 管理加载短语循环的自定义 Hook
+ * @param isActive - 短语循环是否应该激活
+ * @param isWaiting - 是否显示特定的等待短语
+ * @param customPhrases - 可选的自定义短语数组
+ * @returns 当前加载短语
  */
 export const usePhraseCycler = (
   isActive: boolean,

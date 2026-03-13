@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 /**
+ * @file check-i18n.ts
+ * @description 国际化检查脚本 - 验证翻译文件的一致性和完整性
+ * 检查翻译键是否匹配、是否存在未使用的翻译键等
+ */
+
+/**
  * @license
  * Copyright 2025 Qwen
  * SPDX-License-Identifier: Apache-2.0
@@ -29,7 +35,13 @@ interface CheckResult {
 }
 
 /**
- * Load translations from JS file
+ * 从 JS 文件加载翻译内容
+ * 尝试动态导入为 ES 模块，如果失败则回退到 JSON 格式
+ * @param {string} filePath - 翻译文件路径（.js 或 .json）
+ * @returns {Promise<Record<string, string | string[]>>} 翻译键值对对象
+ * @throws {Error} 如果加载失败
+ * @example
+ * const translations = await loadTranslationsFile('./locales/en.js');
  */
 async function loadTranslationsFile(
   filePath: string,
@@ -53,7 +65,12 @@ async function loadTranslationsFile(
 }
 
 /**
- * Extract string literal from code, handling escaped quotes
+ * 从代码中提取字符串字面量
+ * 处理转义字符如 \"、\n、\t 等
+ * @param {string} content - 源代码内容
+ * @param {number} startPos - 字符串开始位置（引号之后）
+ * @param {string} quote - 引号类型（' 或 "）
+ * @returns {{value: string, endPos: number} | null} 提取的字符串值和结束位置，如果未找到闭合引号则返回 null
  */
 function extractStringLiteral(
   content: string,
@@ -97,7 +114,12 @@ function extractStringLiteral(
 }
 
 /**
- * Extract all t() calls from source files
+ * 从源文件中提取所有使用的翻译键
+ * 查找 t() 和 ta() 函数调用
+ * @param {string} sourceDir - 源代码目录路径
+ * @returns {Promise<Set<string>>} 使用的翻译键集合
+ * @example
+ * const usedKeys = await extractUsedKeys('./packages/cli/src');
  */
 async function extractUsedKeys(sourceDir: string): Promise<Set<string>> {
   const usedKeys = new Set<string>();
@@ -150,7 +172,12 @@ async function extractUsedKeys(sourceDir: string): Promise<Set<string>> {
 }
 
 /**
- * Check key-value consistency in en.js
+ * 检查 en.js 中键值一致性
+ * 验证翻译键与其值是否匹配（非数组类型）
+ * @param {Record<string, string | string[]>} enTranslations - 英语翻译对象
+ * @returns {string[]} 错误信息列表
+ * @example
+ * const errors = checkKeyValueConsistency(enTranslations);
  */
 function checkKeyValueConsistency(
   enTranslations: Record<string, string | string[]>,
@@ -172,7 +199,13 @@ function checkKeyValueConsistency(
 }
 
 /**
- * Check if en.js and zh.js have matching keys
+ * 检查 en.js 和 zh.js 中的键是否匹配
+ * 验证两个语言文件具有相同的翻译键
+ * @param {Record<string, string | string[]>} enTranslations - 英语翻译对象
+ * @param {Record<string, string | string[]>} zhTranslations - 中文翻译对象
+ * @returns {string[]} 错误信息列表
+ * @example
+ * const errors = checkKeyMatching(enTranslations, zhTranslations);
  */
 function checkKeyMatching(
   enTranslations: Record<string, string | string[]>,
@@ -200,7 +233,13 @@ function checkKeyMatching(
 }
 
 /**
- * Find unused translation keys
+ * 查找未使用的翻译键
+ * 找出在翻译文件中存在但在源代码中未使用的键
+ * @param {Set<string>} allKeys - 所有翻译键集合
+ * @param {Set<string>} usedKeys - 实际使用的翻译键集合
+ * @returns {string[]} 未使用的翻译键列表（已排序）
+ * @example
+ * const unused = findUnusedKeys(allKeys, usedKeys);
  */
 function findUnusedKeys(allKeys: Set<string>, usedKeys: Set<string>): string[] {
   return Array.from(allKeys)
@@ -209,9 +248,11 @@ function findUnusedKeys(allKeys: Set<string>, usedKeys: Set<string>): string[] {
 }
 
 /**
- * Save keys that exist only in locale files to a JSON file
- * @param keysOnlyInLocales Array of keys that exist only in locale files
- * @param outputPath Path to save the JSON file
+ * 将仅存在于 locales 文件中的键保存到 JSON 文件
+ * @param {string[]} keysOnlyInLocales - 仅存在于 locales 中的键数组
+ * @param {string} outputPath - 输出 JSON 文件的路径
+ * @example
+ * saveKeysOnlyInLocalesToJson(keys, './unused-keys.json');
  */
 function saveKeysOnlyInLocalesToJson(
   keysOnlyInLocales: string[],
@@ -231,12 +272,14 @@ function saveKeysOnlyInLocalesToJson(
 }
 
 /**
- * Check if unused keys exist only in locale files and nowhere else in the codebase
- * Optimized to search all keys in a single pass instead of multiple grep calls
- * @param unusedKeys The list of unused keys to check
- * @param sourceDir The source directory to search in
- * @param localesDir The locales directory to exclude from search
- * @returns Array of keys that exist only in locale files
+ * 查找仅存在于 locale 文件中的未使用键
+ * 优化为单次遍历搜索所有键，而不是多次 grep 调用
+ * @param {string[]} unusedKeys - 未使用键列表
+ * @param {string} sourceDir - 源代码目录
+ * @param {string} localesDir - locale 目录（从搜索中排除）
+ * @returns {Promise<string[]>} 仅存在于 locale 文件中的键数组
+ * @example
+ * const onlyInLocales = await findKeysOnlyInLocales(unusedKeys, sourceDir, localesDir);
  */
 async function findKeysOnlyInLocales(
   unusedKeys: string[],
@@ -293,7 +336,14 @@ async function findKeysOnlyInLocales(
 }
 
 /**
- * Main check function
+ * 主检查函数
+ * 执行所有国际化检查并返回结果
+ * @returns {Promise<CheckResult>} 检查结果对象，包含成功状态、错误、警告和统计信息
+ * @example
+ * const result = await checkI18n();
+ * if (!result.success) {
+ *   console.error('检查失败:', result.errors);
+ * }
  */
 async function checkI18n(): Promise<CheckResult> {
   const errors: string[] = [];

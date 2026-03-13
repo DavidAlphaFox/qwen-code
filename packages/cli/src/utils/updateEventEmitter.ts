@@ -7,7 +7,7 @@
 import { EventEmitter } from 'node:events';
 
 /**
- * A shared event emitter for application-wide communication
- * between decoupled parts of the CLI.
+ * 应用程序范围的共享事件发射器
+ * 用于 CLI 解耦部分之间的通信
  */
 export const updateEventEmitter = new EventEmitter();

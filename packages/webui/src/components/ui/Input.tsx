@@ -8,45 +8,71 @@ import type { ReactNode } from 'react';
 import { forwardRef } from 'react';
 
 /**
- * Input size types
+ * 输入框尺寸类型
+ * @typedef {'sm' | 'md' | 'lg'} InputSize
+ * @description 定义输入框的尺寸：sm（小）、md（中）、lg（大）
  */
 export type InputSize = 'sm' | 'md' | 'lg';
 
 /**
- * Input component props interface
+ * 输入框组件属性接口
+ * @interface InputProps
+ * @description Input组件的属性定义，继承自HTML输入元素的所有属性（size除外）
  */
-export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  /** Input size */
+export interface InputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'size'
+> {
+  /** 输入框尺寸 */
   size?: InputSize;
-  /** Error state */
+  /** 错误状态 */
   error?: boolean;
-  /** Error message to display */
+  /** 错误提示信息 */
   errorMessage?: string;
-  /** Label for the input */
+  /** 输入框标签 */
   label?: string;
-  /** Helper text below input */
+  /** 输入框下方的辅助文本 */
   helperText?: string;
-  /** Left icon/element */
+  /** 左侧元素（如图标） */
   leftElement?: ReactNode;
-  /** Right icon/element */
+  /** 右侧元素（如图标） */
   rightElement?: ReactNode;
-  /** Full width input */
+  /** 是否占满宽度 */
   fullWidth?: boolean;
 }
 
 /**
- * Input component with multiple sizes and states
+ * 输入框组件
+ * @component
+ * @description 多尺寸、多状态的输入框组件，支持错误提示、标签和辅助文本
+ *
+ * @param {InputProps} props - 组件属性
+ * @param {React.Ref<HTMLInputElement>} ref - 转发给底层input元素的引用
+ * @returns {JSX.Element} React输入框元素
  *
  * @example
- * ```tsx
+ * // 基本用法
  * <Input
- *   label="Email"
- *   placeholder="Enter your email"
- *   error={!!errors.email}
- *   errorMessage={errors.email}
+ *   label="邮箱"
+ *   placeholder="请输入邮箱"
  * />
- * ```
+ *
+ * @example
+ * // 带错误提示
+ * <Input
+ *   label="邮箱"
+ *   placeholder="请输入邮箱"
+ *   error={hasError}
+ *   errorMessage="请输入有效的邮箱地址"
+ * />
+ *
+ * @example
+ * // 带图标
+ * <Input
+ *   placeholder="搜索..."
+ *   leftElement={<SearchIcon />}
+ *   rightElement={<ClearIcon />}
+ * />
  */
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (

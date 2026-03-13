@@ -10,6 +10,11 @@ import type {
   ModelMetrics,
 } from '../contexts/SessionContext.js';
 
+/**
+ * 计算错误率
+ * @param metrics - 模型指标
+ * @returns 错误百分比
+ */
 export function calculateErrorRate(metrics: ModelMetrics): number {
   if (metrics.api.totalRequests === 0) {
     return 0;
@@ -17,6 +22,11 @@ export function calculateErrorRate(metrics: ModelMetrics): number {
   return (metrics.api.totalErrors / metrics.api.totalRequests) * 100;
 }
 
+/**
+ * 计算平均延迟
+ * @param metrics - 模型指标
+ * @returns 平均延迟（毫秒）
+ */
 export function calculateAverageLatency(metrics: ModelMetrics): number {
   if (metrics.api.totalRequests === 0) {
     return 0;
@@ -24,6 +34,11 @@ export function calculateAverageLatency(metrics: ModelMetrics): number {
   return metrics.api.totalLatencyMs / metrics.api.totalRequests;
 }
 
+/**
+ * 计算缓存命中率
+ * @param metrics - 模型指标
+ * @returns 缓存命中率百分比
+ */
 export function calculateCacheHitRate(metrics: ModelMetrics): number {
   if (metrics.tokens.prompt === 0) {
     return 0;
@@ -31,6 +46,11 @@ export function calculateCacheHitRate(metrics: ModelMetrics): number {
   return (metrics.tokens.cached / metrics.tokens.prompt) * 100;
 }
 
+/**
+ * 计算会话统计信息
+ * @param metrics - 会话指标
+ * @returns 计算后的会话统计信息
+ */
 export const computeSessionStats = (
   metrics: SessionMetrics,
 ): ComputedSessionStats => {

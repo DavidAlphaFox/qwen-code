@@ -9,8 +9,8 @@ import type { KeyBinding, KeyBindingConfig } from '../config/keyBindings.js';
 import { Command, defaultKeyBindings } from '../config/keyBindings.js';
 
 /**
- * Matches a KeyBinding against an actual Key press
- * Pure data-driven matching logic
+ * 将 KeyBinding 与实际按键进行匹配
+ * 纯数据驱动的匹配逻辑
  */
 function matchKeyBinding(keyBinding: KeyBinding, key: Key): boolean {
   // Either key name or sequence must match (but not both should be defined)
@@ -58,7 +58,7 @@ function matchKeyBinding(keyBinding: KeyBinding, key: Key): boolean {
 }
 
 /**
- * Checks if a key matches any of the bindings for a command
+ * 检查按键是否匹配命令的任何绑定
  */
 function matchCommand(
   command: Command,
@@ -70,19 +70,21 @@ function matchCommand(
 }
 
 /**
- * Key matcher function type
+ * 键匹配器函数类型
  */
 type KeyMatcher = (key: Key) => boolean;
 
 /**
- * Type for key matchers mapped to Command enum
+ * 映射到 Command 枚举的键匹配器类型
  */
 export type KeyMatchers = {
   readonly [C in Command]: KeyMatcher;
 };
 
 /**
- * Creates key matchers from a key binding configuration
+ * 从键绑定配置创建键匹配器
+ * @param config - 键绑定配置，默认为 defaultKeyBindings
+ * @returns 键匹配器对象
  */
 export function createKeyMatchers(
   config: KeyBindingConfig = defaultKeyBindings,
@@ -97,9 +99,9 @@ export function createKeyMatchers(
 }
 
 /**
- * Default key binding matchers using the default configuration
+ * 使用默认配置的默认键绑定匹配器
  */
 export const keyMatchers: KeyMatchers = createKeyMatchers(defaultKeyBindings);
 
-// Re-export Command for convenience
+// 为方便起见，重新导出 Command
 export { Command };

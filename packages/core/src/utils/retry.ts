@@ -11,31 +11,43 @@ import { createDebugLogger } from './debugLogger.js';
 
 const debugLogger = createDebugLogger('RETRY');
 
+/**
+ * HTTP 错误接口
+ */
 export interface HttpError extends Error {
   status?: number;
 }
 
+/**
+ * 重试选项配置
+ */
 export interface RetryOptions {
+  /** 最大重试次数 */
   maxAttempts: number;
+  /** 初始延迟毫秒数 */
   initialDelayMs: number;
+  /** 最大延迟毫秒数 */
   maxDelayMs: number;
+  /** 判断错误是否应该重试的函数 */
   shouldRetryOnError: (error: Error) => boolean;
+  /** 判断内容是否应该重试的函数（可选） */
   shouldRetryOnContent?: (content: GenerateContentResponse) => boolean;
+  /** 认证类型 */
   authType?: string;
 }
 
 const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   maxAttempts: 7,
   initialDelayMs: 1500,
-  maxDelayMs: 30000, // 30 seconds
+  maxDelayMs: 30000, // 30 秒
   shouldRetryOnError: defaultShouldRetry,
 };
 
 /**
- * Default predicate function to determine if a retry should be attempted.
- * Retries on 429 (Too Many Requests) and 5xx server errors.
- * @param error The error object.
- * @returns True if the error is a transient error, false otherwise.
+ * 默认的重试判断函数
+ * 对 429（请求过多）和 5xx 服务器错误进行重试
+ * @param error - 错误对象
+ * @returns 如果是临时错误返回 true，否则返回 false
  */
 function defaultShouldRetry(error: Error | unknown): boolean {
   const status = getErrorStatus(error);
@@ -45,20 +57,20 @@ function defaultShouldRetry(error: Error | unknown): boolean {
 }
 
 /**
- * Delays execution for a specified number of milliseconds.
- * @param ms The number of milliseconds to delay.
- * @returns A promise that resolves after the delay.
+ * 延迟执行指定的毫秒数
+ * @param ms - 延迟的毫秒数
+ * @returns 延迟后解析的 Promise
  */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
- * Retries a function with exponential backoff and jitter.
- * @param fn The asynchronous function to retry.
- * @param options Optional retry configuration.
- * @returns A promise that resolves with the result of the function if successful.
- * @throws The last error encountered if all attempts fail.
+ * 使用指数退避和抖动重试函数
+ * @param fn - 要重试的异步函数
+ * @param options - 可选的重试配置
+ * @returns 成功时返回函数结果的 Promise
+ * @throws 如果所有尝试都失败，则抛出最后一个遇到的错误
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -152,16 +164,14 @@ export async function retryWithBackoff<T>(
 }
 
 /**
- * Extracts the HTTP status code from an error object.
- *
- * Checks the following properties in order of priority:
- * 1. `error.status` - OpenAI, Anthropic, Gemini SDK errors
- * 2. `error.statusCode` - Some HTTP client libraries
- * 3. `error.response.status` - Axios-style errors
- * 4. `error.error.code` - Nested error objects
- *
- * @param error The error object.
- * @returns The HTTP status code (100-599), or undefined if not found.
+ * 从错误对象中提取 HTTP 状态码
+ * 按优先级检查以下属性：
+ * 1. error.status - OpenAI、Anthropic、 Gemini SDK 错误
+ * 2. error.statusCode - 某些 HTTP 客户端库
+ * 3. error.response.status - Axios 风格的错误
+ * 4. error.error.code - 嵌套错误对象
+ * @param error - 错误对象
+ * @returns HTTP 状态码（100-599），如果未找到则返回 undefined
  */
 export function getErrorStatus(error: unknown): number | undefined {
   if (typeof error !== 'object' || error === null) {
@@ -184,9 +194,9 @@ export function getErrorStatus(error: unknown): number | undefined {
 }
 
 /**
- * Extracts the Retry-After delay from an error object's headers.
- * @param error The error object.
- * @returns The delay in milliseconds, or 0 if not found or invalid.
+ * 从错误对象的响应头中提取 Retry-After 延迟时间
+ * @param error - 错误对象
+ * @returns 延迟毫秒数，如果未找到或无效则返回 0
  */
 function getRetryAfterDelayMs(error: unknown): number {
   if (typeof error === 'object' && error !== null) {
@@ -222,10 +232,10 @@ function getRetryAfterDelayMs(error: unknown): number {
 }
 
 /**
- * Logs a message for a retry attempt when using exponential backoff.
- * @param attempt The current attempt number.
- * @param error The error that caused the retry.
- * @param errorStatus The HTTP status code of the error, if available.
+ * 使用指数退避重试时记录重试尝试的消息
+ * @param attempt - 当前尝试次数
+ * @param error - 导致重试的错误
+ * @param errorStatus - 错误的 HTTP 状态码（如果有）
  */
 function logRetryAttempt(
   attempt: number,

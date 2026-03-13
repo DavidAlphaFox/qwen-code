@@ -15,9 +15,13 @@ import { linkCommand } from './extensions/link.js';
 import { newCommand } from './extensions/new.js';
 import { settingsCommand } from './extensions/settings.js';
 
+/**
+ * 扩展命令模块
+ * 用于管理 Qwen Code 扩展的 yargs 命令定义
+ */
 export const extensionsCommand: CommandModule = {
   command: 'extensions <command>',
-  describe: 'Manage Qwen Code extensions.',
+  describe: '管理 Qwen Code 扩展',
   builder: (yargs) =>
     yargs
       .command(installCommand)

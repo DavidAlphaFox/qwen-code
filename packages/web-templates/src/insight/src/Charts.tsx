@@ -4,10 +4,16 @@ import type { InsightData } from './types';
 import React from 'react';
 
 // -----------------------------------------------------------------------------
-// Existing Components
+// 现有组件
 // -----------------------------------------------------------------------------
 
-// Dashboard Cards Component
+// 仪表板卡片组件
+/**
+ * 仪表板卡片组件
+ * 包含洞察数据的可视化卡片
+ * @param props - 组件属性
+ * @param props.insights - 洞察数据
+ */
 export function DashboardCards({ insights }: { insights: InsightData }) {
   const cardClass = 'glass-card p-6';
   const sectionTitleClass =
@@ -24,7 +30,15 @@ export function DashboardCards({ insights }: { insights: InsightData }) {
   );
 }
 
-// Active Hours Chart Component
+// 活跃时间图表组件
+/**
+ * 活跃时间图表组件
+ * 展示用户在一天中不同时间段的活跃程度
+ * @param props - 组件属性
+ * @param props.activeHours - 每小时活跃次数
+ * @param props.cardClass - 卡片样式类
+ * @param props.sectionTitleClass - 标题样式类
+ */
 export function ActiveHoursChart({
   activeHours,
   cardClass,
@@ -115,7 +129,13 @@ export function ActiveHoursChart({
   );
 }
 
-// Heatmap Section Component
+// 热力图区域组件
+/**
+ * 热力图区域组件
+ * 展示用户一年内的活动热力图
+ * @param props - 组件属性
+ * @param props.heatmap - 热力图数据
+ */
 export function HeatmapSection({
   heatmap,
 }: {
@@ -141,7 +161,13 @@ export function HeatmapSection({
   );
 }
 
-// Activity Heatmap Component
+// 活动热力图组件
+/**
+ * 活动热力图组件
+ * SVG 渲染的一年活动热力图
+ * @param props - 组件属性
+ * @param props.heatmapData - 热力图数据
+ */
 function ActivityHeatmap({
   heatmapData,
 }: {
@@ -276,7 +302,11 @@ function ActivityHeatmap({
   );
 }
 
-// Heatmap Legend Component (outside SVG)
+// 热力图图例组件
+/**
+ * 热力图图例组件
+ * 显示热力图颜色对应的数值范围
+ */
 function HeatmapLegend() {
   const colors = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'];
 

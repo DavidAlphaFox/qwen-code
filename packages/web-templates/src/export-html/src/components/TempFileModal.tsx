@@ -2,12 +2,25 @@ import './TempFileModal.css';
 
 const React = window.React;
 
+/**
+ * 模态框状态类型
+ */
 export type ModalState = {
+  /** 模态框是否可见 */
   visible: boolean;
+  /** 模态框内容 */
   content: string;
+  /** 文件名 */
   fileName: string;
 };
 
+/**
+ * 临时文件模态框组件
+ * 显示临时文件内容的模态对话框
+ * @param props - 组件属性
+ * @param props.state - 模态框状态
+ * @param props.onClose - 关闭回调函数
+ */
 export const TempFileModal = ({
   state,
   onClose,
@@ -43,6 +56,11 @@ export const TempFileModal = ({
   );
 };
 
+/**
+ * 模态框状态 Hook
+ * 管理模态框的显示状态和操作
+ * @returns 包含状态和操作方法的对象
+ */
 export const useModalState = () => {
   const [modalState, setModalState] = React.useState<ModalState>({
     visible: false,

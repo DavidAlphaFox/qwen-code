@@ -22,21 +22,29 @@ import { detectEncodingFromBuffer } from './systemEncoding.js';
 
 const debugLogger = createDebugLogger('FILE_UTILS');
 
-// Default values for encoding and separator format
+// 默认编码和分隔符格式
 export const DEFAULT_ENCODING: BufferEncoding = 'utf-8';
 
-// --- Unicode BOM detection & decoding helpers --------------------------------
+// --- Unicode BOM 检测和解码辅助函数 --------------------------------
 
+/**
+ * Unicode 编码类型
+ */
 type UnicodeEncoding = 'utf8' | 'utf16le' | 'utf16be' | 'utf32le' | 'utf32be';
 
+/**
+ * BOM 信息接口
+ */
 interface BOMInfo {
   encoding: UnicodeEncoding;
   bomLength: number;
 }
 
 /**
- * Detect a Unicode BOM (Byte Order Mark) if present.
- * Reads up to the first 4 bytes and returns encoding + BOM length, else null.
+ * 检测 Unicode BOM（字节顺序标记）是否存在
+ * 读取前 4 个字节并返回编码和 BOM 长度，如果不存在则返回 null
+ * @param buf - 要检测的缓冲区
+ * @returns BOM 信息或 null
  */
 export function detectBOM(buf: Buffer): BOMInfo | null {
   if (buf.length >= 4) {
@@ -83,8 +91,10 @@ export function detectBOM(buf: Buffer): BOMInfo | null {
 }
 
 /**
- * Convert a UTF-16 BE buffer to a JS string by swapping to LE then using Node's decoder.
- * (Node has 'utf16le' but not 'utf16be'.)
+ * 将 UTF-16 BE 缓冲区转换为 JS 字符串
+ * 通过交换为 LE 然后使用 Node 的解码器
+ * @param buf - 要解码的缓冲区
+ * @returns 解码后的字符串
  */
 function decodeUTF16BE(buf: Buffer): string {
   if (buf.length === 0) return '';
@@ -94,8 +104,11 @@ function decodeUTF16BE(buf: Buffer): string {
 }
 
 /**
- * Decode a UTF-32 buffer (LE or BE) into a JS string.
- * Invalid code points are replaced with U+FFFD, partial trailing bytes are ignored.
+ * 将 UTF-32 缓冲区（LE 或 BE）解码为 JS 字符串
+ * 无效的代码点将替换为 U+FFFD，尾部不完整的字节将被忽略
+ * @param buf - 要解码的缓冲区
+ * @param littleEndian - 是否为小端序
+ * @returns 解码后的字符串
  */
 function decodeUTF32(buf: Buffer, littleEndian: boolean): string {
   if (buf.length < 4) return '';
@@ -124,8 +137,10 @@ function decodeUTF32(buf: Buffer, littleEndian: boolean): string {
 }
 
 /**
- * Check whether a buffer is valid UTF-8 by attempting a strict decode.
- * If any invalid byte sequence is encountered, TextDecoder with `fatal: true` throws.
+ * 通过尝试严格解码来检查缓冲区是否是有效的 UTF-8
+ * 如果遇到任何无效字节序列，使用 fatal: true 的 TextDecoder 会抛出错误
+ * @param buffer - 要检查的缓冲区
+ * @returns 是否为有效的 UTF-8
  */
 function isValidUtf8(buffer: Buffer): boolean {
   try {
@@ -137,24 +152,26 @@ function isValidUtf8(buffer: Buffer): boolean {
 }
 
 /**
- * Result of reading a file with encoding detection.
+ * 文件读取结果
  */
 export interface FileReadResult {
-  /** Decoded text content of the file (BOM stripped if present). */
+  /** 文件的解码文本内容（如果存在 BOM 则已剥离） */
   content: string;
-  /** Detected encoding name (e.g. 'utf-8', 'gb18030', 'utf-16le'). */
+  /** 检测到的编码名称（例如 'utf-8'、'gb18030'、'utf-16le'） */
   encoding: string;
   /**
-   * Whether the file had a Unicode BOM (UTF-8, UTF-16 LE/BE, or UTF-32 LE/BE).
-   * When true, the same BOM should be re-written on save to preserve the file's
-   * original byte-order mark.
+   * 文件是否有 Unicode BOM（UTF-8、UTF-16 LE/BE 或 UTF-32 LE/BE）
+   * 当为 true 时，保存时应重新写入相同的 BOM 以保留文件的原始字节顺序
    */
   bom: boolean;
 }
 
 /**
- * Internal helper: decode a buffer given a BOMInfo.
- * Returns the decoded string for each supported BOM encoding.
+ * 内部辅助函数：根据 BOM 信息解码缓冲区
+ * 返回每个支持的 BOM 编码的解码字符串
+ * @param buf - 要解码的缓冲区
+ * @param bomInfo - BOM 信息
+ * @returns 解码后的字符串
  */
 function decodeBOMBuffer(buf: Buffer, bomInfo: BOMInfo): string {
   const content = buf.subarray(bomInfo.bomLength);
@@ -176,7 +193,9 @@ function decodeBOMBuffer(buf: Buffer, bomInfo: BOMInfo): string {
 }
 
 /**
- * Map a BOMInfo encoding to a canonical encoding name string.
+ * 将 BOMInfo 编码映射到规范化的编码名称字符串
+ * @param bomEncoding - BOM 编码类型
+ * @returns 规范化的编码名称
  */
 function bomEncodingToName(bomEncoding: UnicodeEncoding): string {
   switch (bomEncoding) {
@@ -196,13 +215,13 @@ function bomEncodingToName(bomEncoding: UnicodeEncoding): string {
 }
 
 /**
- * Read a file as text, honoring BOM encodings (UTF‑8/16/32) and stripping the BOM.
- * For files without BOM, validates UTF-8 first. If invalid UTF-8, uses chardet
- * to detect encoding (e.g. GBK, Big5, Shift_JIS) and iconv-lite to decode.
- * Falls back to utf8 when detection fails.
- *
- * Returns both the decoded content and the detected encoding/BOM information
- * in a single I/O pass, avoiding redundant file reads.
+ * 读取文件作为文本，尊重 BOM 编码（UTF-8/16/32）并剥离 BOM
+ * 对于没有 BOM 的文件，首先验证 UTF-8。如果无效 UTF-8，使用 chardet
+ * 检测编码（例如 GBK、Big5、Shift_JIS）并使用 iconv-lite 解码
+ * 检测失败时回退到 utf8
+ * 返回解码后的内容和检测到的编码/BOM 信息，在单次 I/O 中完成
+ * @param filePath - 文件路径
+ * @returns 包含内容、编码和 BOM 信息的 FileReadResult
  */
 export async function readFileWithEncodingInfo(
   filePath: string,
@@ -250,10 +269,12 @@ export async function readFileWithEncodingInfo(
 }
 
 /**
- * Read a file as text, honoring BOM encodings (UTF‑8/16/32) and stripping the BOM.
- * For files without BOM, validates UTF-8 first. If invalid UTF-8, uses chardet
- * to detect encoding (e.g. GBK, Big5, Shift_JIS) and iconv-lite to decode.
- * Falls back to utf8 when detection fails.
+ * 读取文件作为文本，尊重 BOM 编码（UTF-8/16/32）并剥离 BOM
+ * 对于没有 BOM 的文件，首先验证 UTF-8。如果无效 UTF-8，使用 chardet
+ * 检测编码（例如 GBK、Big5、Shift_JIS）并使用 iconv-lite 解码
+ * 检测失败时回退到 utf8
+ * @param filePath - 文件路径
+ * @returns 解码后的文件内容
  */
 export async function readFileWithEncoding(filePath: string): Promise<string> {
   const result = await readFileWithEncodingInfo(filePath);
@@ -261,9 +282,11 @@ export async function readFileWithEncoding(filePath: string): Promise<string> {
 }
 
 /**
- * Detect the encoding of a file by reading a sample from its beginning.
- * Returns the encoding name (e.g. 'utf-8', 'gbk', 'shift_jis').
- * Uses BOM detection first, then UTF-8 validation, then chardet as fallback.
+ * 通过从文件开头读取样本来检测文件的编码
+ * 返回编码名称（例如 'utf-8'、'gbk'、'shift_jis'）
+ * 首先使用 BOM 检测，然后使用 UTF-8 验证，最后使用 chardet 作为后备
+ * @param filePath - 文件路径
+ * @returns 检测到的编码名称
  */
 export async function detectFileEncoding(filePath: string): Promise<string> {
   let fh: fs.promises.FileHandle | null = null;
@@ -323,9 +346,9 @@ export async function detectFileEncoding(filePath: string): Promise<string> {
 }
 
 /**
- * Looks up the specific MIME type for a file path.
- * @param filePath Path to the file.
- * @returns The specific MIME type string (e.g., 'text/python', 'application/javascript') or undefined if not found or ambiguous.
+ * 查找文件路径的特定 MIME 类型
+ * @param filePath - 文件路径
+ * @returns 特定的 MIME 类型字符串（例如 'text/python'、'application/javascript'）如果未找到或不确定则返回 undefined
  */
 export function getSpecificMimeType(filePath: string): string | undefined {
   const lookedUpMime = mime.getType(filePath);
@@ -333,10 +356,10 @@ export function getSpecificMimeType(filePath: string): string | undefined {
 }
 
 /**
- * Checks if a path is within a given root directory.
- * @param pathToCheck The absolute path to check.
- * @param rootDirectory The absolute root directory.
- * @returns True if the path is within the root directory, false otherwise.
+ * 检查路径是否在给定的根目录内
+ * @param pathToCheck - 要检查的绝对路径
+ * @param rootDirectory - 绝对根目录
+ * @returns 如果路径在根目录内返回 true，否则返回 false
  */
 export function isWithinRoot(
   pathToCheck: string,
@@ -360,9 +383,11 @@ export function isWithinRoot(
 }
 
 /**
- * Heuristic: determine if a file is likely binary.
- * Now BOM-aware: if a Unicode BOM is detected, we treat it as text.
- * For non-BOM files, retain the existing null-byte and non-printable ratio checks.
+ * 启发式判断文件是否可能是二进制文件
+ * 现在支持 BOM：如果检测到 Unicode BOM，我们将其视为文本
+ * 对于非 BOM 文件，保留现有的空字节和非可打印比例检查
+ * @param filePath - 文件路径
+ * @returns 是否为二进制文件
  */
 export async function isBinaryFile(filePath: string): Promise<boolean> {
   let fh: fs.promises.FileHandle | null = null;
@@ -412,9 +437,9 @@ export async function isBinaryFile(filePath: string): Promise<boolean> {
 }
 
 /**
- * Detects the type of file based on extension and content.
- * @param filePath Path to the file.
- * @returns Promise that resolves to 'text', 'image', 'pdf', 'audio', 'video', 'binary' or 'svg'.
+ * 根据扩展名和内容检测文件类型
+ * @param filePath - 文件路径
+ * @returns 解析为 'text'、'image'、'pdf'、'audio'、'video'、'binary' 或 'svg' 的 Promise
  */
 export async function detectFileType(
   filePath: string,
@@ -463,23 +488,26 @@ export async function detectFileType(
   return 'text';
 }
 
+/**
+ * 处理后的文件读取结果
+ */
 export interface ProcessedFileReadResult {
-  llmContent: PartUnion; // string for text, Part for image/pdf/unreadable binary
+  llmContent: PartUnion; // 文本为 string，图片/pdf/二进制为 Part
   returnDisplay: string;
-  error?: string; // Optional error message for the LLM if file processing failed
-  errorType?: ToolErrorType; // Structured error type
-  isTruncated?: boolean; // For text files, indicates if content was truncated
-  originalLineCount?: number; // For text files
-  linesShown?: [number, number]; // For text files [startLine, endLine] (1-based for display)
+  error?: string; // 如果文件处理失败，返回给 LLM 的可选错误消息
+  errorType?: ToolErrorType; // 结构化错误类型
+  isTruncated?: boolean; // 对于文本文件，表示内容是否被截断
+  originalLineCount?: number; // 对于文本文件
+  linesShown?: [number, number]; // 对于文本文件 [起始行, 结束行]（基于显示的 1-indexed）
 }
 
 /**
- * Reads and processes a single file, handling text, images, and PDFs.
- * @param filePath Absolute path to the file.
- * @param config Config instance for truncation settings.
- * @param offset Optional offset for text files (0-based line number).
- * @param limit Optional limit for text files (number of lines to read).
- * @returns ProcessedFileReadResult object.
+ * 读取和处理单个文件，处理文本、图片和 PDF
+ * @param filePath - 文件的绝对路径
+ * @param config - 用于截断设置的 Config 实例
+ * @param offset - 文本文件的可选偏移量（0-indexed 行号）
+ * @param limit - 文本文件的可选限制（要读取的行数）
+ * @returns ProcessedFileReadResult 对象
  */
 export async function processSingleFileContent(
   filePath: string,
@@ -682,6 +710,11 @@ export async function processSingleFileContent(
   }
 }
 
+/**
+ * 检查文件是否存在
+ * @param filePath - 文件路径
+ * @returns 如果文件存在返回 true，否则返回 false
+ */
 export async function fileExists(filePath: string): Promise<boolean> {
   try {
     await fsPromises.access(filePath, fs.constants.F_OK);

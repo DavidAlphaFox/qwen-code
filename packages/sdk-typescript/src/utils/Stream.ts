@@ -1,3 +1,7 @@
+/**
+ * 异步流类
+ * 实现AsyncIterable接口，用于异步消息处理
+ */
 export class Stream<T> implements AsyncIterable<T> {
   private returned: (() => void) | undefined;
   private queue: T[] = [];
@@ -7,10 +11,17 @@ export class Stream<T> implements AsyncIterable<T> {
   hasError: Error | undefined;
   private started = false;
 
+  /**
+   * 创建异步流实例
+   * @param returned - 可选的完成回调函数
+   */
   constructor(returned?: () => void) {
     this.returned = returned;
   }
 
+  /**
+   * 获取异步迭代器
+   */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     if (this.started) {
       throw new Error('Stream can only be iterated once');
@@ -19,6 +30,9 @@ export class Stream<T> implements AsyncIterable<T> {
     return this;
   }
 
+  /**
+   * 获取下一个迭代结果
+   */
   async next(): Promise<IteratorResult<T>> {
     if (this.queue.length > 0) {
       return Promise.resolve({
@@ -38,6 +52,10 @@ export class Stream<T> implements AsyncIterable<T> {
     });
   }
 
+  /**
+   * 入队消息
+   * @param value - 要入队的值
+   */
   enqueue(value: T): void {
     if (this.readResolve) {
       const resolve = this.readResolve;
@@ -49,6 +67,9 @@ export class Stream<T> implements AsyncIterable<T> {
     }
   }
 
+  /**
+   * 标记流完成
+   */
   done(): void {
     this.isDone = true;
     if (this.readResolve) {
@@ -59,6 +80,10 @@ export class Stream<T> implements AsyncIterable<T> {
     }
   }
 
+  /**
+   * 设置流错误
+   * @param error - 错误对象
+   */
   error(error: Error): void {
     this.hasError = error;
     if (this.readReject) {
@@ -69,6 +94,9 @@ export class Stream<T> implements AsyncIterable<T> {
     }
   }
 
+  /**
+   * 返回迭代器
+   */
   return(): Promise<IteratorResult<T>> {
     this.isDone = true;
     if (this.returned) {

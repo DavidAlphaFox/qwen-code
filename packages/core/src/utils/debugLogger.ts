@@ -11,12 +11,22 @@ import util from 'node:util';
 import { Storage } from '../config/storage.js';
 import { updateSymlink } from './symlink.js';
 
+/**
+ * 日志级别类型
+ */
 type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
+/**
+ * 调试日志会话接口
+ */
 export interface DebugLogSession {
+  /** 获取会话 ID */
   getSessionId: () => string;
 }
 
+/**
+ * 调试日志记录器接口
+ */
 export interface DebugLogger {
   debug: (...args: unknown[]) => void;
   info: (...args: unknown[]) => void;
@@ -66,11 +76,15 @@ function formatArgs(args: unknown[]): string {
 }
 
 /**
- * Builds a log line in the format:
+ * 构建日志行，格式为：
  * `2026-01-23T06:58:02.011Z [DEBUG] [TAG] message`
  *
- * Tag is optional. If not provided, format is:
+ * 标签是可选的。如果未提供，格式为：
  * `2026-01-23T06:58:02.011Z [DEBUG] message`
+ * @param level - 日志级别
+ * @param message - 日志消息
+ * @param tag - 可选标签
+ * @returns 格式化的日志行
  */
 function buildLogLine(level: LogLevel, message: string, tag?: string): string {
   const timestamp = new Date().toISOString();
@@ -101,16 +115,17 @@ function writeLog(
 }
 
 /**
- * Returns true if any debug log write has failed.
- * Used by the UI to show a degraded mode notice on startup.
+ * 返回是否有任何调试日志写入失败
+ * 用于 UI 在启动时显示降级模式通知
+ * @returns 是否有写入失败
  */
 export function isDebugLoggingDegraded(): boolean {
   return hasWriteFailure;
 }
 
 /**
- * Resets the write failure tracking state.
- * Primarily useful for testing.
+ * 重置写入失败跟踪状态
+ * 主要用于测试
  */
 export function resetDebugLoggingState(): void {
   hasWriteFailure = false;
@@ -135,10 +150,10 @@ function updateLatestDebugLogAlias(sessionId: string): void {
 }
 
 /**
- * Sets the process-wide debug log session used by createDebugLogger().
+ * 设置 createDebugLogger() 使用的进程级调试日志会话
  *
- * This is the default session used when there is no async-local session bound
- * via runWithDebugLogSession().
+ * 这是当没有通过 runWithDebugLogSession() 绑定异步本地会话时使用的默认会话
+ * @param session - 调试日志会话或 null
  */
 export function setDebugLogSession(
   session: DebugLogSession | null | undefined,
@@ -150,10 +165,12 @@ export function setDebugLogSession(
 }
 
 /**
- * Runs a function with a session bound to the current async context.
+ * 使用绑定到当前异步上下文的会话运行函数
  *
- * This is optional; createDebugLogger() falls back to the process-wide session
- * set via setDebugLogSession().
+ * 这是可选的；createDebugLogger() 会回退到通过 setDebugLogSession() 设置的进程级会话
+ * @param session - 调试日志会话
+ * @param fn - 要运行的函数
+ * @returns 函数的结果
  */
 export function runWithDebugLogSession<T>(
   session: DebugLogSession,
@@ -163,11 +180,13 @@ export function runWithDebugLogSession<T>(
 }
 
 /**
- * Creates a debug logger that writes to the current debug log session.
+ * 创建写入当前调试日志会话的调试日志记录器
  *
- * Session resolution order:
- * 1) async-local session (runWithDebugLogSession)
- * 2) process-wide session (setDebugLogSession)
+ * 会话解析顺序：
+ * 1) 异步本地会话 (runWithDebugLogSession)
+ * 2) 进程级会话 (setDebugLogSession)
+ * @param tag - 可选标签
+ * @returns 调试日志记录器
  */
 export function createDebugLogger(tag?: string): DebugLogger {
   return {

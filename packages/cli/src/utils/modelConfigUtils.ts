@@ -14,6 +14,9 @@ import {
 } from '@qwen-code/qwen-code-core';
 import type { Settings } from '../config/settings.js';
 
+/**
+ * CLI 生成配置输入接口
+ */
 export interface CliGenerationConfigInputs {
   argv: {
     model?: string | undefined;
@@ -25,26 +28,33 @@ export interface CliGenerationConfigInputs {
   settings: Settings;
   selectedAuthType: AuthType | undefined;
   /**
-   * Injectable env for testability. Defaults to process.env at callsites.
+   * 可注入的环境变量，用于测试。默认为调用处的 process.env
    */
   env?: Record<string, string | undefined>;
 }
 
+/**
+ * 已解析的 CLI 生成配置接口
+ */
 export interface ResolvedCliGenerationConfig {
-  /** The resolved model id (may be empty string if not resolvable at CLI layer) */
+  /** 已解析的模型 ID（如果在 CLI 层无法解析可能为空字符串） */
   model: string;
-  /** API key for OpenAI-compatible auth */
+  /** OpenAI 兼容认证的 API 密钥 */
   apiKey: string;
-  /** Base URL for OpenAI-compatible auth */
+  /** OpenAI 兼容认证的 Base URL */
   baseUrl: string;
-  /** The full generation config to pass to core Config */
+  /** 传递给 core Config 的完整生成配置 */
   generationConfig: Partial<ContentGeneratorConfig>;
-  /** Source attribution for each resolved field */
+  /** 每个已解析字段的来源归属 */
   sources: ContentGeneratorConfigSources;
-  /** Warnings generated during resolution */
+  /** 解析过程中生成的警告 */
   warnings: string[];
 }
 
+/**
+ * 从环境变量获取认证类型
+ * @returns 认证类型枚举值，如果环境变量未设置则返回 undefined
+ */
 export function getAuthTypeFromEnv(): AuthType | undefined {
   if (process.env['QWEN_OAUTH']) {
     return AuthType.QWEN_OAUTH;
@@ -78,14 +88,14 @@ export function getAuthTypeFromEnv(): AuthType | undefined {
 }
 
 /**
- * Unified resolver for CLI generation config.
- *
- * Precedence (for OpenAI auth):
+ * CLI 生成配置的统一解析器
+ * 优先级（对于 OpenAI 认证）：
  * - model: argv.model > OPENAI_MODEL > QWEN_MODEL > settings.model.name
  * - apiKey: argv.openaiApiKey > OPENAI_API_KEY > settings.security.auth.apiKey
  * - baseUrl: argv.openaiBaseUrl > OPENAI_BASE_URL > settings.security.auth.baseUrl
- *
- * For non-OpenAI auth, only argv.model override is respected at CLI layer.
+ * 对于非 OpenAI 认证，CLI 层只尊重 argv.model 覆盖
+ * @param inputs - CLI 生成配置输入
+ * @returns 已解析的 CLI 生成配置
  */
 export function resolveCliGenerationConfig(
   inputs: CliGenerationConfigInputs,

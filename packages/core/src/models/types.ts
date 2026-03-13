@@ -12,18 +12,18 @@ import type {
 import type { ConfigSources } from '../utils/configResolver.js';
 
 /**
- * Model capabilities configuration
+ * 模型能力配置
  */
 export interface ModelCapabilities {
-  /** Supports image/vision inputs */
+  /** 支持图片/视觉输入 */
   vision?: boolean;
 }
 
 /**
- * Model-scoped generation configuration.
+ * 模型作用域的生成配置
  *
- * Keep this consistent with {@link ContentGeneratorConfig} so modelProviders can
- * feed directly into content generator resolution without shape conversion.
+ * 与 {@link ContentGeneratorConfig} 保持一致，以便 modelProviders
+ * 可以直接输入内容生成器解析，无需形状转换
  */
 export type ModelGenerationConfig = Pick<
   ContentGeneratorConfig,
@@ -41,52 +41,52 @@ export type ModelGenerationConfig = Pick<
 >;
 
 /**
- * Model configuration for a single model within an authType
+ * 单个模型在 authType 中的模型配置
  */
 export interface ModelConfig {
-  /** Unique model ID within authType (e.g., "qwen-coder", "gpt-4-turbo") */
+  /** 在 authType 中的唯一模型 ID（例如 "qwen-coder"、"gpt-4-turbo"） */
   id: string;
-  /** Display name (defaults to id) */
+  /** 显示名称（默认为 id） */
   name?: string;
-  /** Model description */
+  /** 模型描述 */
   description?: string;
-  /** Environment variable name to read API key from (e.g., "OPENAI_API_KEY") */
+  /** 环境变量名，用于读取 API 密钥（例如 "OPENAI_API_KEY"） */
   envKey?: string;
-  /** API endpoint override */
+  /** API 端点覆盖 */
   baseUrl?: string;
-  /** Model capabilities, reserve for future use. Now we do not read this to determine multi-modal support or other capabilities. */
+  /** 模型能力，保留以供将来使用。现在我们不读取此字段来确定多模态支持或其他能力 */
   capabilities?: ModelCapabilities;
-  /** Generation configuration (sampling parameters) */
+  /** 生成配置（采样参数） */
   generationConfig?: ModelGenerationConfig;
 }
 
 /**
- * Model providers configuration grouped by authType
+ * 按 authType 分组的模型提供者配置
  */
 export type ModelProvidersConfig = {
   [authType: string]: ModelConfig[];
 };
 
 /**
- * Resolved model config with all defaults applied
+ * 应用所有默认值后的解析模型配置
  */
 export interface ResolvedModelConfig extends ModelConfig {
-  /** AuthType this model belongs to (always present from map key) */
+  /** 模型所属的 AuthType（始终从映射键存在） */
   authType: AuthType;
-  /** Display name (always present, defaults to id) */
+  /** 显示名称（始终存在，默认为 id） */
   name: string;
-  /** Environment variable name to read API key from (optional, provider-specific) */
+  /** 环境变量名，用于读取 API 密钥（可选，特定于提供商） */
   envKey?: string;
-  /** API base URL (always present, has default per authType) */
+  /** API 基础 URL（始终存在，每个 authType 有默认值） */
   baseUrl: string;
-  /** Generation config (always present, merged with defaults) */
+  /** 生成配置（始终存在，与默认值合并） */
   generationConfig: ModelGenerationConfig;
-  /** Capabilities (always present, defaults to {}) */
+  /** 能力（始终存在，默认为 {}） */
   capabilities: ModelCapabilities;
 }
 
 /**
- * Model info for UI display
+ * 用于 UI 显示的模型信息
  */
 export interface AvailableModel {
   id: string;
@@ -100,51 +100,51 @@ export interface AvailableModel {
   baseUrl?: string;
   envKey?: string;
 
-  /** Whether this is a runtime model (not from modelProviders) */
+  /** 是否为运行时模型（不是来自 modelProviders） */
   isRuntimeModel?: boolean;
 
-  /** Runtime model snapshot ID (if isRuntimeModel is true) */
+  /** 运行时模型快照 ID（如果 isRuntimeModel 为 true） */
   runtimeSnapshotId?: string;
 }
 
 /**
- * Metadata for model switch operations
+ * 模型切换操作的元数据
  */
 export interface ModelSwitchMetadata {
-  /** Reason for the switch */
+  /** 切换原因 */
   reason?: string;
-  /** Additional context */
+  /** 额外上下文 */
   context?: string;
 }
 
 /**
- * Runtime model snapshot - captures complete model configuration from non-modelProviders sources
+ * 运行时模型快照 - 捕获来自非 modelProviders 来源的完整模型配置
  */
 export interface RuntimeModelSnapshot {
-  /** Snapshot unique identifier */
+  /** 快照唯一标识符 */
   id: string;
 
-  /** Associated AuthType */
+  /** 关联的 AuthType */
   authType: AuthType;
 
-  /** Model ID */
+  /** 模型 ID */
   modelId: string;
 
-  /** API Key (may come from env/cli/manual input) */
+  /** API 密钥（可能来自 env/cli/手动输入） */
   apiKey?: string;
 
-  /** Base URL (may come from env/cli/settings/credentials) */
+  /** 基础 URL（可能来自 env/cli/settings/credentials） */
   baseUrl?: string;
 
-  /** Environment variable name (if apiKey comes from env) */
+  /** 环境变量名（如果 apiKey 来自 env） */
   apiKeyEnvKey?: string;
 
-  /** Generation config (sampling parameters, etc.) */
+  /** 生成配置（采样参数等） */
   generationConfig?: ModelGenerationConfig;
 
-  /** Configuration source tracking */
+  /** 配置源跟踪 */
   sources: ConfigSources;
 
-  /** Snapshot creation timestamp */
+  /** 快照创建时间戳 */
   createdAt: number;
 }

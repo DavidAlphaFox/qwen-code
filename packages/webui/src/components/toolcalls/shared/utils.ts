@@ -3,8 +3,8 @@
  * Copyright 2025 Qwen Team
  * SPDX-License-Identifier: Apache-2.0
  *
- * Shared utility functions for tool call components
- * Platform-agnostic utilities that can be used across different platforms
+ * 工具调用组件共享工具函数
+ * 平台无关的工具函数，可在不同平台间使用
  */
 
 import type {
@@ -16,10 +16,10 @@ import type {
 } from './types.js';
 
 /**
- * Extract output from command execution result text
- * Handles both JSON format and structured text format
+ * 从命令执行结果文本中提取输出
+ * 处理JSON格式和结构化文本格式
  *
- * Example structured text:
+ * 结构化文本示例：
  * ```
  * Command: lsof -i :5173
  * Directory: (root)
@@ -27,6 +27,9 @@ import type {
  * Error: (none)
  * Exit Code: 0
  * ```
+ *
+ * @param {string} text - 命令执行结果文本
+ * @returns {string} 提取后的输出内容
  */
 export const extractCommandOutput = (text: string): string => {
   // First try: Parse as JSON and extract output field
@@ -101,7 +104,9 @@ export const extractCommandOutput = (text: string): string => {
 };
 
 /**
- * Format any value to a string for display
+ * 格式化任意值为字符串用于显示
+ * @param {unknown} value - 要格式化的值
+ * @returns {string} 格式化后的字符串
  */
 export const formatValue = (value: unknown): string => {
   if (value === null || value === undefined) {
@@ -128,9 +133,11 @@ export const formatValue = (value: unknown): string => {
 };
 
 /**
- * Safely convert title to string, handling object types
- * Returns empty string if no meaningful title
- * Uses try/catch to handle circular references safely
+ * 安全地将标题转换为字符串，处理对象类型
+ * 如果没有有意义的标题则返回空字符串
+ * 使用 try/catch 安全处理循环引用
+ * @param {unknown} title - 标题值
+ * @returns {string} 转换后的字符串
  */
 export const safeTitle = (title: unknown): string => {
   if (typeof title === 'string' && title.trim()) {
@@ -148,18 +155,22 @@ export const safeTitle = (title: unknown): string => {
 };
 
 /**
- * Check if a tool call should be displayed
- * Hides internal tool calls
+ * 检查是否应该显示工具调用
+ * 隐藏内部工具调用
+ * @param {string} kind - 工具类型
+ * @returns {boolean} 是否应该显示
  */
 export const shouldShowToolCall = (kind: string): boolean =>
   !kind.includes('internal');
 
 /**
- * Group tool call content by type to avoid duplicate labels
- * Error detection logic:
- * - If contentObj.error is set (not null/undefined), treat as error
- * - If contentObj.type === 'error' AND has content (text or error), treat as error
- * This avoids false positives from empty error markers while not missing real errors
+ * 按类型分组工具调用内容以避免重复标签
+ * 错误检测逻辑：
+ * - 如果 contentObj.error 已设置（不为 null/undefined），则视为错误
+ * - 如果 contentObj.type === 'error' 且有内容（text 或 error），则视为错误
+ * 这可以避免空错误标记的误报，同时不遗漏真实错误
+ * @param {ToolCallContent[] | undefined} content - 工具调用内容列表
+ * @returns {GroupedContent} 分组后的内容
  */
 export const groupContent = (content?: ToolCallContent[]): GroupedContent => {
   const textOutputs: string[] = [];
@@ -214,8 +225,10 @@ export const groupContent = (content?: ToolCallContent[]): GroupedContent => {
 };
 
 /**
- * Check if a tool call has actual output to display
- * Returns false for tool calls that completed successfully but have no visible output
+ * 检查工具调用是否有实际输出需要显示
+ * 对于成功完成但没有可见输出的工具调用返回 false
+ * @param {ToolCallData} toolCall - 工具调用数据
+ * @returns {boolean} 是否有输出
  */
 export const hasToolCallOutput = (toolCall: ToolCallData): boolean => {
   if (toolCall.status === 'failed') {
@@ -261,11 +274,13 @@ export const hasToolCallOutput = (toolCall: ToolCallData): boolean => {
 };
 
 /**
- * Map a tool call status to a ToolCallContainer status (bullet color)
+ * 将工具调用状态映射到容器状态（子弹颜色）
  * - pending/in_progress -> loading
  * - completed -> success
  * - failed -> error
  * - default fallback
+ * @param {ToolCallStatus} status - 工具调用状态
+ * @returns {ContainerStatus} 容器状态
  */
 export const mapToolStatusToContainerStatus = (
   status: ToolCallStatus,

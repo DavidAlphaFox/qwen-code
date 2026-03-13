@@ -31,14 +31,22 @@ import { createDebugLogger } from '@qwen-code/qwen-code-core';
 
 const debugLogger = createDebugLogger('THEME_MANAGER');
 
+/**
+ * 主题显示信息接口
+ */
 export interface ThemeDisplay {
   name: string;
   type: ThemeType;
   isCustom?: boolean;
 }
 
+/** 默认主题 */
 export const DEFAULT_THEME: Theme = QwenDark;
 
+/**
+ * 主题管理器类
+ * 负责管理可用主题、激活主题和自定义主题
+ */
 class ThemeManager {
   private readonly availableThemes: Theme[];
   private activeTheme: Theme;

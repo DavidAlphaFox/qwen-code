@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * 格式化内存使用量显示
+ * @param bytes - 字节数
+ * @returns 格式化的内存使用量字符串（如 "1.5 MB"、"2.3 GB"）
+ */
 export const formatMemoryUsage = (bytes: number): string => {
   const gb = bytes / (1024 * 1024 * 1024);
   if (bytes < 1024 * 1024) {

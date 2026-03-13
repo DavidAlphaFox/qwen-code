@@ -9,9 +9,9 @@ import * as path from 'node:path';
 import { execSync } from 'node:child_process';
 
 /**
- * Checks if a directory is within a git repository
- * @param directory The directory to check
- * @returns true if the directory is in a git repository, false otherwise
+ * 检查目录是否在 git 仓库内
+ * @param directory - 要检查的目录
+ * @returns 如果目录在 git 仓库中返回 true，否则返回 false
  */
 export function isGitRepository(directory: string): boolean {
   try {
@@ -43,9 +43,9 @@ export function isGitRepository(directory: string): boolean {
 }
 
 /**
- * Finds the root directory of a git repository
- * @param directory Starting directory to search from
- * @returns The git repository root path, or null if not in a git repository
+ * 查找 git 仓库的根目录
+ * @param directory - 搜索的起始目录
+ * @returns git 仓库根路径，如果不是 git 仓库则返回 null
  */
 export function findGitRoot(directory: string): string | null {
   try {
@@ -74,7 +74,9 @@ export function findGitRoot(directory: string): string | null {
 }
 
 /**
- * Gets the current git branch, if in a git repository.
+ * 获取当前 git 分支，如果在 git 仓库中
+ * @param cwd - 工作目录
+ * @returns 当前分支名称，如果不在 git 仓库中则返回 undefined
  */
 export const getGitBranch = (cwd: string): string | undefined => {
   try {

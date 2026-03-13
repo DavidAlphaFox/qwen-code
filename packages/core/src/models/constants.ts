@@ -13,10 +13,10 @@ type ContentGeneratorConfig =
   import('../core/contentGenerator.js').ContentGeneratorConfig;
 
 /**
- * Field keys for model-scoped generation config.
+ * 模型作用域生成配置的字段键
  *
- * Kept in a small standalone module to avoid circular deps. The `import('...')`
- * usage is type-only and does not emit runtime imports.
+ * 保存在一个小型独立模块中以避免循环依赖。`import('...')`
+ * 的使用是仅类型导入，不会发出运行时导入
  */
 export const MODEL_GENERATION_CONFIG_FIELDS = [
   'samplingParams',

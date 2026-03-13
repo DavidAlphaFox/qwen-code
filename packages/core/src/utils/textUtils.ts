@@ -5,8 +5,12 @@
  */
 
 /**
- * Safely replaces text with literal strings, avoiding ECMAScript GetSubstitution issues.
- * Escapes $ characters to prevent template interpretation.
+ * 安全地用字面字符串替换文本，避免 ECMAScript GetSubstitution 问题
+ * 转义 $ 字符以防止模板解释
+ * @param str - 原始字符串
+ * @param oldString - 要替换的字符串
+ * @param newString - 替换后的字符串
+ * @returns 替换后的字符串
  */
 export function safeLiteralReplace(
   str: string,
@@ -26,11 +30,11 @@ export function safeLiteralReplace(
 }
 
 /**
- * Checks if a Buffer is likely binary by testing for the presence of a NULL byte.
- * The presence of a NULL byte is a strong indicator that the data is not plain text.
- * @param data The Buffer to check.
- * @param sampleSize The number of bytes from the start of the buffer to test.
- * @returns True if a NULL byte is found, false otherwise.
+ * 通过测试 NULL 字节的存在来检查缓冲区是否可能是二进制数据
+ * NULL 字节的存在是数据不是纯文本的强烈指示符
+ * @param data - 要检查的缓冲区
+ * @param sampleSize - 从缓冲区开头测试的字节数
+ * @returns 如果找到 NULL 字节返回 true，否则返回 false
  */
 export function isBinary(
   data: Buffer | null | undefined,
@@ -55,14 +59,12 @@ export function isBinary(
 }
 
 /**
- * Normalizes text content by stripping the UTF-8 BOM and converting all CRLF (\r\n)
- * or standalone CR (\r) line endings to LF (\n).
+ * 通过剥离 UTF-8 BOM 并将所有 CRLF (\r\n) 或单独的 CR (\r) 行尾转换为 LF (\n) 来规范化文本内容
  *
- * This is crucial for cross-platform compatibility, particularly to prevent parsing
- * failures on Windows where files may be saved with CRLF line endings.
- *
- * @param content The raw text content to normalize
- * @returns The normalized string with uniform \n line endings
+ * 这对于跨平台兼容性至关重要，特别是为了防止在 Windows 上解析失败
+ * （Windows 上的文件可能以 CRLF 行尾保存）
+ * @param content - 要规范化的原始文本内容
+ * @returns 具有统一 \n 行尾的规范化字符串
  */
 export function normalizeContent(content: string): string {
   // Strip UTF-8 BOM to ensure string processing starts at the first real character.

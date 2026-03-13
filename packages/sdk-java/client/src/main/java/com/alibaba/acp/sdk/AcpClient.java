@@ -28,9 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ACP (Agent Client Protocol) Client Implementation
- * This class provides the main entry point for communicating with AI agents, responsible for initializing connections, managing sessions, and other
- * operations.
+ * ACP (Agent Client Protocol) 客户端实现
+ * 
+ * 该类是与应用AI代理通信的主入口点，负责初始化连接、管理会话以及其他相关操作。
  *
  * @author SkyFire
  * @version 0.0.1

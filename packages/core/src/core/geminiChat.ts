@@ -37,11 +37,13 @@ import { uiTelemetryService } from '../telemetry/uiTelemetry.js';
 
 const debugLogger = createDebugLogger('QWEN_CODE_CHAT');
 
+/**
+ * 流事件类型枚举
+ */
 export enum StreamEventType {
-  /** A regular content chunk from the API. */
+  /** 来自 API 的常规内容块 */
   CHUNK = 'chunk',
-  /** A signal that a retry is about to happen. The UI should discard any partial
-   * content from the attempt that just failed. */
+  /** 即将重试的信号。UI 应丢弃上一次失败尝试的任何部分内容 */
   RETRY = 'retry',
 }
 
@@ -50,12 +52,12 @@ export type StreamEvent =
   | { type: StreamEventType.RETRY; retryInfo?: RetryInfo };
 
 /**
- * Options for retrying due to invalid content from the model.
+ * 由于模型返回无效内容而重试的选项
  */
 interface ContentRetryOptions {
-  /** Total number of attempts to make (1 initial + N retries). */
+  /** 要进行的尝试总次数（1 次初始 + N 次重试） */
   maxAttempts: number;
-  /** The base delay in milliseconds for linear backoff. */
+  /** 线性退避的初始延迟（毫秒） */
   initialDelayMs: number;
 }
 
@@ -64,20 +66,19 @@ const INVALID_CONTENT_RETRY_OPTIONS: ContentRetryOptions = {
   initialDelayMs: 500,
 };
 
-// Some providers occasionally return transient stream anomalies: either an
-// empty stream (usage metadata only, no candidates), a stream that finishes
-// normally but contains no usable text, or a stream cut off without a finish
-// reason. All are retried with an independent budget (similar to rate-limit
-// retries) so they do not consume each other's retry budgets.
+// 一些提供商偶尔会返回瞬态流异常：空流（仅使用元数据，无候选）、
+// 正常完成但不包含可用文本的流，或没有完成原因而截断的流。
+// 所有这些都会使用独立预算重试（类似于速率限制重试），
+// 因此它们不会消耗彼此的重试预算
 const INVALID_STREAM_RETRY_CONFIG = {
   maxRetries: 2,
   initialDelayMs: 2000,
 };
 
 /**
- * Options for retrying on rate-limit throttling errors returned as stream content.
- * Fixed 60s delay matches the DashScope per-minute quota window.
- * 10 retries aligns with Claude Code's retry behavior.
+ * 当速率限制节流错误作为流内容返回时重试的选项
+ * 固定 60s 延迟符合 DashScope 每分钟配额窗口
+ * 10 次重试与 Claude Code 的重试行为一致
  */
 const RATE_LIMIT_RETRY_OPTIONS = {
   maxRetries: 10,

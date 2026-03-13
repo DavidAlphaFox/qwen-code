@@ -12,37 +12,57 @@ import { createDebugLogger, type DebugLogger } from '../utils/debugLogger.js';
 
 const LOG_FILE_NAME = 'logs.json';
 
+/**
+ * 消息发送者类型枚举
+ */
 export enum MessageSenderType {
+  /** 用户 */
   USER = 'user',
+  /** 模型切换 */
   MODEL_SWITCH = 'model_switch',
 }
 
+/**
+ * 日志条目
+ */
 export interface LogEntry {
+  /** 会话 ID */
   sessionId: string;
+  /** 消息 ID */
   messageId: number;
+  /** 时间戳 */
   timestamp: string;
+  /** 消息类型 */
   type: MessageSenderType;
+  /** 消息内容 */
   message: string;
 }
 
+/**
+ * 模型切换事件
+ */
 export interface ModelSwitchEvent {
+  /** 原模型 */
   fromModel: string;
+  /** 目标模型 */
   toModel: string;
+  /** 切换原因 */
   reason: 'vision_auto_switch' | 'manual' | 'fallback' | 'other';
+  /** 额外上下文 */
   context?: string;
 }
 
-// This regex matches any character that is NOT a letter (a-z, A-Z),
-// a number (0-9), a hyphen (-), an underscore (_), or a dot (.).
+// 此正则表达式匹配任何不是字母 (a-z, A-Z)、
+// 数字 (0-9)、连字符 (-)、下划线 (_) 或点 (.) 的字符
 
 /**
- * Encodes a string to be safe for use as a filename.
+ * 将字符串编码为可用于文件名的安全格式
  *
- * It replaces any characters that are not alphanumeric or one of `_`, `-`, `.`
- * with a URL-like percent-encoding (`%` followed by the 2-digit hex code).
+ * 它将任何非字母数字或 `_`、`-`、`.` 之一的字符
+ * 替换为类似 URL 的百分号编码（`%` 后跟两位十六进制代码）
  *
- * @param str The input string to encode.
- * @returns The encoded, filename-safe string.
+ * @param str - 要编码的输入字符串
+ * @returns 编码后的、文件名安全的字符串
  */
 export function encodeTagName(str: string): string {
   return encodeURIComponent(str);

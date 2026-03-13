@@ -1,4 +1,10 @@
 /**
+ * @file version.js
+ * @description 版本管理脚本
+ * 处理版本号更新并确保所有相关更改在单个原子提交中
+ */
+
+/**
  * @license
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
@@ -10,15 +16,35 @@ import { resolve } from 'node:path';
 
 // A script to handle versioning and ensure all related changes are in a single, atomic commit.
 
+/**
+ * 执行 shell 命令并继承父进程的 stdio
+ * @param {string} command - 要执行的命令
+ * @example
+ * run('npm install');
+ */
 function run(command) {
   console.log(`> ${command}`);
   execSync(command, { stdio: 'inherit' });
 }
 
+/**
+ * 读取并解析 JSON 文件
+ * @param {string} filePath - JSON 文件路径
+ * @returns {object} 解析后的 JSON 对象
+ * @example
+ * const pkg = readJson('./package.json');
+ */
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf-8'));
 }
 
+/**
+ * 将数据写入 JSON 文件（格式化）
+ * @param {string} filePath - JSON 文件路径
+ * @param {object} data - 要写入的数据对象
+ * @example
+ * writeJson('./package.json', { name: 'test' });
+ */
 function writeJson(filePath, data) {
   writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n');
 }

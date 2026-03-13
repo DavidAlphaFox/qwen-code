@@ -7,42 +7,41 @@
 import type { LspCodeActionKind, LspDiagnosticSeverity } from './types.js';
 
 // ============================================================================
-// Timeout Constants
+// 超时常量
 // ============================================================================
 
-/** Default timeout for LSP server startup in milliseconds */
+/** LSP 服务器启动默认超时（毫秒） */
 export const DEFAULT_LSP_STARTUP_TIMEOUT_MS = 10000;
 
-/** Default timeout for LSP requests in milliseconds */
+/** LSP 请求默认超时（毫秒） */
 export const DEFAULT_LSP_REQUEST_TIMEOUT_MS = 15000;
 
-/** Default delay for TypeScript server warm-up in milliseconds */
+/** TypeScript 服务器预热默认延迟（毫秒） */
 export const DEFAULT_LSP_WARMUP_DELAY_MS = 150;
 
-/** Default timeout for command existence check in milliseconds */
+/** 命令存在性检查默认超时（毫秒） */
 export const DEFAULT_LSP_COMMAND_CHECK_TIMEOUT_MS = 2000;
 
 // ============================================================================
-// Retry Constants
+// 重试常量
 // ============================================================================
 
-/** Default maximum number of server restart attempts */
+/** 服务器重启默认最大尝试次数 */
 export const DEFAULT_LSP_MAX_RESTARTS = 3;
 
-/** Default initial delay between socket connection retries in milliseconds */
+/** 套接字连接重试之间默认初始延迟（毫秒） */
 export const DEFAULT_LSP_SOCKET_RETRY_DELAY_MS = 250;
 
-/** Default maximum delay between socket connection retries in milliseconds */
+/** 套接字连接重试之间默认最大延迟（毫秒） */
 export const DEFAULT_LSP_SOCKET_MAX_RETRY_DELAY_MS = 1000;
 
 // ============================================================================
-// LSP Protocol Labels
+// LSP 协议标签
 // ============================================================================
 
 /**
- * Symbol kind labels for converting numeric LSP SymbolKind to readable strings.
- * Based on the LSP specification:
- * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind
+ * 符号类型标签，用于将数字 LSP SymbolKind 转换为可读字符串
+ * 基于 LSP 规范：https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind
  */
 export const SYMBOL_KIND_LABELS: Record<number, string> = {
   1: 'File',
@@ -74,8 +73,8 @@ export const SYMBOL_KIND_LABELS: Record<number, string> = {
 };
 
 /**
- * Diagnostic severity labels for converting numeric LSP DiagnosticSeverity to readable strings.
- * Based on the LSP specification.
+ * 诊断严重性标签，用于将数字 LSP DiagnosticSeverity 转换为可读字符串
+ * 基于 LSP 规范
  */
 export const DIAGNOSTIC_SEVERITY_LABELS: Record<number, LspDiagnosticSeverity> =
   {
@@ -86,7 +85,7 @@ export const DIAGNOSTIC_SEVERITY_LABELS: Record<number, LspDiagnosticSeverity> =
   };
 
 /**
- * Code action kind labels from LSP specification.
+ * 来自 LSP 规范的代码操作类型标签
  */
 export const CODE_ACTION_KIND_LABELS: Record<string, LspCodeActionKind> = {
   '': 'quickfix',

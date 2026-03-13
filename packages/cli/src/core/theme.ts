@@ -9,9 +9,9 @@ import { type LoadedSettings } from '../config/settings.js';
 import { t } from '../i18n/index.js';
 
 /**
- * Validates the configured theme.
- * @param settings The loaded application settings.
- * @returns An error message if the theme is not found, otherwise null.
+ * 验证配置的主题
+ * @param settings - 已加载的应用程序设置
+ * @returns 如果主题未找到返回错误消息，否则返回 null
  */
 export function validateTheme(settings: LoadedSettings): string | null {
   const effectiveTheme = settings.merged.ui?.theme;

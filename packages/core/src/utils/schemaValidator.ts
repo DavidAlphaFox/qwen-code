@@ -45,7 +45,9 @@ addFormatsFunc(ajv2020);
 const DRAFT_2020_12_SCHEMA = 'https://json-schema.org/draft/2020-12/schema';
 
 /**
- * Returns the appropriate validator based on schema's $schema field.
+ * 根据模式的 $schema 字段返回适当的验证器
+ * @param schema - JSON Schema 对象
+ * @returns Ajv 验证器实例
  */
 function getValidator(schema: AnySchema): Ajv {
   if (
@@ -60,13 +62,16 @@ function getValidator(schema: AnySchema): Ajv {
 }
 
 /**
- * Simple utility to validate objects against JSON Schemas.
- * Supports both draft-07 (default) and draft-2020-12 schemas.
+ * 简单的实用程序，用于根据 JSON Schema 验证对象
+ * 支持 draft-07（默认）和 draft-2020-12 模式
  */
 export class SchemaValidator {
   /**
-   * Returns null if the data conforms to the schema described by schema (or if schema
-   *  is null). Otherwise, returns a string describing the error.
+   * 如果数据符合模式描述的 schema 则返回 null（或者如果 schema 为 null）
+   * 否则返回描述错误的字符串
+   * @param schema - JSON Schema 或 undefined
+   * @param data - 要验证的数据
+   * @returns 错误消息或 null
    */
   static validate(schema: unknown | undefined, data: unknown): string | null {
     if (!schema) {
@@ -113,13 +118,14 @@ export class SchemaValidator {
 }
 
 /**
- * Coerces string boolean values to actual booleans.
- * This handles cases where LLMs return "true"/"false" strings instead of boolean values,
- * which is common with self-hosted LLMs.
+ * 将字符串布尔值强制转换为实际布尔值
+ * 这可以处理 LLM 返回 "true"/"false" 字符串而不是布尔值的情况
+ * 这在自托管 LLM 中很常见
  *
- * Converts:
+ * 转换：
  * - "true", "True", "TRUE" -> true
  * - "false", "False", "FALSE" -> false
+ * @param data - 要修复的数据对象
  */
 function fixBooleanValues(data: Record<string, unknown>) {
   for (const key of Object.keys(data)) {

@@ -13,10 +13,10 @@ import {
 } from '@qwen-code/qwen-code-core';
 
 /**
- * Handles the initial authentication flow.
- * @param config The application config.
- * @param authType The selected auth type.
- * @returns An error message if authentication fails, otherwise null.
+ * 处理初始认证流程
+ * @param config - 应用程序配置
+ * @param authType - 选择的认证类型
+ * @returns 如果认证失败返回错误消息，否则返回 null
  */
 export async function performInitialAuth(
   config: Config,

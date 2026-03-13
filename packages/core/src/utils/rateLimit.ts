@@ -13,23 +13,24 @@ import { isApiError, isStructuredError } from './quotaErrorDetection.js';
 // 1305 - DashScope/IdealTalk internal rate limit (issue #1918)
 const RATE_LIMIT_ERROR_CODES = new Set([429, 503, 1302, 1305]);
 
+/**
+ * 重试信息接口
+ */
 export interface RetryInfo {
-  /** Formatted error message for display, produced by parseAndFormatApiError. */
+  /** 由 parseAndFormatApiError 生成的可显示的错误消息 */
   message?: string;
-  /** Current retry attempt (1-based). */
+  /** 当前重试次数（从 1 开始） */
   attempt: number;
-  /** Max retries allowed. */
+  /** 允许的最大重试次数 */
   maxRetries: number;
-  /** Delay in milliseconds before the retry happens. */
+  /** 重试发生前的延迟毫秒数 */
   delayMs: number;
 }
 
 /**
- * Detects rate-limit / throttling errors and returns retry info.
- *
- * @param error - The error to check.
- * @param extraCodes - Additional error codes to treat as rate-limit errors,
- *   merged with the built-in set at call time (not mutating the default set).
+ * 检测速率限制/节流错误并返回重试信息
+ * @param error - 要检查的错误
+ * @param extraCodes - 额外的错误代码，视为速率限制错误，与内置集合合并
  */
 export function isRateLimitError(
   error: unknown,
@@ -43,8 +44,10 @@ export function isRateLimitError(
 }
 
 /**
- * Extracts the numeric error code from various error shapes.
- * Mirrors the same parsing patterns used by parseAndFormatApiError.
+ * 从各种错误形状中提取数字错误代码
+ * 镜像与 parseAndFormatApiError 相同的解析模式
+ * @param error - 错误对象
+ * @returns 错误代码或 null
  */
 function getErrorCode(error: unknown): number | null {
   if (isApiError(error)) return Number(error.error.code) || null;

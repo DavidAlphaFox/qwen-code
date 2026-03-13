@@ -27,6 +27,11 @@ export interface UseCompletionReturn {
   navigateDown: () => void;
 }
 
+/**
+ * 管理建议完成状态和导航的自定义 Hook
+ * 处理建议列表、当前活动建议索引、可见性范围和键盘导航
+ * @returns 包含建议状态和导航函数的对象
+ */
 export function useCompletion(): UseCompletionReturn {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeSuggestionIndex, setActiveSuggestionIndex] =

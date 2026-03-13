@@ -11,11 +11,10 @@ import { useKeypressContext } from '../contexts/KeypressContext.js';
 export type { Key };
 
 /**
- * A hook that listens for keypress events from stdin.
- *
- * @param onKeypress - The callback function to execute on each keypress.
- * @param options - Options to control the hook's behavior.
- * @param options.isActive - Whether the hook should be actively listening for input.
+ * 一个监听 stdin 按键事件的 Hook
+ * @param onKeypress - 每次按键时执行的回调函数
+ * @param options - 控制 Hook 行为的选项
+ * @param options.isActive - Hook 是否应该主动监听输入
  */
 export function useKeypress(
   onKeypress: KeypressHandler,

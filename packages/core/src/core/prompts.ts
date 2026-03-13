@@ -16,6 +16,11 @@ import { createDebugLogger } from '../utils/debugLogger.js';
 
 const debugLogger = createDebugLogger('PROMPTS');
 
+/**
+ * 从环境变量解析路径
+ * @param envVar - 环境变量名
+ * @returns 包含是否切换、值和是否禁用的对象
+ */
 export function resolvePathFromEnv(envVar?: string): {
   isSwitch: boolean;
   value: string | null;
@@ -67,12 +72,12 @@ export function resolvePathFromEnv(envVar?: string): {
 }
 
 /**
- * Processes a custom system instruction by appending user memory if available.
- * This function should only be used when there is actually a custom instruction.
+ * 处理自定义系统指令，如果可用则附加用户记忆
+ * 此函数仅在确实有自定义指令时使用
  *
- * @param customInstruction - Custom system instruction (ContentUnion from @google/genai)
- * @param userMemory - User memory to append
- * @returns Processed custom system instruction with user memory appended
+ * @param customInstruction - 自定义系统指令（来自 @google/genai 的 ContentUnion）
+ * @param userMemory - 要附加的用户记忆
+ * @returns 处理后的附加了用户记忆的自定义系统指令
  */
 export function getCustomSystemPrompt(
   customInstruction: GenerateContentConfig['systemInstruction'],

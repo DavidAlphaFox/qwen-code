@@ -11,8 +11,8 @@ import { createDebugLogger } from '@qwen-code/qwen-code-core';
 const debugLogger = createDebugLogger('GIT');
 
 /**
- * Checks if a directory is within a git repository hosted on GitHub.
- * @returns true if the directory is in a git repository with a github.com remote, false otherwise
+ * 检查目录是否在托管于 GitHub 的 git 仓库中
+ * @returns boolean 如果目录在具有 github.com 远程的 git 仓库中则返回 true，否则返回 false
  */
 export const isGitHubRepository = (): boolean => {
   try {
@@ -26,16 +26,16 @@ export const isGitHubRepository = (): boolean => {
 
     return pattern.test(remotes);
   } catch (_error) {
-    // If any filesystem error occurs, assume not a git repo
+    // 如果发生任何文件系统错误，假设不是 git 仓库
     debugLogger.debug(`Failed to get git remote:`, _error);
     return false;
   }
 };
 
 /**
- * getGitRepoRoot returns the root directory of the git repository.
- * @returns the path to the root of the git repo.
- * @throws error if the exec command fails.
+ * getGitRepoRoot 返回 git 仓库的根目录
+ * @returns string git 仓库根目录的路径
+ * @throws 如果 exec 命令失败则抛出错误
  */
 export const getGitRepoRoot = (): string => {
   const gitRepoRoot = (
@@ -52,8 +52,8 @@ export const getGitRepoRoot = (): string => {
 };
 
 /**
- * getLatestGitHubRelease returns the release tag as a string.
- * @returns string of the release tag (e.g. "v1.2.3").
+ * getLatestGitHubRelease 返回最新发布标签
+ * @returns string 发布标签（例如 "v1.2.3"）
  */
 export const getLatestGitHubRelease = async (
   proxy?: string,
@@ -97,21 +97,21 @@ export const getLatestGitHubRelease = async (
 };
 
 /**
- * getGitHubRepoInfo returns the owner and repository for a GitHub repo.
- * @returns the owner and repository of the github repo.
- * @throws error if the exec command fails.
+ * getGitHubRepoInfo 返回 GitHub 仓库的所有者和仓库名
+ * @returns { owner: string; repo: string } 仓库的所有者和名称
+ * @throws 如果 exec 命令失败则抛出错误
  */
 export function getGitHubRepoInfo(): { owner: string; repo: string } {
   const remoteUrl = execSync('git remote get-url origin', {
     encoding: 'utf-8',
   }).trim();
 
-  // Handle SCP-style SSH URLs (git@github.com:owner/repo.git)
+  // 处理 SCP 风格的 SSH URL（git@github.com:owner/repo.git）
   let urlToParse = remoteUrl;
   if (remoteUrl.startsWith('git@github.com:')) {
     urlToParse = remoteUrl.replace('git@github.com:', '');
   } else if (remoteUrl.startsWith('git@')) {
-    // SSH URL for a different provider (GitLab, Bitbucket, etc.)
+    // 其他提供商（GitLab、Bitbucket 等）的 SSH URL
     throw new Error(
       `Owner & repo could not be extracted from remote URL: ${remoteUrl}`,
     );

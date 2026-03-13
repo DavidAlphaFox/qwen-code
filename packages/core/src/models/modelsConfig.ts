@@ -34,8 +34,11 @@ export {
 };
 
 /**
- * Callback for when the model changes.
- * Used by Config to refresh auth/ContentGenerator when needed.
+ * 模型变更时的回调函数
+ * 用于在 Config 需要刷新 auth/ContentGenerator 时通知
+ * @param authType - 认证类型
+ * @param requiresRefresh - 是否需要刷新
+ * @returns Promise<void>
  */
 export type OnModelChangeCallback = (
   authType: AuthType,
@@ -43,31 +46,31 @@ export type OnModelChangeCallback = (
 ) => Promise<void>;
 
 /**
- * Options for creating ModelsConfig
+ * 创建 ModelsConfig 的选项
  */
 export interface ModelsConfigOptions {
-  /** Initial authType from settings */
+  /** 来自设置文件的初始 authType */
   initialAuthType?: AuthType;
-  /** Model providers configuration */
+  /** 模型提供者配置 */
   modelProvidersConfig?: ModelProvidersConfig;
-  /** Generation config from CLI/settings */
+  /** 来自 CLI/设置文件的生成配置 */
   generationConfig?: Partial<ContentGeneratorConfig>;
-  /** Source tracking for generation config */
+  /** 生成配置的源跟踪 */
   generationConfigSources?: ContentGeneratorConfigSources;
-  /** Callback when model changes require refresh */
+  /** 模型变更时的回调函数 */
   onModelChange?: OnModelChangeCallback;
 }
 
 /**
- * ModelsConfig manages all model selection logic and state.
+ * ModelsConfig 管理所有模型选择逻辑和状态
  *
- * This class encapsulates:
- * - ModelRegistry for model configuration storage
- * - Current authType and modelId selection
- * - Generation config management
- * - Model switching logic
+ * 此类封装了：
+ * - ModelRegistry 用于模型配置存储
+ * - 当前 authType 和 modelId 的选择
+ * - 生成配置管理
+ * - 模型切换逻辑
  *
- * Config uses this as a thin entry point for all model-related operations.
+ * Config 使用它作为所有模型相关操作的入口点
  */
 export class ModelsConfig {
   private readonly modelRegistry: ModelRegistry;
@@ -102,27 +105,26 @@ export class ModelsConfig {
   private readonly authTypeWasExplicitlyProvided: boolean;
 
   /**
-   * Runtime model snapshot storage.
+   * 运行时模型快照存储
    *
-   * These snapshots store runtime-resolved model configurations that are NOT from
-   * modelProviders registry (e.g., models with manually set credentials).
+   * 这些快照存储运行时解析的模型配置，不来自 modelProviders 注册表
+   *（例如，使用手动设置的凭据的模型）
    *
-   * Key: snapshotId (format: `$runtime|${authType}|${modelId}`)
-   *   Uses `$runtime|` prefix since `$` and `|` are unlikely to appear in real model IDs.
-   *   This prevents conflicts with model IDs containing `-` or `:` characters.
-   * Value: RuntimeModelSnapshot containing the model's configuration
+   * 键：snapshotId（格式：`$runtime|${authType}|${modelId}`）
+   *   使用 `$runtime|` 前缀，因为 `$` 和 `|` 不太可能出现在真实模型 ID 中
+   *   这可以防止与包含 `-` 或 `:` 字符的模型 ID 发生冲突
+   * 值：包含模型配置的 RuntimeModelSnapshot
    *
-   * Note: This is different from state snapshots used for rollback during model switching.
-   * RuntimeModelSnapshot stores persistent model configurations, while state snapshots
-   * are temporary and used only for error recovery.
+   * 注意：这与模型切换期间用于回滚的状态快照不同
+   * RuntimeModelSnapshot 存储持久化的模型配置，而状态快照是临时的，仅用于错误恢复
    */
   private runtimeModelSnapshots: Map<string, RuntimeModelSnapshot> = new Map();
 
   /**
-   * Currently active RuntimeModelSnapshot ID.
+   * 当前活动的 RuntimeModelSnapshot ID
    *
-   * When set, indicates that the current model is a runtime model (not from registry).
-   * This ID is included in state snapshots for rollback purposes.
+   * 当设置时，表示当前模型是运行时模型（不是来自注册表）
+   * 此 ID 包含在状态快照中用于回滚
    */
   private activeRuntimeModelSnapshotId: string | undefined;
 
@@ -162,10 +164,11 @@ export class ModelsConfig {
   }
 
   /**
-   * Create a snapshot of the current ModelsConfig state for rollback purposes.
-   * Used before model switching operations to enable recovery on errors.
+   * 创建当前 ModelsConfig 状态的快照，用于回滚
+   * 在模型切换操作之前使用，以启用错误时的恢复
    *
-   * Note: This is different from RuntimeModelSnapshot which stores runtime model configs.
+   * 注意：这与 RuntimeSnapshot 不同，后者存储运行时模型配置
+   * @returns 包含当前状态的快照对象
    */
   private createStateSnapshotForRollback(): {
     currentAuthType: AuthType | undefined;
@@ -190,10 +193,9 @@ export class ModelsConfig {
   }
 
   /**
-   * Restore ModelsConfig state from a previously created state snapshot.
-   * Used for rollback when model switching operations fail.
-   *
-   * @param snapshot - The state snapshot to restore
+   * 从之前创建的状态快照恢复 ModelsConfig 状态
+   * 用于模型切换操作失败时的回滚
+   * @param snapshot - 要恢复的状态快照
    */
   private rollbackToStateSnapshot(
     snapshot: ReturnType<ModelsConfig['createStateSnapshotForRollback']>,
@@ -209,29 +211,33 @@ export class ModelsConfig {
   }
 
   /**
-   * Get current model ID
+   * 获取当前模型 ID
+   * @returns 当前模型 ID
    */
   getModel(): string {
     return this._generationConfig.model || DEFAULT_QWEN_MODEL;
   }
 
   /**
-   * Get current authType
+   * 获取当前 authType
+   * @returns 当前 authType
    */
   getCurrentAuthType(): AuthType | undefined {
     return this.currentAuthType;
   }
 
   /**
-   * Check if authType was explicitly provided (via CLI or settings).
-   * If false, no authType was provided yet (fresh user).
+   * 检查 authType 是否被显式提供（通过 CLI 或设置文件）
+   * 如果为 false，表示尚未提供 authType（新用户）
+   * @returns 是否显式提供了 authType
    */
   wasAuthTypeExplicitlyProvided(): boolean {
     return this.authTypeWasExplicitlyProvided;
   }
 
   /**
-   * Get available models for current authType
+   * 获取当前 authType 的可用模型
+   * @returns 可用模型数组
    */
   getAvailableModels(): AvailableModel[] {
     return this.currentAuthType
@@ -240,19 +246,23 @@ export class ModelsConfig {
   }
 
   /**
-   * Get available models for a specific authType
+   * 获取指定 authType 的可用模型
+   * @param authType - 认证类型
+   * @returns 可用模型数组
    */
   getAvailableModelsForAuthType(authType: AuthType): AvailableModel[] {
     return this.modelRegistry.getModelsForAuthType(authType);
   }
 
   /**
-   * Get all configured models across authTypes.
+   * 获取所有配置的模型（跨 authType）
    *
-   * Notes:
-   * - By default, returns models across all authTypes.
-   * - qwen-oauth models are always ordered first.
-   * - Runtime model option (if active) is included before registry models of the same authType.
+   * 注意：
+   * - 默认返回所有 authType 的模型
+   * - qwen-oauth 模型始终排在最前面
+   * - 如果有活动状态，运行时模型选项会包含在相同 authType 的注册表模型之前
+   * @param authTypes - 可选的 authType 过滤数组
+   * @returns 可用模型数组
    */
   getAllConfiguredModels(authTypes?: AuthType[]): AvailableModel[] {
     const inputAuthTypes =
@@ -295,15 +305,21 @@ export class ModelsConfig {
   }
 
   /**
-   * Check if a model exists for the given authType
+   * 检查指定 authType 和 modelId 的模型是否存在
+   * @param authType - 认证类型
+   * @param modelId - 模型 ID
+   * @returns 是否存在
    */
   hasModel(authType: AuthType, modelId: string): boolean {
     return this.modelRegistry.hasModel(authType, modelId);
   }
 
   /**
-   * Set model programmatically (e.g., VLM auto-switch, fallback).
-   * Supports both registry models and raw model IDs.
+   * 以编程方式设置模型（例如 VLM 自动切换、回退）
+   * 支持注册表模型和原始模型 ID
+   * @param newModel - 新模型 ID
+   * @param metadata - 可选的切换元数据
+   * @returns Promise<void>
    */
   async setModel(
     newModel: string,
@@ -348,15 +364,19 @@ export class ModelsConfig {
   }
 
   /**
-   * Switch model (and optionally authType).
-   * Supports both registry-backed models and RuntimeModelSnapshots.
+   * 切换模型（也可选择切换 authType）
+   * 支持注册表支持的模型和 RuntimeModelSnapshots
    *
-   * For runtime models, the modelId can be:
-   * - A RuntimeModelSnapshot ID (format: `$runtime|${authType}|${modelId}`)
-   * - With explicit `$runtime|` prefix (format: `$runtime|${authType}|${modelId}`)
+   * 对于运行时模型，modelId 可以是：
+   * - RuntimeModelSnapshot ID（格式：`$runtime|${authType}|${modelId}`）
+   * - 带显式 `$runtime|` 前缀（格式：`$runtime|${authType}|${modelId}`）
    *
-   * When called from ACP integration, the modelId has already been parsed
-   * by parseAcpModelOption, which strips any (${authType}) suffix.
+   * 当从 ACP 集成调用时，modelId 已经被 parseAcpModelOption 解析，
+   * 剥离了任何 (${authType}) 后缀
+   * @param authType - 认证类型
+   * @param modelId - 模型 ID
+   * @param options - 可选选项
+   * @returns Promise<void>
    */
   async switchModel(
     authType: AuthType,
@@ -409,21 +429,19 @@ export class ModelsConfig {
   }
 
   /**
-   * Prefix used to identify RuntimeModelSnapshot IDs.
-   * Chosen to avoid conflicts with real model IDs which may contain `-` or `:`.
+   * 用于识别 RuntimeModelSnapshot ID 的前缀
+   * 选择它是为了避免与可能包含 `-` 或 `:` 的真实模型 ID 冲突
    */
   private static readonly RUNTIME_SNAPSHOT_PREFIX = '$runtime|';
 
   /**
-   * Build a RuntimeModelSnapshot ID from authType and modelId.
-   * The format is: `$runtime|${authType}|${modelId}`
+   * 从 authType 和 modelId 构建 RuntimeModelSnapshot ID
+   * 格式为：`$runtime|${authType}|${modelId}`
    *
-   * This is the canonical way to construct snapshot IDs, ensuring
-   * consistency across creation and lookup.
-   *
-   * @param authType - The authentication type
-   * @param modelId - The model ID
-   * @returns The snapshot ID in format `$runtime|${authType}|${modelId}`
+   * 这是构造快照 ID 的规范方式，确保创建和查找的一致性
+   * @param authType - 认证类型
+   * @param modelId - 模型 ID
+   * @returns 格式为 `$runtime|${authType}|${modelId}` 的快照 ID
    */
   private buildRuntimeModelSnapshotId(
     authType: AuthType,
@@ -433,18 +451,17 @@ export class ModelsConfig {
   }
 
   /**
-   * Extract RuntimeModelSnapshot ID from modelId if it's a runtime model reference.
+   * 从 modelId 中提取 RuntimeModelSnapshot ID（如果是运行时模型引用）
    *
-   * Supports the following formats:
-   * - Direct snapshot ID: `$runtime|${authType}|${modelId}` → returns as-is if exists in Map
-   * - Direct snapshot ID match: returns if exists in Map
+   * 支持以下格式：
+   * - 直接快照 ID：`$runtime|${authType}|${modelId}` → 如果存在于 Map 中则返回原值
+   * - 直接快照 ID 匹配：如果存在于 Map 中则返回
    *
-   * Note: When called from ACP integration via setModel, the modelId has already
-   * been parsed by parseAcpModelOption which strips any (${authType}) suffix.
-   * So we don't need to handle ACP format here - the ACP layer handles that.
-   *
-   * @param modelId - The model ID to parse
-   * @returns The RuntimeModelSnapshot ID if found, undefined otherwise
+   * 注意：当从 setModel 通过 ACP 集成调用时，modelId 已经
+   * 被 parseAcpModelOption 解析，剥离了任何 (${authType}) 后缀
+   * 所以我们不需要在这里处理 ACP 格式 - ACP 层处理那个
+   * @param modelId - 要解析的模型 ID
+   * @returns RuntimeModelSnapshot ID（如果找到），否则返回 undefined
    */
   private extractRuntimeModelSnapshotId(modelId: string): string | undefined {
     // Check if modelId starts with the runtime snapshot prefix
@@ -466,22 +483,25 @@ export class ModelsConfig {
   }
 
   /**
-   * Get generation config for ContentGenerator creation
+   * 获取用于创建 ContentGenerator 的生成配置
+   * @returns 生成配置
    */
   getGenerationConfig(): Partial<ContentGeneratorConfig> {
     return this._generationConfig;
   }
 
   /**
-   * Get generation config sources for debugging/UI
+   * 获取生成配置的源，用于调试/UI
+   * @returns 生成配置源
    */
   getGenerationConfigSources(): ContentGeneratorConfigSources {
     return this.generationConfigSources;
   }
 
   /**
-   * Merge settings generation config, preserving existing values.
-   * Used when provider-sourced config is cleared but settings should still apply.
+   * 合并设置文件的生成配置，保留现有值
+   * 用于清除提供者配置的源后，但仍应应用设置
+   * @param settingsGenerationConfig - 来自设置文件的生成配置
    */
   mergeSettingsGenerationConfig(
     settingsGenerationConfig?: Partial<ContentGeneratorConfig>,
@@ -507,20 +527,17 @@ export class ModelsConfig {
   }
 
   /**
-   * Update credentials in generation config.
-   * Sets a flag to prevent syncAfterAuthRefresh from overriding these credentials.
+   * 更新生成配置中的凭据
+   * 设置一个标志以防止 syncAfterAuthRefresh 覆盖这些凭据
    *
-   * When credentials are manually set, we clear all provider-sourced configuration
-   * to maintain provider atomicity (either fully applied or not at all).
-   * Other layers (CLI, env, settings, defaults) will participate in resolve.
+   * 当凭据被手动设置时，我们清除所有提供者配置的源
+   * 以保持提供者的原子性（完全应用或不应用）
+   * 其他层（CLI、env、设置、默认值）将参与解析
    *
-   * Also updates or creates a RuntimeModelSnapshot when credentials form a complete config
-   * for a model not in the registry. This allows the runtime model to be reused later.
-   *
-   * @param settingsGenerationConfig Optional generation config from settings.json
-   *                                  to merge after clearing provider-sourced config.
-   *                                  This ensures settings.model.generationConfig fields
-   *                                  (e.g., samplingParams, timeout) are preserved.
+   * 当凭据形成不在注册表中的模型的完整配置时，
+   * 还会更新或创建 RuntimeModelSnapshot。这允许运行时模型稍后重用
+   * @param credentials - 要更新的凭据
+   * @param settingsGenerationConfig - 可选的来自 settings.json 的生成配置
    */
   updateCredentials(
     credentials: {
@@ -583,14 +600,14 @@ export class ModelsConfig {
   }
 
   /**
-   * Sync RuntimeModelSnapshot with current credentials.
+   * 使用当前凭据同步 RuntimeModelSnapshot
    *
-   * Creates or updates a RuntimeModelSnapshot when current credentials form a complete
-   * configuration for a model not in the registry. This enables:
-   * - Reusing the runtime model configuration later
-   * - Showing the runtime model as an available option in model lists
+   * 当当前凭据形成不在注册表中的模型的完整配置时，
+   * 创建或更新 RuntimeModelSnapshot。这使得可以：
+   * - 稍后重用运行时模型配置
+   * - 在模型列表中将运行时模型显示为可用选项
    *
-   * Only creates snapshots for models NOT in the registry (to avoid duplication).
+   * 仅为不在注册表中的模型创建快照（以避免重复）
    */
   private syncRuntimeModelSnapshotWithCredentials(): void {
     const currentAuthType = this.currentAuthType;
@@ -640,9 +657,9 @@ export class ModelsConfig {
   }
 
   /**
-   * Clear configuration fields that were sourced from modelProviders.
-   * This ensures provider config atomicity when user manually sets credentials.
-   * Other layers (CLI, env, settings, defaults) will participate in resolve.
+   * 清除来自 modelProviders 的配置字段
+   * 这确保了当用户手动设置凭据时提供者的配置原子性
+   * 其他层（CLI、env、设置、默认值）将参与解析
    */
   private clearProviderSourcedConfig(): void {
     for (const field of PROVIDER_SOURCED_FIELDS) {
@@ -656,21 +673,23 @@ export class ModelsConfig {
   }
 
   /**
-   * Get whether strict model provider selection is enabled
+   * 获取是否启用了严格的模型提供者选择
+   * @returns 是否启用了严格模式
    */
   isStrictModelProviderSelection(): boolean {
     return this.strictModelProviderSelection;
   }
 
   /**
-   * Reset strict model provider selection flag
+   * 重置严格的模型提供者选择标志
    */
   resetStrictModelProviderSelection(): void {
     this.strictModelProviderSelection = false;
   }
 
   /**
-   * Check and consume the one-shot cached credentials flag
+   * 检查并使用一次性缓存凭据标志
+   * @returns 标志的先前值
    */
   consumeRequireCachedCredentialsFlag(): boolean {
     const value = this.requireCachedQwenCredentialsOnce;
@@ -679,7 +698,8 @@ export class ModelsConfig {
   }
 
   /**
-   * Apply resolved model config to generation config
+   * 将解析后的模型配置应用到生成配置
+   * @param model - 解析后的模型配置
    */
   private applyResolvedModelDefaults(model: ResolvedModelConfig): void {
     this.strictModelProviderSelection = true;
@@ -783,23 +803,25 @@ export class ModelsConfig {
   }
 
   /**
-   * Check if model switch requires ContentGenerator refresh.
+   * 检查模型切换是否需要 ContentGenerator 刷新
    *
-   * Note: This method is ONLY called by switchModel() for same-authType model switches.
-   * Cross-authType switches use switchModel(authType, modelId), which always requires full refresh.
+   * 注意：此方法仅由 switchModel() 为同-authType 模型切换调用
+   * 跨-authType 切换使用 switchModel(authType, modelId)，始终需要完全刷新
    *
-   * When this method is called:
-   * - this.currentAuthType is already the target authType
-   * - We're checking if switching between two models within the SAME authType needs refresh
+   * 当调用此方法时：
+   * - this.currentAuthType 已经是目标 authType
+   * - 我们正在检查在同一 authType 内切换两个模型是否需要刷新
    *
-   * Examples:
-   * - Qwen OAuth: coder-model switches (same authType, hot-update safe)
-   * - OpenAI: model-a -> model-b with same envKey (same authType, hot-update safe)
-   * - OpenAI: gpt-4 -> deepseek-chat with different envKey (same authType, needs refresh)
+   * 示例：
+   * - Qwen OAuth：coder-model 切换（同 authType，热更新安全）
+   * - OpenAI：model-a -> model-b 使用相同的 envKey（同 authType，热更新安全）
+   * - OpenAI：gpt-4 -> deepseek-chat 使用不同的 envKey（同 authType，需要刷新）
    *
-   * Cross-authType scenarios:
-   * - OpenAI -> Qwen OAuth: handled by switchModel(authType, modelId), always refreshes
-   * - Qwen OAuth -> OpenAI: handled by switchModel(authType, modelId), always refreshes
+   * 跨-authType 场景：
+   * - OpenAI -> Qwen OAuth：由 switchModel(authType, modelId) 处理，始终刷新
+   * - Qwen OAuth -> OpenAI：由 switchModel(authType, modelId) 处理，始终刷新
+   * @param previousModelId - 之前的模型 ID
+   * @returns 是否需要刷新
    */
   private checkRequiresRefresh(previousModelId: string): boolean {
     // Defensive: this method is only called after switchModel() sets currentAuthType,
@@ -846,13 +868,15 @@ export class ModelsConfig {
   }
 
   /**
-   * Sync state after auth refresh with fallback strategy:
-   * 1. If modelId can be found in modelRegistry, use the config from modelRegistry.
-   * 2. Otherwise, if existing credentials exist in resolved generationConfig from other sources
-   *    (not modelProviders), preserve them and update authType/modelId only.
-   * 3. Otherwise, fall back to default model for the authType.
-   * 4. If no default is available, leave the generationConfig incomplete and let
-   *    resolveContentGeneratorConfigWithSources throw exceptions as expected.
+   * 认证刷新后使用回退策略同步状态：
+   * 1. 如果 modelId 可以在 modelRegistry 中找到，使用 modelRegistry 的配置
+   * 2. 否则，如果解析后的生成配置中存在来自其他来源的现有凭据
+   *    （不是 modelProviders），保留它们，仅更新 authType/modelId
+   * 3. 否则，回退到 authType 的默认模型
+   * 4. 如果没有可用的默认模型，使生成配置不完整，让
+   *    resolveContentGeneratorConfigWithSources 按预期抛出异常
+   * @param authType - 认证类型
+   * @param modelId - 可选的模型 ID
    */
   syncAfterAuthRefresh(authType: AuthType, modelId?: string): void {
     this.strictModelProviderSelection = false;
@@ -937,21 +961,21 @@ export class ModelsConfig {
   }
 
   /**
-   * Update callback for model changes
+   * 更新模型变更的回调函数
+   * @param callback - 回调函数
    */
   setOnModelChange(callback: OnModelChangeCallback): void {
     this.onModelChange = callback;
   }
 
   /**
-   * Detect and capture RuntimeModelSnapshot during initialization.
+   * 在初始化期间检测并捕获 RuntimeModelSnapshot
    *
-   * Checks if the current configuration represents a runtime model (not from
-   * modelProviders registry) and captures it as a RuntimeModelSnapshot.
+   * 检查当前配置是否表示运行时模型（不是来自 modelProviders 注册表）
+   * 并将其捕获为 RuntimeModelSnapshot
    *
-   * This enables runtime models to persist across sessions and appear in model lists.
-   *
-   * @returns Created snapshot ID, or undefined if current config is a registry model
+   * 这使得运行时模型可以跨会话持久化并出现在模型列表中
+   * @returns 创建的快照 ID，如果当前配置是注册表模型则返回 undefined
    */
   detectAndCaptureRuntimeModel(): string | undefined {
     const {
@@ -1009,9 +1033,8 @@ export class ModelsConfig {
   }
 
   /**
-   * Get the currently active RuntimeModelSnapshot.
-   *
-   * @returns The active RuntimeModelSnapshot, or undefined if no runtime model is active
+   * 获取当前活动的 RuntimeModelSnapshot
+   * @returns 当前活动的 RuntimeModelSnapshot，如果没有则返回 undefined
    */
   getActiveRuntimeModelSnapshot(): RuntimeModelSnapshot | undefined {
     if (!this.activeRuntimeModelSnapshotId) {
@@ -1021,22 +1044,20 @@ export class ModelsConfig {
   }
 
   /**
-   * Get the ID of the currently active RuntimeModelSnapshot.
-   *
-   * @returns The active snapshot ID, or undefined if no runtime model is active
+   * 获取当前活动的 RuntimeModelSnapshot ID
+   * @returns 活动快照 ID，如果没有则返回 undefined
    */
   getActiveRuntimeModelSnapshotId(): string | undefined {
     return this.activeRuntimeModelSnapshotId;
   }
 
   /**
-   * Switch to a RuntimeModelSnapshot.
+   * 切换到 RuntimeModelSnapshot
    *
-   * Applies the configuration from a previously captured RuntimeModelSnapshot.
-   * Uses state rollback pattern: creates a state snapshot before switching and
-   * restores it on error.
-   *
-   * @param snapshotId - The ID of the RuntimeModelSnapshot to switch to
+   * 应用之前捕获的 RuntimeModelSnapshot 的配置
+   * 使用状态回滚模式：在切换前创建状态快照，并在错误时恢复
+   * @param snapshotId - 要切换到的 RuntimeModelSnapshot ID
+   * @returns Promise<void>
    */
   async switchToRuntimeModel(snapshotId: string): Promise<void> {
     const runtimeModelSnapshot = this.runtimeModelSnapshots.get(snapshotId);
@@ -1109,12 +1130,11 @@ export class ModelsConfig {
   }
 
   /**
-   * Get the active RuntimeModelSnapshot as an AvailableModel option.
+   * 将活动的 RuntimeModelSnapshot 作为 AvailableModel 选项获取
    *
-   * Converts the active RuntimeModelSnapshot to an AvailableModel format for display
-   * in model lists. Returns undefined if no runtime model is active.
-   *
-   * @returns The runtime model as an AvailableModel option, or undefined
+   * 将活动的 RuntimeModelSnapshot 转换为 AvailableModel 格式以在模型列表中显示
+   * 如果没有活动的运行时模型则返回 undefined
+   * @returns 运行时模型作为 AvailableModel 选项，或 undefined
    */
   private getRuntimeModelOption(): AvailableModel | undefined {
     const snapshot = this.getActiveRuntimeModelSnapshot();
@@ -1139,12 +1159,11 @@ export class ModelsConfig {
   }
 
   /**
-   * Clear all RuntimeModelSnapshots for a specific authType.
+   * 清除特定 authType 的所有 RuntimeModelSnapshot
    *
-   * Removes all RuntimeModelSnapshots associated with the given authType.
-   * Called when switching to a registry model to avoid stale RuntimeModelSnapshots.
-   *
-   * @param authType - The authType whose snapshots should be cleared
+   * 删除与给定 authType 关联的所有 RuntimeModelSnapshot
+   * 切换到注册表模型时调用，以避免过时的 RuntimeModelSnapshot
+   * @param authType - 要清除快照的 authType
    */
   private clearRuntimeModelSnapshotForAuthType(authType: AuthType): void {
     for (const [id, snapshot] of this.runtimeModelSnapshots.entries()) {
@@ -1158,10 +1177,10 @@ export class ModelsConfig {
   }
 
   /**
-   * Cleanup old RuntimeModelSnapshots to enforce per-authType limit.
+   * 清理旧的 RuntimeModelSnapshot 以强制执行每个 authType 的限制
    *
-   * Keeps only the latest RuntimeModelSnapshot for each authType.
-   * Older snapshots are removed to prevent unbounded growth.
+   * 仅保留每个 authType 的最新 RuntimeModelSnapshot
+   * 删除旧快照以防止无限增长
    */
   private cleanupOldRuntimeModelSnapshots(): void {
     const snapshotsByAuthType = new Map<AuthType, RuntimeModelSnapshot>();
@@ -1188,10 +1207,9 @@ export class ModelsConfig {
   }
 
   /**
-   * Reload model providers configuration at runtime.
-   * This enables hot-reloading of modelProviders settings without restarting the CLI.
-   *
-   * @param modelProvidersConfig - The updated model providers configuration
+   * 在运行时重新加载模型提供者配置
+   * 这允许在不重新启动 CLI 的情况下热重载 modelProviders 设置
+   * @param modelProvidersConfig - 更新后的模型提供者配置
    */
   reloadModelProvidersConfig(
     modelProvidersConfig?: ModelProvidersConfig,

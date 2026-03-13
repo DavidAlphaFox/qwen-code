@@ -10,13 +10,12 @@ import { createDebugLogger } from './debugLogger.js';
 const debugLogger = createDebugLogger('JSON_PARSE');
 
 /**
- * Safely parse JSON string with jsonrepair fallback for malformed JSON.
- * This function attempts to parse JSON normally first, and if that fails,
- * it uses jsonrepair to fix common JSON formatting issues before parsing.
- *
- * @param jsonString - The JSON string to parse
- * @param fallbackValue - The value to return if parsing fails completely
- * @returns The parsed object or the fallback value
+ * 使用 jsonrepair 后备选项安全解析 JSON 字符串
+ * 此函数首先尝试正常解析 JSON，如果失败，
+ * 使用 jsonrepair 修复常见的 JSON 格式问题后再解析
+ * @param jsonString - 要解析的 JSON 字符串
+ * @param fallbackValue - 如果解析完全失败则返回的值
+ * @returns 解析后的对象或后备值
  */
 export function safeJsonParse<T = Record<string, unknown>>(
   jsonString: string,

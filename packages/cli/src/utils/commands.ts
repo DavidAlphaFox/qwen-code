@@ -6,19 +6,24 @@
 
 import { type SlashCommand } from '../ui/commands/types.js';
 
+/**
+ * 解析后的斜杠命令结构
+ */
 export type ParsedSlashCommand = {
+  /** 要执行的命令 */
   commandToExecute: SlashCommand | undefined;
+  /** 命令参数 */
   args: string;
+  /** 命令的规范路径 */
   canonicalPath: string[];
 };
 
 /**
- * Parses a raw slash command string into its command, arguments, and canonical path.
- * If no valid command is found, the `commandToExecute` property will be `undefined`.
- *
- * @param query The raw input string, e.g., "/memory add some data" or "/help".
- * @param commands The list of available top-level slash commands.
- * @returns An object containing the resolved command, its arguments, and its canonical path.
+ * 将原始斜杠命令字符串解析为命令、参数和规范路径
+ * 如果未找到有效命令，commandToExecute 属性将为 undefined
+ * @param query - 原始输入字符串，例如 "/memory add some data" 或 "/help"
+ * @param commands - 可用的顶级斜杠命令列表
+ * @returns ParsedSlashCommand 包含解析后的命令、参数及其规范路径的对象
  */
 export const parseSlashCommand = (
   query: string,
@@ -27,7 +32,7 @@ export const parseSlashCommand = (
   const trimmed = query.trim();
 
   const parts = trimmed.substring(1).trim().split(/\s+/);
-  const commandPath = parts.filter((p) => p); // The parts of the command, e.g., ['memory', 'add']
+  const commandPath = parts.filter((p) => p); // 命令的部分，例如 ['memory', 'add']
 
   let currentCommands = commands;
   let commandToExecute: SlashCommand | undefined;
@@ -35,16 +40,15 @@ export const parseSlashCommand = (
   const canonicalPath: string[] = [];
 
   for (const part of commandPath) {
-    // TODO: For better performance and architectural clarity, this two-pass
-    // search could be replaced. A more optimal approach would be to
-    // pre-compute a single lookup map in `CommandService.ts` that resolves
-    // all name and alias conflicts during the initial loading phase. The
-    // processor would then perform a single, fast lookup on that map.
+    // TODO: 为提高性能和架构清晰度，这种两遍搜索可以被替换
+    // 更优化的方法是在 CommandService.ts 中预先计算一个单一的查找映射
+    // 在初始加载阶段解析所有名称和别名冲突
+    // 然后处理器将对该映射执行单一快速查找
 
-    // First pass: check for an exact match on the primary command name.
+    // 第一遍：检查主命令名称的精确匹配
     let foundCommand = currentCommands.find((cmd) => cmd.name === part);
 
-    // Second pass: if no primary name matches, check for an alias.
+    // 第二遍：如果主名称不匹配，则检查别名
     if (!foundCommand) {
       foundCommand = currentCommands.find((cmd) =>
         cmd.altNames?.includes(part),
